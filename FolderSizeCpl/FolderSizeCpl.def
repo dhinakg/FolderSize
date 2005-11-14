@@ -1,0 +1,4 @@
+LIBRARY	FolderSize
+
+EXPORTS
+	CPlApplet

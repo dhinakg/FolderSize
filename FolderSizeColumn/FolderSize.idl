@@ -1,0 +1,28 @@
+// FolderSize.idl : IDL source for FolderSize.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (FolderSize.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(7F3C8BE4-A0AD-4A52-9B0F-431630D5BA2F),
+	version(1.0),
+	helpstring("FolderSize 1.0 Type Library")
+]
+library FOLDERSIZELib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(04DAAD08-70EF-450E-834A-DCFAF9B48748),
+		helpstring("FolderSizeObj Class")
+	]
+	coclass FolderSizeObj
+	{
+		interface IUnknown;
+	};
+};

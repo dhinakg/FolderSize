@@ -1,0 +1,9 @@
+; FolderSize.def : Declares the module parameters.
+
+LIBRARY      "FolderSizeColumn.dll"
+
+EXPORTS
+	DllCanUnloadNow      PRIVATE
+	DllGetClassObject    PRIVATE
+	DllRegisterServer    PRIVATE
+	DllUnregisterServer  PRIVATE
