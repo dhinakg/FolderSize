@@ -1,5 +1,7 @@
 #pragma once
 
+#include "..\Pipe\FolderInfo.h"
+
 class Scanner;
 class FolderManager;
 
@@ -16,7 +18,7 @@ public:
 	};
 
 	// get info
-	ULONGLONG GetTotalSize() const;
+	const FOLDERINFO& GetTotalSize() const;
 	LPCTSTR GetPath() const;
 	STATUS GetStatus() const;
 	UINT GetDirtyChildren() const;
@@ -24,7 +26,7 @@ public:
 
 	// change the CacheFolder's status
 	void Dirty();
-	void Clean(ULONGLONG nSize);
+	void Clean(const FOLDERINFO& nSize);
 
 	void Rename(LPCTSTR pszNewName);
 
@@ -57,7 +59,7 @@ protected:
 	CacheFolder* m_pNextSibling;
 
 	// the accuracy of nSize is determined by m_eStatus
-	ULONGLONG m_nSize;
+	FOLDERINFO m_nSize;
 	STATUS m_eStatus;
 
 	bool m_bScanning;
@@ -68,8 +70,10 @@ protected:
 
 	LONGLONG m_nLastCleanTime;
 
-	// m_nTotalSize is the sum of all nSizes in the tree rooted at this folder
-	ULONGLONG m_nTotalSize;
+	// This nSize struct contains the sum of all 
+	// nSizes, nFiles and nFolders respectively in the tree rooted 
+	// at this folder
+	FOLDERINFO m_nTotalSize;
 
 	// information about children
 	UINT m_nDirtyChildren;

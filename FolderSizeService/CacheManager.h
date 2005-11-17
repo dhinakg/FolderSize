@@ -7,7 +7,7 @@ public:
 	CacheManager(SERVICE_STATUS_HANDLE hSS);
 	~CacheManager();
 
-	DWORD GetInfoForFolder(LPCTSTR pszFolder, ULONGLONG& nSize);
+	bool GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize);
 	void GetUpdateFoldersForBrowsedFolders(const Strings& strsFoldersBrowsed, Strings& strsFoldersToUpdate);
 	void EnableScanners(bool bEnable);
 	void DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh);

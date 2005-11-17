@@ -181,6 +181,9 @@
 				RelativePath=".\Folder.h">
 			</File>
 			<File
+				RelativePath=".\FolderInfo.h">
+			</File>
+			<File
 				RelativePath=".\FolderManager.cpp">
 			</File>
 			<File

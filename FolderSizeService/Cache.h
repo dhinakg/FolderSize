@@ -1,4 +1,5 @@
 #pragma once
+#include "..\Pipe\FolderInfo.h"
 #include "Scanner.h"
 #include "Monitor.h"
 
@@ -12,14 +13,14 @@ public:
 	~Cache();
 
 	// the CacheManager calls these
-	DWORD GetInfoForFolder(LPCTSTR pszFolder, ULONGLONG& nSize, HANDLE& hDevice);
+	void GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize, HANDLE& hDevice);
 	void GetUpdateFoldersForFolder(LPCTSTR pszFolder, Strings& strsFoldersToUpdate);
 	void EnableScanner(bool bEnable);
 	bool ClearIfMonitoringHandle(HANDLE h);
 
 	// IScannerCallback
 	virtual void FoundFolder(LPCTSTR pszFolder);
-	virtual void GotScanResult(LPCTSTR pszFolder, ULONGLONG nSize);
+	virtual void GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize);
 	virtual bool GetNextScanFolder(LPTSTR pszFolder);
 
 	// IMonitorCallback

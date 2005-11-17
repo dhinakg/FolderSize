@@ -88,14 +88,14 @@ bool WriteStringList(HANDLE h, Strings strs)
 	return true;
 }
 
-bool ReadGetFolderSize(HANDLE h, PIPE_REPLY_GETFOLDERSIZE& gfs)
+bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size)
 {
 	DWORD dwBytesRead;
-	return ReadFile(h, &gfs, sizeof(gfs), &dwBytesRead, NULL) && dwBytesRead == sizeof(gfs);
+	return ReadFile(h, &Size, sizeof(Size), &dwBytesRead, NULL) && dwBytesRead == sizeof(Size);
 }
 
-bool WriteGetFolderSize(HANDLE h, const PIPE_REPLY_GETFOLDERSIZE& gfs)
+bool WriteGetFolderSize(HANDLE h, const FOLDERINFO2& Size)
 {
 	DWORD dwBytesWritten;
-	return WriteFile(h, &gfs, sizeof(gfs), &dwBytesWritten, NULL) && dwBytesWritten == sizeof(gfs);
+	return WriteFile(h, &Size, sizeof(Size), &dwBytesWritten, NULL) && dwBytesWritten == sizeof(Size);
 }

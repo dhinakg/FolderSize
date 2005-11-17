@@ -23,7 +23,7 @@ Scanner::~Scanner()
 
 void Scanner::ScanFolder(LPCTSTR pszFolder)
 {
-	ULONGLONG nSize = 0;
+	FOLDERINFO nSize;
 	TCHAR szFolder[MAX_PATH];
 	_tcscpy(szFolder, pszFolder);
 	PathAppend(szFolder, _T("*"));
@@ -45,11 +45,15 @@ void Scanner::ScanFolder(LPCTSTR pszFolder)
 						_tcscpy(szFolder, pszFolder);
 						PathAppend(szFolder, FindData.cFileName);
 						m_pCallback->FoundFolder(szFolder);
+
+						nSize.nFolders++;
 					}
 				}
 				else
 				{
-					nSize += MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+					nSize.nSize += MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+
+					nSize.nFiles++;
 				}
 			}
 		} while (FindNextFile(hFind, &FindData));

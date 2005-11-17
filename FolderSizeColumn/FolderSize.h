@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Thu Jun 30 01:55:14 2005
+/* at Wed Nov 16 00:33:57 2005
  */
 /* Compiler settings for .\FolderSize.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

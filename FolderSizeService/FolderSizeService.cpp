@@ -50,10 +50,9 @@ void HandlePipeClient(HANDLE hPipe)
 			WCHAR szFile[MAX_PATH];
 			if (ReadString(hPipe, szFile, MAX_PATH))
 			{
-				PIPE_REPLY_GETFOLDERSIZE gfs;
-				ZeroMemory(&gfs, sizeof(gfs));
-				gfs.dwResult = g_pCacheManager->GetInfoForFolder(szFile, gfs.nSize);
-				WriteGetFolderSize(hPipe, gfs);
+				FOLDERINFO2 Size;
+				g_pCacheManager->GetInfoForFolder(szFile, Size);
+				WriteGetFolderSize(hPipe, Size);
 			}
 			break;
 

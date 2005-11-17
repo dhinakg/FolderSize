@@ -97,6 +97,12 @@ BEGIN
     IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
     IDS_COLUMN_SORT_TITLE   "Folder Size Sort"
     IDS_COLUMN_SORT_DESCRIPTION "Sort this column to sort by folder size."
+    IDS_COLUMN_FILES_TITLE   "File Count"
+    IDS_COLUMN_FILES_DESCRIPTION "Display the total number of files within folders."
+    IDS_COLUMN_FOLDERS_TITLE   "Folder Count"
+    IDS_COLUMN_FOLDERS_DESCRIPTION "Display the total number of subfolders within folders."
+    IDS_COLUMN_SIBLINGS_TITLE   "Sibling Count"
+    IDS_COLUMN_SIBLINGS_DESCRIPTION "Display the total number of files and subfolders within folders."
 END
 
 #endif    // English (U.S.) resources

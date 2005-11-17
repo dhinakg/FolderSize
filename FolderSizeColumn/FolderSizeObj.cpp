@@ -75,26 +75,59 @@ STDMETHODIMP CFolderSizeObj::GetColumnInfo(DWORD dwIndex, SHCOLUMNINFO *psci)
 {
 	switch (dwIndex)
 	{
-	case 0:
+	case FSC_SIZE:
 		psci->scid.fmtid = CLSID_FolderSizeObj;
-		psci->scid.pid = 0;
+		psci->scid.pid = dwIndex;
 		psci->vt = VT_BSTR;
 		psci->fmt = LVCFMT_RIGHT;
-		psci->cChars = 18;
+		psci->cChars = 15;
 		psci->csFlags = SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT;
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
 		return S_OK;
 
-	case 1:
+	case FSC_SIZESORT:
 		psci->scid.fmtid = CLSID_FolderSizeObj;
-		psci->scid.pid = 1;
+		psci->scid.pid = dwIndex;
 		psci->vt = VT_UI8;
 		psci->fmt = LVCFMT_RIGHT;
-		psci->cChars = 18;
+		psci->cChars = 13;
 		psci->csFlags = SHCOLSTATE_TYPE_INT;
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SORT_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SORT_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
+		return S_OK;
+
+	case FSC_FILES:
+		psci->scid.fmtid = CLSID_FolderSizeObj;
+		psci->scid.pid = dwIndex;
+		psci->vt = VT_UI8;
+		psci->fmt = LVCFMT_RIGHT;
+		psci->cChars = 13;
+		psci->csFlags = SHCOLSTATE_TYPE_INT;
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_FILES_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_FILES_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
+		return S_OK;
+
+	case FSC_FOLDERS:
+		psci->scid.fmtid = CLSID_FolderSizeObj;
+		psci->scid.pid = dwIndex;
+		psci->vt = VT_UI8;
+		psci->fmt = LVCFMT_RIGHT;
+		psci->cChars = 13;
+		psci->csFlags = SHCOLSTATE_TYPE_INT;
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_FOLDERS_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_FOLDERS_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
+		return S_OK;
+
+	case FSC_SIBLINGS:
+		psci->scid.fmtid = CLSID_FolderSizeObj;
+		psci->scid.pid = dwIndex;
+		psci->vt = VT_UI8;
+		psci->fmt = LVCFMT_RIGHT;
+		psci->cChars = 13;
+		psci->csFlags = SHCOLSTATE_TYPE_INT;
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SIBLINGS_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
+		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SIBLINGS_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
 		return S_OK;
 	}
 
@@ -127,6 +160,15 @@ ULONGLONG GetFileSize(LPCTSTR pFileName)
 
 void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 {
+	// Assume folders won't get larger than 10^(2^4 - 4) = 10^16 bytes = 1 TB
+	// Adjust if necessary
+	const int N_PREFIX = 4;
+	const int N_DIGITS_MAX = 1 << N_PREFIX;
+	
+	// Paranoia.
+	if (uiBufSize <= N_PREFIX)
+		return;
+
 	bool bCompact = false;
 
 	HKEY hKey;
@@ -147,6 +189,70 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 		RegCloseKey(hKey);
 	}
 
+	// Retrieve the dimension of the size value:
+   //
+   // The dimension is an integer so that for each pair of sizes with
+   // the same dimension the sort order of "string sort" is the same
+   // as the intended sort order
+   // Retrieve the string representation for the size
+   // as usual.
+   //
+   // The dimension depends on the prefix.
+   ULONGLONG nSize1;
+   int nDimension;
+
+   if (bCompact)
+   {
+      for (nDimension = 0, nSize1 = nSize / 1024; nSize1 > 0; nSize1 /= 10, nDimension++) ;
+   }
+   else
+   {
+      for (nDimension = 0, nSize1 = nSize; nSize1 >= 1024; nSize1 /= 1024, nDimension += 4) ;
+      for (; nSize1 > 0; nSize1 /= 10, nDimension++ ) ;
+   }
+
+	// Insert invisible prefix according to the dimension to maintain
+	// the correct sort order for the string representation of the
+	// size.
+	//
+	// The prefix is a combination of N_PREFIX invisible characters
+	// (0x20 and 0xA0). For sizes with the same dimension,
+	// the same prefix is assigned. The prefix is constructed 
+	// in a way that a prefix for a larger size is sorted after a 
+	// prefix for a smaller size with string sort. So, when sorting
+	// by our "Folder size" column, sizes are sorted according to 
+	// their dimension.
+	//
+	// String representations for sizes of the same dimension maintain
+	// the correct sort order. 
+	// The combination of prefix and the size's string 
+	// representation yields a (visually unchanged)
+	// representation for the size while maintaining correct sort 
+	// order.
+	//
+	// However, three restrictions apply:
+	// 1. The values are four spaces longer, so the folder size
+	//    column must not be too small.
+	// 2. The ">" and "~" symbols that indicate pending calculation
+	//    destroy the sort order if placed in front of the size.
+	//    They are now appended to the size.
+	// 3. Files and folders with the same string representation for
+	//    their size but different sizes are sorted according to their
+	//    name, not to their real size. For more accurate performance,
+	//    use the "Folder Size Sort" column.
+	for (int i1 = N_PREFIX; (i1--) > 0;)
+	{
+		if (nDimension & (1 << i1)) 
+			*(pszBuff++) = 0xA0; // non-breaking space
+		else
+			*(pszBuff++) = 0x20; // space
+	}
+	
+	// Our buffer is smaller now.
+	uiBufSize -= N_PREFIX;
+
+	// Retrieve the string representation for the size
+	// as usual.
 	if (bCompact)
 	{
 		StrFormatByteSize64(nSize, pszBuff, uiBufSize);
@@ -157,9 +263,9 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 	}
 }
 
-DWORD GetInfoForFolder(LPCWSTR pszFile, ULONGLONG& nSize)
+bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
 {
-	DWORD dwResult = 0;
+	bool bRet = false;
 
 	// try twice to connect to the pipe
 	HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -181,14 +287,13 @@ DWORD GetInfoForFolder(LPCWSTR pszFile, ULONGLONG& nSize)
 		{
 			if (WriteString(hPipe, pszFile))
 			{
-				PIPE_REPLY_GETFOLDERSIZE gfs;
-				ZeroMemory(&gfs, sizeof(gfs));
+				FOLDERINFO2 Size;
 /*
 				LARGE_INTEGER nFrequency, nCount1, nCount2;
 				QueryPerformanceFrequency(&nFrequency);
 				QueryPerformanceCounter(&nCount1);
 */
-				if (ReadGetFolderSize(hPipe, gfs))
+				if (ReadGetFolderSize(hPipe, nSize))
 				{
 /*
 					QueryPerformanceCounter(&nCount2);
@@ -197,8 +302,7 @@ DWORD GetInfoForFolder(LPCWSTR pszFile, ULONGLONG& nSize)
 					wsprintf(szMessage, _T("Waited for a pipe: %d\n"), dwMilliseconds);
 					OutputDebugString(szMessage);
 */
-					dwResult = gfs.dwResult;
-					nSize = gfs.nSize;
+					bRet = true;
 				}
 			}
 		}
@@ -206,16 +310,15 @@ DWORD GetInfoForFolder(LPCWSTR pszFile, ULONGLONG& nSize)
 		CloseHandle(hPipe);
 	}
 
-	return dwResult;
+	return bRet;
 }
 
 void GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 {
 	pszBuffer[0] = _T('\0');
-	ULONGLONG nSize;
+	FOLDERINFO2 nSize;
 	SetLastError(0);
-	DWORD dwResult = GetInfoForFolder(pszFolder, nSize);
-	if (GetLastError() != NO_ERROR)
+	if (!GetInfoForFolder(pszFolder, nSize))
 	{
 #ifdef _DEBUG
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), 0, pszBuffer, cch, NULL);
@@ -223,21 +326,19 @@ void GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 	}
 	else
 	{
-		if (dwResult & GFS_SUCCEEDED)
+		FormatSizeWithOption(nSize.nSize, pszBuffer, cch);
+
+		LPWSTR psz = pszBuffer + wcslen(pszBuffer);
+		switch (nSize.giff)
 		{
-			LPWSTR psz = pszBuffer;
-			if (dwResult & GFS_DIRTY)
-			{
-				*(psz++) = L'~';
-				*(psz++) = L' ';
-			}
-			else if (dwResult & GFS_EMPTY)
-			{
-				*(psz++) = L'>';
-				*(psz++) = L' ';
-			}
-			FormatSizeWithOption(nSize, psz, cch-2);
+		case GIFF_DIRTY:
+			*(psz++) = L'~';
+			break;
+		case GIFF_SCANNING:
+			*(psz++) = L'+';
+			break;
 		}
+		*psz = 0;
 	}
 }
 
@@ -245,52 +346,68 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 {
 	if (pscid->fmtid == CLSID_FolderSizeObj)
 	{
+		FOLDERINFO2 nSize;
+
 		switch (pscid->pid)
 		{
-		case 0:
+		case FSC_SIZE:
 			{
 				WCHAR buffer[50];
 				if (pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
-					GetFolderInfoToBuffer(pscd->wszFile, buffer, 50);
+					GetFolderInfoToBuffer(pscd->wszFile, buffer, sizeof(buffer)/sizeof(WCHAR));
 				}
 				else
 				{
 					ULONGLONG nSize = GetFileSize(pscd->wszFile);
 					FormatSizeWithOption(nSize, buffer, sizeof(buffer)/sizeof(WCHAR));
 				}
-/*
-				// remove the " KB"
-//				lstrcpy(buffer + lstrlen(buffer) - 3, L".0 KB");
-//				buffer[lstrlen(buffer)-3] = L'\0';
-
-				WCHAR buffer2[50];
-//				lstrcpy(buffer2, L"                     "); // 21 spaces
-				for (int i=0; i<21; i++)
-				{
-					buffer2[i] = 32;
-				}
-				buffer2[21] = 0;
-				lstrcpy(buffer2 + lstrlen(buffer2) - lstrlen(buffer), buffer);
-*/
 				V_VT(pvarData) = VT_BSTR;
 				V_BSTR(pvarData) = SysAllocString(buffer);
 				return S_OK;
 			}
 			
-		case 1:
+		case FSC_SIZESORT:
 			{
-				ULONGLONG nSize = 0;
 				if (pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
-					GetInfoForFolder(pscd->wszFile, nSize);
+					if (!GetInfoForFolder(pscd->wszFile, nSize))
+						return S_OK;
 				}
 				else
 				{
-					nSize = GetFileSize(pscd->wszFile);
+					nSize.nSize = GetFileSize(pscd->wszFile);
 				}
 				V_VT(pvarData) = VT_UI8;
-				V_UI8(pvarData) = nSize;
+				V_UI8(pvarData) = nSize.nSize;
+				return S_OK;
+			}
+			
+		case FSC_FILES:
+		case FSC_FOLDERS:
+		case FSC_SIBLINGS:
+			{
+				// Show empty column for files
+				if (!(pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+					return S_OK;
+
+            if (!GetInfoForFolder(pscd->wszFile, nSize))
+               return S_OK;
+
+				V_VT(pvarData) = VT_UI8;
+				switch (pscid->pid) {
+				case FSC_FILES:
+					V_UI8(pvarData) = nSize.nFiles;
+					break;
+
+				case FSC_FOLDERS:
+					V_UI8(pvarData) = nSize.nFolders;
+					break;
+
+				case FSC_SIBLINGS:
+					V_UI8(pvarData) = nSize.nFiles + nSize.nFolders;
+					break;
+				}
 				return S_OK;
 			}
 		}

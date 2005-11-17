@@ -9,9 +9,7 @@ CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, LPCTSTR 
 	m_pParent(pParent),
 	m_pChild(NULL),
 	m_pNextSibling(NULL),
-	m_nSize(0),
 	m_eStatus(FS_EMPTY),
-	m_nTotalSize(0),
 	m_nDirtyChildren(0),
 	m_nEmptyChildren(0),
 	m_nLastCleanTime(0),
@@ -53,7 +51,7 @@ CacheFolder::~CacheFolder()
 	m_pManager->Unregister(this);
 }
 
-ULONGLONG CacheFolder::GetTotalSize() const
+const FOLDERINFO& CacheFolder::GetTotalSize() const
 {
 	return m_nTotalSize;
 }
@@ -140,13 +138,14 @@ void CacheFolder::Dirty()
 	m_bIsScanValid = false;
 }
 
-void CacheFolder::Clean(ULONGLONG nSize)
+void CacheFolder::Clean(const FOLDERINFO& nSize)
 {
 	if (m_eStatus != FS_CLEAN)
 	{
 		if (m_nSize != nSize)
 		{
-			LONGLONG nChange = nSize - m_nSize;
+			FOLDERINFO nChange = nSize;
+			nChange -= m_nSize;
 			m_nSize = nSize;
 			for (CacheFolder* pFolder = this; pFolder != NULL; pFolder = pFolder->m_pParent)
 			{

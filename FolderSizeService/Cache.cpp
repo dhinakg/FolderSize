@@ -41,12 +41,13 @@ Cache::~Cache()
 
 static void WarningEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection, LPCTSTR pszFunction)
 {
-	LARGE_INTEGER nCount1, nCount2;
+	LARGE_INTEGER nCount1;
 	QueryPerformanceCounter(&nCount1);
 	if (!TryEnterCriticalSection(lpCriticalSection))
 	{
 		EnterCriticalSection(lpCriticalSection);
 #ifdef _DEBUG
+		LARGE_INTEGER nCount2;
 		QueryPerformanceCounter(&nCount2);
 		DWORD dwMilliseconds = (DWORD)((nCount2.QuadPart-nCount1.QuadPart)*1000/g_nPerformanceFrequency.QuadPart);
 		TCHAR szMessage[1024];
@@ -79,10 +80,8 @@ void Cache::Clear()
 	LeaveCriticalSection(&m_cs);
 }
 
-DWORD Cache::GetInfoForFolder(LPCTSTR pszFolder, ULONGLONG& nSize, HANDLE& hDevice)
+void Cache::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize, HANDLE& hDevice)
 {
-	DWORD dwResult = 0;
-
 	WarningEnterCriticalSection(&m_cs, _T("GetInfoForFolder"));
 
 	if (m_pFolderManager == NULL)
@@ -96,31 +95,32 @@ DWORD Cache::GetInfoForFolder(LPCTSTR pszFolder, ULONGLONG& nSize, HANDLE& hDevi
 
 		DoSyncScans(pFolder);
 
-		nSize = pFolder->GetTotalSize();
+		(FOLDERINFO&)nSize = pFolder->GetTotalSize();
 
 		// let the folder know that it's being displayed
 		pFolder->DisplayUpdated();
 
-		dwResult = GFS_SUCCEEDED;
 		if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
 		{
-			dwResult |= GFS_DIRTY;
+			nSize.giff = GIFF_DIRTY;
 		}
 		else if (pFolder->GetStatus() == CacheFolder::FS_EMPTY || pFolder->GetEmptyChildren())
 		{
-			dwResult |= GFS_EMPTY;
+			nSize.giff = GIFF_SCANNING;
+		}
+		else
+		{
+			nSize.giff = GIFF_CLEAN;
 		}
 	}
 
 	LeaveCriticalSection(&m_cs);
 
-	if (dwResult & (GFS_DIRTY|GFS_EMPTY))
+	if (nSize.giff != GIFF_CLEAN)
 	{
 		// make sure the scanner is awake
 		m_pScanner->Wakeup();
 	}
-
-	return dwResult;
 }
 
 // The scanner is currently scanning the PARENT of pszFolder, and it
@@ -132,7 +132,7 @@ void Cache::FoundFolder(LPCTSTR pszFolder)
 	LeaveCriticalSection(&m_cs);
 }
 
-void Cache::GotScanResult(LPCTSTR pszFolder, ULONGLONG nSize)
+void Cache::GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize)
 {
 	WarningEnterCriticalSection(&m_cs,  _T("GotScanResult"));
 	// clean the scanned folder
@@ -161,34 +161,7 @@ bool Cache::GetNextScanFolder(LPTSTR pszFolder)
 	}
 	return bRet;
 }
-/*
-void Cache::FileChanged(LPCTSTR pszFile, DWORD dwAction)
-{
-	// pszFile is a file that's changed, and szPath is the CacheFolder it's in
-	WarningEnterCriticalSection(&m_cs, _T("FileChanged"));
-	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFile, false);
-	if (pFolder != NULL)
-	{
-		// pszFile actually referred to a directory
-		if (dwAction == FILE_ACTION_REMOVED)
-		{
-			delete pFolder;
-		}
-	}
-	else
-	{
-		TCHAR szPath[MAX_PATH];
-		_tcscpy(szPath, pszFile);
-		PathRemoveFileSpec(szPath);
-		pFolder = m_pFolderManager->GetFolderForPath(szPath, false);
-		if (pFolder != NULL)
-		{
-			pFolder->Dirty();
-		}
-	}
-	LeaveCriticalSection(&m_cs);
-}
-*/
+
 void Cache::PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe)
 {
 	// i'd rather not call PathIsDirectory(), since the disk could be out of sync

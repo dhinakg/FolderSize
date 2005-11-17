@@ -13,6 +13,7 @@
 
 #include <string>
 #include <hash_set>
+#include "FolderInfo.h"
 
 typedef stdext::hash_set<std::wstring> Strings;
 
@@ -27,21 +28,11 @@ enum PIPE_CLIENT_REQUEST
 	PCR_GETUPDATEDFOLDERS
 };
 
-#define GFS_SUCCEEDED   1
-#define GFS_DIRTY       2
-#define GFS_EMPTY       4
-
-struct PIPE_REPLY_GETFOLDERSIZE
-{
-	DWORD dwResult;
-	ULONGLONG nSize;
-};
-
 bool ReadRequest(HANDLE h, PIPE_CLIENT_REQUEST& pcr);
 bool WriteRequest(HANDLE h, PIPE_CLIENT_REQUEST prc);
 bool ReadString(HANDLE h, LPWSTR psz, UINT cch);
 bool WriteString(HANDLE h, LPCWSTR psz);
 bool ReadStringList(HANDLE h, Strings& strs);
 bool WriteStringList(HANDLE h, Strings strs);
-bool ReadGetFolderSize(HANDLE h, PIPE_REPLY_GETFOLDERSIZE& gfs);
-bool WriteGetFolderSize(HANDLE h, const PIPE_REPLY_GETFOLDERSIZE& gfs);
+bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size);
+bool WriteGetFolderSize(HANDLE h, const FOLDERINFO2& Size);

@@ -27,35 +27,34 @@ CacheManager::~CacheManager()
 	}
 }
 
-DWORD CacheManager::GetInfoForFolder(LPCTSTR pszFolder, ULONGLONG& nSize)
+bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 {
-	DWORD dwResult = 0;
 	int nDrive = PathGetDriveNumber(pszFolder);
-	if (nDrive >= 0)
+	if (nDrive < 0)
+		return false;
+
+	HANDLE hDevice = INVALID_HANDLE_VALUE;
+	m_pCaches[nDrive]->GetInfoForFolder(pszFolder, nSize, hDevice);
+	if (hDevice != INVALID_HANDLE_VALUE)
 	{
-		HANDLE hDevice = INVALID_HANDLE_VALUE;
-		dwResult = m_pCaches[nDrive]->GetInfoForFolder(pszFolder, nSize, hDevice);
-		if (hDevice != INVALID_HANDLE_VALUE)
+		// the cache manager is returning the handle of a new cache we have to wait on
+		DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
+		dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
+		dbh.dbch_handle = hDevice;
+		if (m_hSS != NULL)
 		{
-			// the cache manager is returning the handle of a new cache we have to wait on
-			DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
-			dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
-			dbh.dbch_handle = hDevice;
-			if (m_hSS != NULL)
+			HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+			if (hDevNotify == NULL)
 			{
-				HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
-				if (hDevNotify == NULL)
-				{
-					PostDebugMessage(TEXT("RegisterDeviceNotification"), GetLastError());
-				}
-				else
-				{
-					m_RegisteredDeviceNotifications.insert(hDevNotify);
-				}
+				PostDebugMessage(TEXT("RegisterDeviceNotification"), GetLastError());
+			}
+			else
+			{
+				m_RegisteredDeviceNotifications.insert(hDevNotify);
 			}
 		}
 	}
-	return dwResult;
+	return true;
 }
 
 void CacheManager::GetUpdateFoldersForBrowsedFolders(const Strings& strsFoldersBrowsed, Strings& strsFoldersToUpdate)
