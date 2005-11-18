@@ -179,7 +179,7 @@ END
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
- PRODUCTVERSION 2,0,0,0
+ PRODUCTVERSION 2,1,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -198,10 +198,10 @@ BEGIN
             VALUE "FileDescription", "Folder Size Control Panel"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "FolderSizeCpl"
-            VALUE "LegalCopyright", "Copyright (C) 2005"
+            VALUE "LegalCopyright", "Copyright © 2005"
             VALUE "OriginalFilename", "FolderSize.cpl"
             VALUE "ProductName", "Folder Size for Windows"
-            VALUE "ProductVersion", "2, 0, 0, 0"
+            VALUE "ProductVersion", "2, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
