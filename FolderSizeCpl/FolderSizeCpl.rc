@@ -113,7 +113,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size for Windows was conceived, architected, and implemented by Brian Oraas.",
                     IDC_STATIC,7,38,96,29
-    LTEXT           "Folder Size for Windows 2.0",IDC_TITLE,7,7,189,22,
+    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
     LTEXT           "Folder Size for Windows is released under the GNU Public License agreement.",
                     IDC_STATIC,17,137,179,19
