@@ -31,6 +31,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="pdh.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
@@ -76,6 +77,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="pdh.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
@@ -194,6 +196,12 @@
 			</File>
 			<File
 				RelativePath=".\Monitor.h">
+			</File>
+			<File
+				RelativePath=".\PerformanceMonitor.cpp">
+			</File>
+			<File
+				RelativePath=".\PerformanceMonitor.h">
 			</File>
 			<File
 				RelativePath=".\Scanner.cpp">

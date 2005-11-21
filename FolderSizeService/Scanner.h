@@ -2,7 +2,7 @@
 
 #include "..\Pipe\FolderInfo.h"
 
-class Options;
+class PerformanceMonitor;
 
 class IScannerCallback
 {
@@ -15,7 +15,7 @@ public:
 class Scanner
 {
 public:
-	Scanner(IScannerCallback* pCallback);
+	Scanner(int nDrive, IScannerCallback* pCallback);
 	~Scanner();
 
 	void ScanFolder(LPCTSTR pszFolder);
@@ -23,8 +23,10 @@ public:
 
 protected:
 	static DWORD WINAPI ThreadProc(LPVOID lpParameter);
+	void ThreadProc();
 	bool GetAnItemFromTheQueue(LPTSTR pszFolder);
 
+	PerformanceMonitor* m_pPerformanceMonitor;
 	IScannerCallback* m_pCallback;
 	HANDLE m_hThread;
 	HANDLE m_hQuitEvent;

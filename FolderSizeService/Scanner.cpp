@@ -1,9 +1,10 @@
 #include "StdAfx.h"
 #include "Scanner.h"
+#include "PerformanceMonitor.h"
 
-
-Scanner::Scanner(IScannerCallback* pCallback)
+Scanner::Scanner(int nDrive, IScannerCallback* pCallback)
 {
+	m_pPerformanceMonitor = new PerformanceMonitor(nDrive);
 	m_pCallback = pCallback;
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hScanEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -19,6 +20,7 @@ Scanner::~Scanner()
 	CloseHandle(m_hThread);
 	CloseHandle(m_hQuitEvent);
 	CloseHandle(m_hScanEvent);
+	delete m_pPerformanceMonitor;
 }
 
 void Scanner::ScanFolder(LPCTSTR pszFolder)
@@ -101,12 +103,21 @@ bool Scanner::GetAnItemFromTheQueue(LPTSTR pszFolder)
 DWORD WINAPI Scanner::ThreadProc(LPVOID lpParameter)
 {
 	Scanner* pScanner = (Scanner*)lpParameter;
-
-	TCHAR szFolder[MAX_PATH];
-	while ((pScanner->GetAnItemFromTheQueue(szFolder)))
-	{
-		pScanner->ScanFolder(szFolder);
-	}
-
+	pScanner->ThreadProc();
 	return 0;
+}
+
+void Scanner::ThreadProc()
+{
+	TCHAR szFolder[MAX_PATH];
+	while ((GetAnItemFromTheQueue(szFolder)))
+	{
+		ScanFolder(szFolder);
+		// if the queue length is too long, wait for a bit
+		while (m_pPerformanceMonitor->IsDiskQueueTooLong())
+		{
+			if (WaitForSingleObject(m_hQuitEvent, PERFORMANCE_UPDATE_FREQUENCY) == WAIT_OBJECT_0)
+				return;
+		}
+	}
 }

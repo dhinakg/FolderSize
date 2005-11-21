@@ -25,7 +25,7 @@ void Cache::Create()
 	}
 	if (m_pScanner == NULL)
 	{
-		m_pScanner = new Scanner(this);
+		m_pScanner = new Scanner(m_nDrive, this);
 	}
 	if (m_pMonitor == NULL)
 	{

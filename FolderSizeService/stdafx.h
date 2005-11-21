@@ -7,6 +7,7 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <dbt.h>
+#include <pdh.h>
 
 // ATL
 #include <atlcoll.h>
