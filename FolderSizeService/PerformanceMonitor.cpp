@@ -3,25 +3,29 @@
 
 #define PERFORMANCE_THRESHOLD 0.7
 
-PerformanceMonitor::PerformanceMonitor(int nDrive) :
-m_bDiskQueueTooLong(false)
+PerformanceMonitor::PerformanceMonitor(LPCTSTR pszVolume) :
+	m_bDiskQueueTooLong(false), m_hQuitEvent(NULL), m_hThread(NULL)
 {
-	// create the name of the counter to monitor
-	TCHAR szRoot[4];
-	PathBuildRoot(szRoot, nDrive);
-	wsprintf(m_szCounter, _T("\\LogicalDisk(%c:)\\Avg. Disk Queue Length"), szRoot[0]);
+	if (PathGetDriveNumber(pszVolume) >= 0)
+	{
+		// create the name of the counter to monitor
+		wsprintf(m_szCounter, _T("\\LogicalDisk(%c:)\\Avg. Disk Queue Length"), pszVolume[0]);
 
-	m_hQuitEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	DWORD dwThreadId;
-	m_hThread = CreateThread(NULL, 0, ThreadProc, this, 0, &dwThreadId);
+		m_hQuitEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		DWORD dwThreadId;
+		m_hThread = CreateThread(NULL, 0, ThreadProc, this, 0, &dwThreadId);
+	}
 }
 
 PerformanceMonitor::~PerformanceMonitor()
 {
-	SetEvent(m_hQuitEvent);
-	WaitForSingleObject(m_hThread, INFINITE);
-	CloseHandle(m_hThread);
-	CloseHandle(m_hQuitEvent);
+	if (m_hThread != NULL)
+	{
+		SetEvent(m_hQuitEvent);
+		WaitForSingleObject(m_hThread, INFINITE);
+		CloseHandle(m_hThread);
+		CloseHandle(m_hQuitEvent);
+	}
 }
 
 bool PerformanceMonitor::IsDiskQueueTooLong()

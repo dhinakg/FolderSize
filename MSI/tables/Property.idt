@@ -1,0 +1,52 @@
+Property	Value
+s72	l0
+Property	Property
+ALLUSERS	1
+ARPHELPLINK	http://brio.dyndns.org
+BannerBitmap	bannrbmp
+ButtonText_Back	< &Back
+ButtonText_Browse	Br&owse
+ButtonText_Cancel	Cancel
+ButtonText_Exit	&Exit
+ButtonText_Finish	&Finish
+ButtonText_Ignore	&Ignore
+ButtonText_Install	&Install
+ButtonText_Next	&Next >
+ButtonText_No	&No
+ButtonText_OK	OK
+ButtonText_Remove	&Remove
+ButtonText_Repair	&Repair
+ButtonText_Reset	&Reset
+ButtonText_Resume	&Resume
+ButtonText_Retry	&Retry
+ButtonText_Return	&Return
+ButtonText_Yes	&Yes
+CompleteSetupIcon	completi
+ComponentDownload	ftp://anonymous@microsoft.com/components/
+CustomSetupIcon	custicon
+DefaultUIFont	DlgFont8
+DialogBitmap	dlgbmp
+DlgTitleFont	{&DlgFontBold8}
+ErrorDialog	ErrorDlg
+ExclamationIcon	exclamic
+IAgree	No
+InfoIcon	info
+InstallerIcon	insticon
+INSTALLLEVEL	3
+InstallMode	Typical
+Manufacturer	Brio
+PIDTemplate	12345<###-%%%%%%%>@@@@@
+ProductCode	{FC8D21C8-7B29-4104-ADB0-FEE9CA1C7922}
+ProductID	none
+ProductLanguage	1033
+ProductName	Folder Size for Windows
+ProductVersion	2.0.1
+Progress1	Installing
+Progress2	installs
+PROMPTROLLBACKCOST	P
+RemoveIcon	removico
+RepairIcon	repairic
+Setup	Setup
+ShowUserRegistrationDlg	1
+UpgradeCode	{D0CB4DEA-E7E4-4377-9060-BBE5741155A8}
+Wizard	Setup Wizard

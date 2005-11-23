@@ -22,7 +22,7 @@ public:
 class Monitor
 {
 public:
-	Monitor(int nDrive, IMonitorCallback* pCallback);
+	Monitor(LPCTSTR pszVolume, IMonitorCallback* pCallback);
 	~Monitor();
 
 	HANDLE GetFileHandle();
@@ -30,6 +30,7 @@ public:
 protected:
 
 	static DWORD WINAPI MonitorThread(LPVOID lpParameter);
+	void MonitorThread();
 
 	HANDLE m_hMonitorThread;
 	HANDLE m_hQuitEvent;
@@ -37,6 +38,6 @@ protected:
 	OVERLAPPED m_Overlapped;
 	BYTE m_Buffer[4096];
 
-	int m_nDrive;
+	TCHAR m_szVolume[MAX_PATH];
 	IMonitorCallback* m_pCallback;
 };

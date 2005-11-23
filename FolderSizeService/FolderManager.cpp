@@ -3,12 +3,10 @@
 #include "Folder.h"
 
 
-FolderManager::FolderManager(int nDrive)
+FolderManager::FolderManager(LPCTSTR pszVolume)
 {
-	TCHAR szRoot[MAX_PATH];
-	PathBuildRoot(szRoot, nDrive);
-	m_pFolderRoot = new CacheFolder(this, NULL, szRoot);
-	m_Map.SetAt(szRoot, m_pFolderRoot);
+	m_pFolderRoot = new CacheFolder(this, NULL, pszVolume);
+	m_Map.SetAt(pszVolume, m_pFolderRoot);
 }
 
 FolderManager::~FolderManager()

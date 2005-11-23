@@ -4,7 +4,6 @@
 #define _WIN32_IE    0x0500
 
 #include <windows.h>
-#include <shlobj.h>
 #include <shlwapi.h>
 #include <dbt.h>
 #include <pdh.h>

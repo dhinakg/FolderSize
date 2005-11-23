@@ -1,0 +1,5 @@
+ServiceControl	Name	Event	Arguments	Wait	Component_
+s72	l255	i2	L255	I2	s72
+ServiceControl	ServiceControl
+FolderSizeSvcDelete	FolderSize	128			Service
+FolderSizeSvcStart	FolderSize	1			Service

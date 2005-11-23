@@ -9,7 +9,7 @@ class FolderManager;
 class Cache : protected IScannerCallback, protected IMonitorCallback
 {
 public:
-	Cache(int nDrive);
+	Cache(LPCTSTR pszVolume);
 	~Cache();
 
 	// the CacheManager calls these
@@ -32,7 +32,7 @@ private:
 	void DoSyncScans(CacheFolder* pFolder);
 
 	// the cache data and the lock for it
-	int m_nDrive;
+	TCHAR m_szVolume[MAX_PATH];
 	CRITICAL_SECTION m_cs;
 	FolderManager* m_pFolderManager;
 

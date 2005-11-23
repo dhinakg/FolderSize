@@ -1,34 +1,38 @@
 #include "StdAfx.h"
 #include "Monitor.h"
-#include "Resource.h"
 
 
-Monitor::Monitor(int nDrive, IMonitorCallback* pCallback)
-: m_nDrive(nDrive), m_pCallback(pCallback), m_hDirectory(NULL)
+Monitor::Monitor(LPCTSTR pszVolume, IMonitorCallback* pCallback)
+: m_pCallback(pCallback), m_hDirectory(INVALID_HANDLE_VALUE), m_hMonitorThread(NULL)
 {
-	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	ZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
 
-	TCHAR szRoot[MAX_PATH];
-	PathBuildRoot(szRoot, m_nDrive);
+	lstrcpy(m_szVolume, pszVolume);
 
-	m_hDirectory = CreateFile(szRoot, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+	m_hDirectory = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
 		NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
 
-	ZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
-	m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (m_hDirectory != INVALID_HANDLE_VALUE)
+	{
+		m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+		m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	DWORD dwThreadId;
-	m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &dwThreadId);
+		DWORD dwThreadId;
+		m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &dwThreadId);
+	}
 }
 
 Monitor::~Monitor()
 {
-	SetEvent(m_hQuitEvent);
-	WaitForSingleObject(m_hMonitorThread, INFINITE);
-	CloseHandle(m_hMonitorThread);
-	CloseHandle(m_hDirectory);
-	CloseHandle(m_Overlapped.hEvent);
-	CloseHandle(m_hQuitEvent);
+	if (m_hDirectory != INVALID_HANDLE_VALUE)
+	{
+		SetEvent(m_hQuitEvent);
+		WaitForSingleObject(m_hMonitorThread, INFINITE);
+		CloseHandle(m_hMonitorThread);
+		CloseHandle(m_Overlapped.hEvent);
+		CloseHandle(m_hQuitEvent);
+		CloseHandle(m_hDirectory);
+	}
 }
 
 HANDLE Monitor::GetFileHandle()
@@ -38,45 +42,53 @@ HANDLE Monitor::GetFileHandle()
 
 DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)
 {
+	Monitor* pMonitor = (Monitor*)lpParameter;
+	pMonitor->MonitorThread();
+	return 0;
+}
+
+void Monitor::MonitorThread()
+{
 	// this thread will just keep waiting for directory change events,
 	// and respond to them by dirtying the cache
-	Monitor* pMonitor = (Monitor*)lpParameter;
-
-	TCHAR szRoot[MAX_PATH];
-	PathBuildRoot(szRoot, pMonitor->m_nDrive);
-
 	TCHAR szRenameBuffer[MAX_PATH] = _T("");
 
 	while (true)
 	{
 		DWORD dwBytesReturned;
-		ReadDirectoryChangesW(pMonitor->m_hDirectory, pMonitor->m_Buffer, 4096, TRUE,
+		if (!ReadDirectoryChangesW(m_hDirectory, m_Buffer, 4096, TRUE,
 			FILE_NOTIFY_CHANGE_FILE_NAME|FILE_NOTIFY_CHANGE_DIR_NAME|FILE_NOTIFY_CHANGE_SIZE,
-			&dwBytesReturned, &pMonitor->m_Overlapped, NULL);
+			&dwBytesReturned, &m_Overlapped, NULL))
+				break;
 
-		HANDLE hEvents[2] = {pMonitor->m_hQuitEvent, pMonitor->m_Overlapped.hEvent};
+		HANDLE hEvents[2] = {m_hQuitEvent, m_Overlapped.hEvent};
 		if (WaitForMultipleObjects(2, hEvents, FALSE, INFINITE) == WAIT_OBJECT_0)
 		{
 			break;
 		}
 
-		GetOverlappedResult(pMonitor->m_hDirectory, &pMonitor->m_Overlapped, &dwBytesReturned, TRUE);
+		GetOverlappedResult(m_hDirectory, &m_Overlapped, &dwBytesReturned, TRUE);
 
-		PFILE_NOTIFY_INFORMATION pfni = (PFILE_NOTIFY_INFORMATION)pMonitor->m_Buffer;
+		PFILE_NOTIFY_INFORMATION pfni = (PFILE_NOTIFY_INFORMATION)m_Buffer;
 		while (true)
 		{
+			// NULL-terminated version of the notify info filename
+			TCHAR szNotifyFile[MAX_PATH];
+			lstrcpyn(szNotifyFile, pfni->FileName, pfni->FileNameLength/sizeof(WCHAR) + 1);
+
+			// full path
 			TCHAR szFile[MAX_PATH];
-			_tcscpy(szFile, szRoot);
-			lstrcpyn(szFile + 3, pfni->FileName, pfni->FileNameLength/sizeof(WCHAR) + 1);
+			_tcscpy(szFile, m_szVolume);
+			PathAppend(szFile, szNotifyFile);
 
 			// can't do PathIsDirectory on this because OLD_NAMEs don't exist anymore!
 			if (pfni->Action == FILE_ACTION_ADDED)
 			{
-				pMonitor->m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_ADDED);
+				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_ADDED);
 			}
 			else if (pfni->Action == FILE_ACTION_MODIFIED)
 			{
-				pMonitor->m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_CHANGED);
+				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_CHANGED);
 			}
 			else if (pfni->Action == FILE_ACTION_RENAMED_OLD_NAME)
 			{
@@ -93,13 +105,13 @@ DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)
 			{
 				// there better be an old name stored
 				assert(szRenameBuffer[0] != _T('\0'));
-				pMonitor->m_pCallback->PathChanged(szRenameBuffer, szFile, IMonitorCallback::FE_RENAMED);
+				m_pCallback->PathChanged(szRenameBuffer, szFile, IMonitorCallback::FE_RENAMED);
 				// empty the buffer - we're ready for the next FILE_ACTION_RENAMED_OLD_NAME now
 				szRenameBuffer[0] = _T('\0');
 			}
 			else if (pfni->Action == FILE_ACTION_REMOVED)
 			{
-				pMonitor->m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_REMOVED);
+				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_REMOVED);
 			}
 
 			if (pfni->NextEntryOffset == 0)
@@ -108,6 +120,4 @@ DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)
 			pfni = (PFILE_NOTIFY_INFORMATION)(((LPBYTE)pfni) + pfni->NextEntryOffset);
 		}
 	}
-
-	return 0;
 }

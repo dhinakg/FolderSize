@@ -10,9 +10,10 @@
 
 LARGE_INTEGER g_nPerformanceFrequency = {0};
 
-Cache::Cache(int nDrive) :
-	m_nDrive(nDrive), m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL)
+Cache::Cache(LPCTSTR pszVolume) :
+	m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL)
 {
+	lstrcpy(m_szVolume, pszVolume);
 	InitializeCriticalSection(&m_cs);
 	QueryPerformanceFrequency(&g_nPerformanceFrequency);
 }
@@ -21,15 +22,15 @@ void Cache::Create()
 {
 	if (m_pFolderManager == NULL)
 	{
-		m_pFolderManager = new FolderManager(m_nDrive);
+		m_pFolderManager = new FolderManager(m_szVolume);
 	}
 	if (m_pScanner == NULL)
 	{
-		m_pScanner = new Scanner(m_nDrive, this);
+		m_pScanner = new Scanner(m_szVolume, this);
 	}
 	if (m_pMonitor == NULL)
 	{
-		m_pMonitor = new Monitor(m_nDrive, this);
+		m_pMonitor = new Monitor(m_szVolume, this);
 	}
 }
 

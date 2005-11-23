@@ -1,0 +1,4 @@
+Condition	Description
+s255	l255
+LaunchCondition	Condition
+VersionNT >= 500	This only works on Windows 2000, Windows XP, or higher.

@@ -5,7 +5,7 @@
 class PerformanceMonitor
 {
 public:
-	PerformanceMonitor(int nDrive);
+	PerformanceMonitor(LPCTSTR pszVolume);
 	~PerformanceMonitor();
 
 	bool IsDiskQueueTooLong();

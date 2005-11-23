@@ -6,7 +6,7 @@ class CacheFolder;
 class FolderManager
 {
 public:
-	FolderManager(int nDrive);
+	FolderManager(LPCTSTR pszVolume);
 	~FolderManager();
 
 	CacheFolder* GetFolderForPath(LPCTSTR pszPath, bool bCreate);

@@ -2,9 +2,9 @@
 #include "Scanner.h"
 #include "PerformanceMonitor.h"
 
-Scanner::Scanner(int nDrive, IScannerCallback* pCallback)
+Scanner::Scanner(LPCTSTR pszVolume, IScannerCallback* pCallback)
 {
-	m_pPerformanceMonitor = new PerformanceMonitor(nDrive);
+	m_pPerformanceMonitor = new PerformanceMonitor(pszVolume);
 	m_pCallback = pCallback;
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hScanEvent = CreateEvent(NULL, FALSE, FALSE, NULL);

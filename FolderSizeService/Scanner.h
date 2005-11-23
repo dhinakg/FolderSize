@@ -15,7 +15,7 @@ public:
 class Scanner
 {
 public:
-	Scanner(int nDrive, IScannerCallback* pCallback);
+	Scanner(LPCTSTR pszVolume, IScannerCallback* pCallback);
 	~Scanner();
 
 	void ScanFolder(LPCTSTR pszFolder);
