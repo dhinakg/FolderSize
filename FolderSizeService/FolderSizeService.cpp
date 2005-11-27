@@ -1,129 +1,7 @@
 #include "StdAfx.h"
 #include "CacheManager.h"
-#include "DebugMessage.h"
 #include "FolderSizeSvc.h"
-
-
-CacheManager* g_pCacheManager = NULL;
-
-
-// it's important that a pointer to this class
-// is also a pointer to OVERLAPPED
-class Pipe
-{
-public:
-	Pipe();
-	~Pipe();
-
-private:
-	static DWORD WINAPI PipeThread(LPVOID lpParameter);
-
-	HANDLE m_hThread;
-	HANDLE m_hQuitEvent;
-};
-
-
-Pipe::Pipe()
-: m_hQuitEvent(NULL), m_hThread(NULL)
-{
-	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	DWORD dwThreadId;
-	m_hThread = CreateThread(NULL, 0, PipeThread, this, 0, &dwThreadId);
-}
-
-Pipe::~Pipe()
-{
-	SetEvent(m_hQuitEvent);
-	WaitForSingleObject(m_hThread, INFINITE);
-	CloseHandle(m_hThread);
-	CloseHandle(m_hQuitEvent);
-}
-
-void HandlePipeClient(HANDLE hPipe)
-{
-	PIPE_CLIENT_REQUEST pcr;
-	if (ReadRequest(hPipe, pcr))
-	{
-		switch (pcr)
-		{
-		case PCR_GETFOLDERSIZE:
-			WCHAR szFile[MAX_PATH];
-			if (ReadString(hPipe, szFile, MAX_PATH))
-			{
-				FOLDERINFO2 Size;
-				g_pCacheManager->GetInfoForFolder(szFile, Size);
-				WriteGetFolderSize(hPipe, Size);
-			}
-			break;
-
-		case PCR_GETUPDATEDFOLDERS:
-			Strings strsBrowsed, strsUpdated;
-			if (ReadStringList(hPipe, strsBrowsed))
-			{
-				g_pCacheManager->GetUpdateFoldersForBrowsedFolders(strsBrowsed, strsUpdated);
-				WriteStringList(hPipe, strsUpdated);
-			}
-			break;
-		}
-	}
-	FlushFileBuffers(hPipe);
-	DisconnectNamedPipe(hPipe);
-}
-
-DWORD WINAPI Pipe::PipeThread(LPVOID lpParameter)
-{
-	Pipe* pPipe = (Pipe*)lpParameter;
-
-	HANDLE hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-		PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_BUFFER_SIZE_OUT, PIPE_BUFFER_SIZE_IN, PIPE_DEFAULT_TIME_OUT, NULL);
-
-	if (hPipe == INVALID_HANDLE_VALUE)
-	{
-		return GetLastError();
-	}
-	
-	HANDLE hWaitHandles[2];
-	hWaitHandles[0] = pPipe->m_hQuitEvent;
-	hWaitHandles[1] = hPipe;
-
-	OVERLAPPED o;
-	ZeroMemory(&o, sizeof(o));
-
-	while (true)
-	{
-		if (ConnectNamedPipe(hPipe, &o))
-		{
-			HandlePipeClient(hPipe);
-		}
-		else
-		{
-			DWORD dwLastError = GetLastError();
-			if (dwLastError == ERROR_PIPE_CONNECTED)
-			{
-				HandlePipeClient(hPipe);
-			}
-			else if (dwLastError == ERROR_IO_PENDING)
-			{
-				DWORD dwWait = WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
-				if (dwWait == WAIT_OBJECT_0 + 1)
-				{
-					HandlePipeClient(hPipe);
-				}
-				else
-				{
-					break;
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	CloseHandle(hPipe);
-	return 0;
-}
+#include "Pipe.h"
 
 
 class Service
@@ -132,19 +10,23 @@ public:
 	Service();
 	~Service();
 
+	void SetCacheManager(CacheManager* pCacheManager);
 	SERVICE_STATUS_HANDLE GetHandle();
 	void WaitUntilServiceStops();
 	void SetStatus(DWORD dwCurrentState = -1, DWORD dwError = NO_ERROR);
 
 private:
 	static DWORD WINAPI HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext);
+	DWORD HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData);
 
 	SERVICE_STATUS_HANDLE m_hSS;
 	SERVICE_STATUS m_ss;
 	HANDLE m_hQuitEvent;
+	CacheManager* m_pCacheManager;
 };
 
 Service::Service()
+: m_pCacheManager(NULL)
 {
 	m_ss.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	m_ss.dwCurrentState = SERVICE_START_PENDING;
@@ -165,6 +47,11 @@ Service::~Service()
 	{
 		CloseHandle(m_hQuitEvent);
 	}
+}
+
+void Service::SetCacheManager(CacheManager* pCacheManager)
+{
+	m_pCacheManager = pCacheManager;
 }
 
 SERVICE_STATUS_HANDLE Service::GetHandle()
@@ -195,33 +82,38 @@ void Service::WaitUntilServiceStops()
 DWORD WINAPI Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext)
 {
 	Service* pService = (Service*)lpContext;
+	return pService->HandlerEx(dwControl, dwEventType, lpEventData);
+}
+
+DWORD Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData)
+{
 	switch (dwControl)
 	{
 	case SERVICE_CONTROL_INTERROGATE:
-		pService->SetStatus();
+		SetStatus();
 		return NO_ERROR;
 
 	case SERVICE_CONTROL_PAUSE:
-		pService->SetStatus(SERVICE_PAUSE_PENDING);
-		g_pCacheManager->EnableScanners(false);
-		pService->SetStatus(SERVICE_PAUSED);
+		SetStatus(SERVICE_PAUSE_PENDING);
+		m_pCacheManager->EnableScanners(false);
+		SetStatus(SERVICE_PAUSED);
 		return NO_ERROR;
 
 	case SERVICE_CONTROL_CONTINUE:
-		pService->SetStatus(SERVICE_CONTINUE_PENDING);
-		g_pCacheManager->EnableScanners(true);
-		pService->SetStatus(SERVICE_RUNNING);
+		SetStatus(SERVICE_CONTINUE_PENDING);
+		m_pCacheManager->EnableScanners(true);
+		SetStatus(SERVICE_RUNNING);
 		return NO_ERROR;
 		
 	case SERVICE_CONTROL_STOP:
-		SetEvent(pService->m_hQuitEvent);
+		SetEvent(m_hQuitEvent);
 		return NO_ERROR;
 
 	case SERVICE_CONTROL_DEVICEEVENT:
 		if ((dwEventType == DBT_DEVICEQUERYREMOVE || dwEventType == DBT_DEVICEREMOVECOMPLETE) &&
 		   ((PDEV_BROADCAST_HDR)lpEventData)->dbch_devicetype == DBT_DEVTYP_HANDLE)
 		{
-			g_pCacheManager->DeviceRemoveEvent((PDEV_BROADCAST_HANDLE)lpEventData);
+			m_pCacheManager->DeviceRemoveEvent((PDEV_BROADCAST_HANDLE)lpEventData);
 		}
 		return NO_ERROR;
 	}
@@ -241,11 +133,17 @@ void WINAPI	ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 	if (lpszArgv || s.GetHandle() != NULL)
 	{
 		CacheManager theCacheManager(s.GetHandle());
-		g_pCacheManager = &theCacheManager;
+		s.SetCacheManager(&theCacheManager);
 
 		// create some pipes
-		Pipe Pipes[NUM_PIPES];
+		Pipe* apPipes[NUM_PIPES];
+		for (int i=0; i<NUM_PIPES; i++)
+			apPipes[i] = new Pipe(&theCacheManager);
+
 		s.WaitUntilServiceStops();
+
+		for (int i=0; i<NUM_PIPES; i++)
+			delete apPipes[i];
 	}
 
 	DWORD dwError = GetLastError();

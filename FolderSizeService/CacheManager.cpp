@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "CacheManager.h"
 #include "Cache.h"
-#include "DebugMessage.h"
+#include "EventLog.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 : m_hSS(hSS)
@@ -15,7 +15,7 @@ CacheManager::~CacheManager()
 	{
 		if (!UnregisterDeviceNotification(*i))
 		{
-			PostDebugMessage(TEXT("UnregisterDeviceNotification"), GetLastError());
+			m_EventLog.ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 		}
 	}
 	POSITION pos = m_Map.GetStartPosition();
@@ -90,7 +90,7 @@ bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 				HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
 				if (hDevNotify == NULL)
 				{
-					PostDebugMessage(TEXT("RegisterDeviceNotification"), GetLastError());
+					m_EventLog.ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
 				}
 				else
 				{
@@ -161,10 +161,10 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 
 	if (!bFound)
 	{
-		PostDebugMessage(TEXT("CacheManager::RemoveDevice"), GetLastError());
+		m_EventLog.ReportError(TEXT("CacheManager::RemoveDevice"), GetLastError());
 	}
 	if (!UnregisterDeviceNotification(pdbh->dbch_hdevnotify))
 	{
-		PostDebugMessage(TEXT("UnregisterDeviceNotification"), GetLastError());
+		m_EventLog.ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 	}
 }

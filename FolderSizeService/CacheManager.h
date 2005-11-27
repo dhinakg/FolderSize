@@ -1,5 +1,6 @@
 #pragma once
 #include "Cache.h"
+#include "EventLog.h"
 
 class CacheManager
 {
@@ -33,4 +34,6 @@ protected:
 	typedef CAtlMap<CString, Cache*, CStringHashTraits> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;
+
+	EventLog m_EventLog;
 };

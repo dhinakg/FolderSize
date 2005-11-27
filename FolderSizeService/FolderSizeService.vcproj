@@ -115,10 +115,25 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\DebugMessage.cpp">
+				RelativePath=".\EventLog.cpp">
 			</File>
 			<File
 				RelativePath=".\FolderSizeService.cpp">
+			</File>
+			<File
+				RelativePath=".\Pipe.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\stdafx.cpp">
@@ -141,10 +156,13 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\DebugMessage.h">
+				RelativePath=".\EventLog.h">
 			</File>
 			<File
 				RelativePath=".\FolderSizeSvc.h">
+			</File>
+			<File
+				RelativePath=".\Pipe.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
