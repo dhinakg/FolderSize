@@ -125,6 +125,18 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 	case WM_INITDIALOG:
 		{
+			// localize the messages
+			const LONGLONG llSampleSize = 2634192972;
+			TCHAR szFormatMsg[256], szSize[256], szDisplayMsg[256];
+			GetDlgItemText(hwndDlg, IDC_DISPLAY_EXPLORER, szFormatMsg, 256);
+			StrFormatKBSize(llSampleSize, szSize, 256);
+			wsprintf(szDisplayMsg, szFormatMsg, szSize);
+			SetDlgItemText(hwndDlg, IDC_DISPLAY_EXPLORER, szDisplayMsg);
+			GetDlgItemText(hwndDlg, IDC_DISPLAY_COMPACT, szFormatMsg, 256);
+			StrFormatByteSize64(llSampleSize, szSize, 256);
+			wsprintf(szDisplayMsg, szFormatMsg, szSize);
+			SetDlgItemText(hwndDlg, IDC_DISPLAY_COMPACT, szDisplayMsg);
+
 			int nDisplayFormat = 0;
 			LoadDisplayOptions(nDisplayFormat);
 			UINT nIDCheck = nDisplayFormat == 1 ? IDC_DISPLAY_COMPACT : IDC_DISPLAY_EXPLORER;

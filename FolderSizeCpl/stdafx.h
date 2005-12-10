@@ -14,6 +14,7 @@
 #include <prsht.h>
 #include <shellapi.h>
 #include <objbase.h>
+#include <shlwapi.h>
 
 // useful macros
 #define countof(x) (sizeof(x)/sizeof((x)[0]))

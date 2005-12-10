@@ -30,7 +30,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
 				OutputFile="$(OutDir)/FolderSize.cpl"
 				LinkIncremental="2"
 				ModuleDefinitionFile="FolderSizeCpl.def"
@@ -78,7 +78,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
 				OutputFile="$(OutDir)/FolderSize.cpl"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="TRUE"
