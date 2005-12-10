@@ -30,8 +30,6 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_TITLE        "Grösse"
     IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
-    IDS_COLUMN_SORT_TITLE   "nach Grösse sortieren"
-    IDS_COLUMN_SORT_DESCRIPTION "Sort this column to sort by folder size."
     IDS_COLUMN_FILES_TITLE  "Anzahl Dateien"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Display the total number of files within folders."
@@ -130,8 +128,6 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_TITLE        "Folder Size"
     IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
-    IDS_COLUMN_SORT_TITLE   "Folder Size Sort"
-    IDS_COLUMN_SORT_DESCRIPTION "Sort this column to sort by folder size."
     IDS_COLUMN_FILES_TITLE  "File Count"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Display the total number of files within folders."
@@ -165,8 +161,6 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_TITLE        "Taille de Dossier"
     IDS_COLUMN_DESCRIPTION  "Taille de Dossier"
-    IDS_COLUMN_SORT_TITLE   "Taille de Dossier Rangement"
-    IDS_COLUMN_SORT_DESCRIPTION "Taille de Dossier Rangement"
     IDS_COLUMN_FILES_TITLE  "Nombre de Fichiers"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Afficher le nombre totale de fichiers dans les dossiers."

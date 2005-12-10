@@ -86,17 +86,6 @@ STDMETHODIMP CFolderSizeObj::GetColumnInfo(DWORD dwIndex, SHCOLUMNINFO *psci)
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
 		return S_OK;
 
-	case FSC_SIZESORT:
-		psci->scid.fmtid = CLSID_FolderSizeObj;
-		psci->scid.pid = dwIndex;
-		psci->vt = VT_UI8;
-		psci->fmt = LVCFMT_RIGHT;
-		psci->cChars = 13;
-		psci->csFlags = SHCOLSTATE_TYPE_INT;
-		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SORT_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
-		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_SORT_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
-		return S_OK;
-
 	case FSC_FILES:
 		psci->scid.fmtid = CLSID_FolderSizeObj;
 		psci->scid.pid = dwIndex;
@@ -313,7 +302,7 @@ bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
 	return bRet;
 }
 
-void GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
+bool GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 {
 	pszBuffer[0] = _T('\0');
 	FOLDERINFO2 nSize;
@@ -322,6 +311,8 @@ void GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 	{
 #ifdef _DEBUG
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), 0, pszBuffer, cch, NULL);
+#else
+		return false;
 #endif
 	}
 	else
@@ -340,14 +331,13 @@ void GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 		}
 		*psz = 0;
 	}
+	return true;
 }
 
 STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA pscd, VARIANT *pvarData)
 {
 	if (pscid->fmtid == CLSID_FolderSizeObj)
 	{
-		FOLDERINFO2 nSize;
-
 		switch (pscid->pid)
 		{
 		case FSC_SIZE:
@@ -355,7 +345,8 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 				WCHAR buffer[50];
 				if (pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
-					GetFolderInfoToBuffer(pscd->wszFile, buffer, sizeof(buffer)/sizeof(WCHAR));
+					if (!GetFolderInfoToBuffer(pscd->wszFile, buffer, sizeof(buffer)/sizeof(WCHAR)))
+						return S_FALSE;
 				}
 				else
 				{
@@ -367,32 +358,17 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 				return S_OK;
 			}
 			
-		case FSC_SIZESORT:
-			{
-				if (pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					if (!GetInfoForFolder(pscd->wszFile, nSize))
-						return S_OK;
-				}
-				else
-				{
-					nSize.nSize = GetFileSize(pscd->wszFile);
-				}
-				V_VT(pvarData) = VT_UI8;
-				V_UI8(pvarData) = nSize.nSize;
-				return S_OK;
-			}
-			
 		case FSC_FILES:
 		case FSC_FOLDERS:
 		case FSC_SIBLINGS:
 			{
 				// Show empty column for files
 				if (!(pscd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-					return S_OK;
+					return S_FALSE;
 
-            if (!GetInfoForFolder(pscd->wszFile, nSize))
-               return S_OK;
+				FOLDERINFO2 nSize;
+	            if (!GetInfoForFolder(pscd->wszFile, nSize))
+					return S_FALSE;
 
 				V_VT(pvarData) = VT_UI8;
 				switch (pscid->pid) {

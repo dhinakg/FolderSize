@@ -8,10 +8,9 @@ class ATL_NO_VTABLE CFolderSizeObj :
 public:
 	enum FolderSizeColumns {
 		FSC_SIZE = 0,
-		FSC_SIZESORT,
 		FSC_FILES,
 		FSC_FOLDERS,
-		FSC_SIBLINGS,
+		FSC_SIBLINGS
 	};
 
 	CFolderSizeObj()
