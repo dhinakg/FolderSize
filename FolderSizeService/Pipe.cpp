@@ -2,6 +2,60 @@
 #include "Pipe.h"
 #include "CacheManager.h"
 
+class SecurityDescriptor
+{
+public:
+	SecurityDescriptor();
+	~SecurityDescriptor();
+	const PSECURITY_DESCRIPTOR GetSD() const;
+
+private:
+	PSECURITY_DESCRIPTOR m_psd;
+	PACL m_pacl;
+};
+
+SecurityDescriptor::SecurityDescriptor()
+: m_psd(NULL), m_pacl(NULL)
+{
+	PSID psidLocal;
+	SID_IDENTIFIER_AUTHORITY SIDAuthLocal = SECURITY_LOCAL_SID_AUTHORITY;
+	if (AllocateAndInitializeSid(&SIDAuthLocal, 1, SECURITY_LOCAL_RID, 0, 0, 0, 0, 0, 0, 0, &psidLocal))
+	{
+		EXPLICIT_ACCESS ea;
+		ea.grfAccessPermissions = GENERIC_WRITE|GENERIC_READ;
+		ea.grfAccessMode = SET_ACCESS;
+		ea.grfInheritance = NO_INHERITANCE;
+		ea.Trustee.pMultipleTrustee = NULL;
+		ea.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+		ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+		ea.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+		ea.Trustee.ptstrName = (LPTSTR)psidLocal;
+		
+		if (SetEntriesInAcl(1, &ea, NULL, &m_pacl) == ERROR_SUCCESS)
+		{
+			m_psd = LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
+			if (!InitializeSecurityDescriptor(m_psd, SECURITY_DESCRIPTOR_REVISION) ||
+				!SetSecurityDescriptorDacl(m_psd, TRUE, m_pacl, FALSE))
+			{
+				LocalFree(m_psd);
+				m_psd = NULL;
+			}
+		}
+		FreeSid(psidLocal);
+	}
+}
+
+SecurityDescriptor::~SecurityDescriptor()
+{
+	LocalFree(m_psd);
+	LocalFree(m_pacl);
+}
+
+const PSECURITY_DESCRIPTOR SecurityDescriptor::GetSD() const
+{
+	return m_psd;
+}
+
 Pipe::Pipe(CacheManager* pCacheManager)
 : m_hQuitEvent(NULL), m_hThread(NULL), m_pCacheManager(pCacheManager)
 {
@@ -57,8 +111,12 @@ DWORD WINAPI Pipe::PipeThread(LPVOID lpParameter)
 
 DWORD Pipe::PipeThread()
 {
+	SecurityDescriptor sd;
+	SECURITY_ATTRIBUTES sa = { sizeof(sa) };
+	sa.lpSecurityDescriptor = sd.GetSD();
+
 	HANDLE hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-		PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_BUFFER_SIZE_OUT, PIPE_BUFFER_SIZE_IN, PIPE_DEFAULT_TIME_OUT, NULL);
+		PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_BUFFER_SIZE_OUT, PIPE_BUFFER_SIZE_IN, PIPE_DEFAULT_TIME_OUT, &sa);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
