@@ -27,8 +27,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 2,2,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Brio"
             VALUE "FileDescription", "FolderSize Service"
-            VALUE "FileVersion", "1, 1, 0, 0"
+            VALUE "FileVersion", "1, 2, 0, 0"
             VALUE "InternalName", "FolderSizeService"
             VALUE "LegalCopyright", "Copyright © 2005"
             VALUE "OriginalFilename", "FolderSizeSvc.exe"
             VALUE "ProductName", "Folder Size for Windows"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "2, 2, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -96,6 +96,17 @@ BEGIN
 END
 
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_SERVICE_DESCRIPTION "Caches sizes of folders viewed in Explorer. The service monitors folders for changes and updates the cache in the background."
+END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

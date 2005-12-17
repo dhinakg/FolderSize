@@ -2,7 +2,16 @@
 #include "CacheManager.h"
 #include "FolderSizeSvc.h"
 #include "Pipe.h"
+#include "Resource.h"
 
+void RegisterServiceDescription(SC_HANDLE hService)
+{
+	TCHAR szDescription[1024];
+	LoadString(GetModuleHandle(NULL), IDS_SERVICE_DESCRIPTION, szDescription, 1024);
+	SERVICE_DESCRIPTION sd;
+	sd.lpDescription = szDescription;
+	ChangeServiceConfig2(hService, SERVICE_CONFIG_DESCRIPTION, &sd);
+}
 
 class Service
 {
@@ -39,11 +48,25 @@ Service::Service()
 	SetStatus();
 
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	// the service description doesn't get set by the installer,
+	// so the service registers its description when it is created
+	SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+	if (hSCManager != NULL)
+	{
+		SC_HANDLE hService = OpenService(hSCManager, SERVICE_NAME, SERVICE_CHANGE_CONFIG);
+		if (hService != NULL)
+		{
+			RegisterServiceDescription(hService);
+			CloseServiceHandle(hService);
+		}
+		CloseServiceHandle(hSCManager);
+	}
 }
 
 Service::~Service()
 {
-	if (m_hQuitEvent != INVALID_HANDLE_VALUE)
+	if (m_hQuitEvent != NULL)
 	{
 		CloseHandle(m_hQuitEvent);
 	}
@@ -157,30 +180,29 @@ void WINAPI	ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 
 void InstallService()
 {
-	TCHAR szModulePathname[_MAX_PATH];
-	SC_HANDLE hService;
-
 	// Open	the	SCM	on this	machine.
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
 
-	// Get our full	pathname
-	GetModuleFileName(NULL,	szModulePathname, countof(szModulePathname));
-	PathQuoteSpaces(szModulePathname);
-
-	// Add this	service	to the SCM's database.
-	hService = CreateService(hSCM, SERVICE_NAME, SERVICE_DISPLAY, 0,
-		SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, 
-		szModulePathname, NULL,	NULL, NULL,	NULL, NULL);
-
-	if (hService != NULL)
+	if (hSCM != NULL)
 	{
-//		SERVICE_DESCRIPTION sd;
-//		sd.lpDescription = TEXT("While the service runs, it keeps a cache in memory of sizes of folders viewed in Explorer. Folders are cached in the background. Disable this service to stop monitoring disk activity and stop background scanning.");
-//		ChangeServiceConfig2(hService, SERVICE_CONFIG_DESCRIPTION, &sd);
-		CloseServiceHandle(hService);
-	}
+		// Get our full	pathname
+		TCHAR szModulePathname[MAX_PATH];
+		GetModuleFileName(NULL,	szModulePathname, countof(szModulePathname));
+		PathQuoteSpaces(szModulePathname);
 
-	CloseServiceHandle(hSCM);
+		// Add this	service	to the SCM's database.
+		SC_HANDLE hService = CreateService(hSCM, SERVICE_NAME, SERVICE_DISPLAY, 0,
+			SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, 
+			szModulePathname, NULL,	NULL, NULL,	NULL, NULL);
+
+		if (hService != NULL)
+		{
+			RegisterServiceDescription(hService);
+			CloseServiceHandle(hService);
+		}
+
+		CloseServiceHandle(hSCM);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -189,16 +211,18 @@ void RemoveService()
 {
 	// Open	the	SCM	on this	machine.
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-
-	// Open	this service for DELETE	access
-	SC_HANDLE hService = OpenService(hSCM, SERVICE_NAME, DELETE);
-
-	// Remove this service from	the	SCM's database.
-	DeleteService(hService);
-
-	// Close the service and the SCM
-	CloseServiceHandle(hService);
-	CloseServiceHandle(hSCM);
+	if (hSCM != NULL)
+	{
+		// Open	this service for DELETE	access
+		SC_HANDLE hService = OpenService(hSCM, SERVICE_NAME, DELETE);
+		if (hService != NULL)
+		{
+			// Remove this service from	the	SCM's database.
+			DeleteService(hService);
+			CloseServiceHandle(hService);
+		}
+		CloseServiceHandle(hSCM);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
