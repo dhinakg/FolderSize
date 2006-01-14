@@ -105,10 +105,56 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_SERVICE_DESCRIPTION "Caches sizes of folders viewed in Explorer. The service monitors folders for changes and updates the cache in the background."
+    IDS_SERVICE_DESCRIPTION "Caches the sizes of all folders viewed in Explorer. The service monitors folders for changes and updates the cache in the background."
 END
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_SERVICE_DESCRIPTION "Met en cache les tailles de tous les dossiers répertoriés dans l'Explorateur. Le service surveille les changements et met à jour le cache en arrière plan."
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Italian (Italy) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+#ifdef _WIN32
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_SERVICE_DESCRIPTION "Mantieni aggiornata la dimensione delle cartelle visualizzata in Esplora Risorse. Le cartelle vengono monitorate e la cache utilizzata dal programma viene aggiornata in background."
+END
+
+#endif    // Italian (Italy) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -13,6 +13,244 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "显示"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "格式",IDC_STATIC,7,7,198,48
+    CONTROL         "固定 (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "自动调节 (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "系统功能"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "功能运作:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
+    PUSHBUTTON      "起动",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "停止",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "你需要拥有系统管理权限才可以更改设定.",IDC_STATIC,64,
+                    161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
+    PUSHBUTTON      "暂停",IDC_SERVICE_PAUSE,7,82,50,14
+    PUSHBUTTON      "继续",IDC_SERVICE_RESUME,7,107,50,14
+    LTEXT           "当功能起动后, 档案夹容量将会随时更新并记录所有档案夹容量资料.",
+                    IDC_STATIC,64,24,141,27
+    LTEXT           "当功能停止后, 档案夹容量将会停止监察并且不会更新所有档案夹容量资料.",
+                    IDC_STATIC,64,55,141,21
+    LTEXT           "暂停功能可停止更新及记录, 可于有需要时加快硬碟运作速度.",
+                    IDC_STATIC,64,82,141,23
+    LTEXT           "继续功能可继续随时更新并记录所有档案夹容量资料.",
+                    IDC_STATIC,64,106,141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "关于"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "显示档案夹容量是由 Brian Oraas 构想, 设计及完成.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "显示档案夹容量是跟据 GNU Public 版权保护下进行发行.",
+                    IDC_STATIC,17,137,179,19
+    GROUPBOX        "版权",IDC_STATIC,7,123,198,58
+    LTEXT           "点一下这里了解更多有关 GNU 的资讯.",IDC_HYPER_GNU,17,
+                    162,101,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "显示档案夹容量"
+    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_SERVICE_RUNNING     "Running"
+    IDS_SERVICE_STOPPED     "Stopped"
+    IDS_SERVICE_UNKNOWN     "Unknown"
+    IDS_SERVICE_PAUSED      "Paused"
+    IDS_SERVICE_START_PENDING "Starting"
+    IDS_SERVICE_STOP_PENDING "Stopping"
+    IDS_SERVICE_CONTINUE_PENDING "Resuming"
+    IDS_SERVICE_PAUSE_PENDING "Pausing"
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (Taiwan) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHT)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
+#pragma code_page(950)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "闽"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "陪ボ郎Ж甧秖琌パ Brian Oraas 篶稱, 砞璸のЧΘ.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "陪ボ郎Ж甧秖琌蛤沮 GNU Public 舦玂臔秈︽祇︽.",
+                    IDC_STATIC,17,137,179,19
+    GROUPBOX        "舦",IDC_STATIC,7,123,198,58
+    LTEXT           "翴硂柑秆Τ闽 GNU 戈癟.",IDC_HYPER_GNU,17,162,101,
+                    8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "陪ボ"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Α",IDC_STATIC,7,7,198,48
+    CONTROL         "㏕﹚ (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "笆秸竊 (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "╰参"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "笲:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
+    PUSHBUTTON      "癬笆",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "氨ゎ",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "You must have Administrator privileges to modify the service.",
+                    IDC_STATIC,64,161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
+    PUSHBUTTON      "既氨",IDC_SERVICE_PAUSE,7,82,50,14
+    PUSHBUTTON      "膥尿",IDC_SERVICE_RESUME,7,107,50,14
+    LTEXT           "讽癬笆, 郎Ж甧秖盢穦繦穝癘魁┮Τ郎Ж甧秖戈.",
+                    IDC_STATIC,64,24,141,27
+    LTEXT           "讽氨ゎ, 郎Ж甧秖盢穦氨ゎ菏诡ぃ穦穝┮Τ郎Ж甧秖戈.",
+                    IDC_STATIC,64,55,141,21
+    LTEXT           "既氨氨ゎ穝の癘魁, Τ惠璶е祑盒笲硉.",
+                    IDC_STATIC,64,82,141,23
+    LTEXT           "膥尿膥尿繦穝癘魁┮Τ郎Ж甧秖戈.",IDC_STATIC,64,106,
+                    141,24
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "陪ボ郎Ж甧秖"
+    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_SERVICE_RUNNING     "タ盽笲"
+    IDS_SERVICE_STOPPED     "Stopped"
+    IDS_SERVICE_UNKNOWN     "Unknown"
+    IDS_SERVICE_PAUSED      "Paused"
+    IDS_SERVICE_START_PENDING "Starting"
+    IDS_SERVICE_STOP_PENDING "Stopping"
+    IDS_SERVICE_CONTINUE_PENDING "Resuming"
+    IDS_SERVICE_PAUSE_PENDING "Pausing"
+END
+
+#endif    // Chinese (Taiwan) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Neutral resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
@@ -623,15 +861,15 @@ END
 STRINGTABLE 
 BEGIN
     IDS_NAME                "Folder Size"
-    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_INFO                "Personalizza la colonna Dimensione Cartelle di Esplora Risorse e controlla il servizio Dimensione Cartelle."
     IDS_SERVICE_RUNNING     "Attivo"
     IDS_SERVICE_STOPPED     "Disattivo"
-    IDS_SERVICE_UNKNOWN     "Unknown"
-    IDS_SERVICE_PAUSED      "Paused"
-    IDS_SERVICE_START_PENDING "Starting"
-    IDS_SERVICE_STOP_PENDING "Stopping"
-    IDS_SERVICE_CONTINUE_PENDING "Resuming"
-    IDS_SERVICE_PAUSE_PENDING "Pausing"
+    IDS_SERVICE_UNKNOWN     "Sconosciuto"
+    IDS_SERVICE_PAUSED      "Pauso"
+    IDS_SERVICE_START_PENDING "Avvio in corso"
+    IDS_SERVICE_STOP_PENDING "Arresto in corso"
+    IDS_SERVICE_CONTINUE_PENDING "Ripristino in corso"
+    IDS_SERVICE_PAUSE_PENDING "Sospensione in corso"
 END
 
 #endif    // Italian (Italy) resources
