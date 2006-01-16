@@ -2,37 +2,28 @@
 #include "Monitor.h"
 
 
-Monitor::Monitor(LPCTSTR pszVolume, IMonitorCallback* pCallback)
-: m_pCallback(pCallback), m_hDirectory(INVALID_HANDLE_VALUE), m_hMonitorThread(NULL)
+Monitor::Monitor(LPCTSTR pszVolume, HANDLE hFile, IMonitorCallback* pCallback)
+: m_hDirectory(hFile), m_pCallback(pCallback), m_hMonitorThread(NULL)
 {
 	ZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
 
 	lstrcpy(m_szVolume, pszVolume);
 
-	m_hDirectory = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
-		NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
+	m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	if (m_hDirectory != INVALID_HANDLE_VALUE)
-	{
-		m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-		m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-		DWORD dwThreadId;
-		m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &dwThreadId);
-	}
+	DWORD dwThreadId;
+	m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &dwThreadId);
 }
 
 Monitor::~Monitor()
 {
-	if (m_hDirectory != INVALID_HANDLE_VALUE)
-	{
-		SetEvent(m_hQuitEvent);
-		WaitForSingleObject(m_hMonitorThread, INFINITE);
-		CloseHandle(m_hMonitorThread);
-		CloseHandle(m_Overlapped.hEvent);
-		CloseHandle(m_hQuitEvent);
-		CloseHandle(m_hDirectory);
-	}
+	SetEvent(m_hQuitEvent);
+	// remove this or there will be a deadlock in the KillMe callback
+	//WaitForSingleObject(m_hMonitorThread, INFINITE);
+	CloseHandle(m_hMonitorThread);
+	CloseHandle(m_Overlapped.hEvent);
+	CloseHandle(m_hQuitEvent);
 }
 
 HANDLE Monitor::GetFileHandle()
@@ -59,15 +50,23 @@ void Monitor::MonitorThread()
 		if (!ReadDirectoryChangesW(m_hDirectory, m_Buffer, 4096, TRUE,
 			FILE_NOTIFY_CHANGE_FILE_NAME|FILE_NOTIFY_CHANGE_DIR_NAME|FILE_NOTIFY_CHANGE_SIZE,
 			&dwBytesReturned, &m_Overlapped, NULL))
-				break;
+		{
+			m_pCallback->DirectoryError(GetLastError());
+			return;
+		}
 
 		HANDLE hEvents[2] = {m_hQuitEvent, m_Overlapped.hEvent};
 		if (WaitForMultipleObjects(2, hEvents, FALSE, INFINITE) == WAIT_OBJECT_0)
 		{
-			break;
+			// exit normally
+			return;
 		}
 
-		GetOverlappedResult(m_hDirectory, &m_Overlapped, &dwBytesReturned, TRUE);
+		if (!GetOverlappedResult(m_hDirectory, &m_Overlapped, &dwBytesReturned, TRUE))
+		{
+			m_pCallback->DirectoryError(GetLastError());
+			return;
+		}
 
 		PFILE_NOTIFY_INFORMATION pfni = (PFILE_NOTIFY_INFORMATION)m_Buffer;
 		while (true)

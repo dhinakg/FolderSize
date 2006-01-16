@@ -1,23 +1,59 @@
 #include "StdAfx.h"
 #include "Scanner.h"
 #include "PerformanceMonitor.h"
+#include "EventLog.h"
 
 Scanner::Scanner(LPCTSTR pszVolume, IScannerCallback* pCallback)
+: m_hThread(NULL)
 {
 	m_pPerformanceMonitor = new PerformanceMonitor(pszVolume);
 	m_pCallback = pCallback;
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hScanEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	m_hThread = CreateThread(NULL, 0, ThreadProc, this, 0, NULL);
-	// don't let the scanner hog the disk!
-	//SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
+
+	// if this thread is impersonating the user, the scanner thread needs to have the same impersonation token
+	HANDLE hToken;
+	if (OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE, FALSE, &hToken))
+	{
+		// apparently it's a bad idea to create a thread while impersonating
+		if (RevertToSelf())
+		{
+			m_hThread = CreateThread(NULL, 0, ThreadProc, this, CREATE_SUSPENDED, NULL);
+			if (m_hThread != NULL)
+			{
+				if (!SetThreadToken(&m_hThread, hToken) ||
+					!ResumeThread(m_hThread))
+				{
+					TerminateThread(m_hThread, 0);
+					m_hThread = NULL;
+				}
+			}
+			// restore the impersonation
+			SetThreadToken(NULL, hToken);
+		}
+		CloseHandle(hToken);
+	}
+	else
+	{
+		// if this thread is not impersonating, just create the thread normally
+		m_hThread = CreateThread(NULL, 0, ThreadProc, this, 0, NULL);
+	}
+
+	if (m_hThread == NULL)
+	{
+		EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+	}
+
 }
 
 Scanner::~Scanner()
 {
-	SetEvent(m_hQuitEvent);
-	WaitForSingleObject(m_hThread, INFINITE);
-	CloseHandle(m_hThread);
+	if (m_hThread != NULL)
+	{
+		SetEvent(m_hQuitEvent);
+		WaitForSingleObject(m_hThread, INFINITE);
+		CloseHandle(m_hThread);
+	}
 	CloseHandle(m_hQuitEvent);
 	CloseHandle(m_hScanEvent);
 	delete m_pPerformanceMonitor;
@@ -31,8 +67,19 @@ void Scanner::ScanFolder(LPCTSTR pszFolder)
 	PathAppend(szFolder, _T("*"));
 	WIN32_FIND_DATA FindData;
 	HANDLE hFind = FindFirstFile(szFolder, &FindData);
-	if (hFind != INVALID_HANDLE_VALUE)
+	if (hFind == INVALID_HANDLE_VALUE)
 	{
+		//EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+		TCHAR szMessage[1024];
+		wsprintf(szMessage, _T("FindFirstFile failed in thread %d on %s\n"), GetCurrentThreadId(), pszFolder);
+		OutputDebugString(szMessage);
+		return;
+	}
+	else
+	{
+		TCHAR szMessage[1024];
+		wsprintf(szMessage, _T("FindFirstFile succeeded in thread %d on %s\n"), GetCurrentThreadId(), pszFolder);
+		OutputDebugString(szMessage);
 		do
 		{
 			// ignore reparse points... they are links to other directories.

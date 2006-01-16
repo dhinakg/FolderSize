@@ -3,10 +3,13 @@
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE    0x0500
 
+// windows
 #include <windows.h>
 #include <shlwapi.h>
 #include <dbt.h>
 #include <pdh.h>
+#include <accctrl.h>
+#include <aclapi.h>
 
 // ATL
 #include <atlcoll.h>
@@ -19,6 +22,7 @@
 // STL
 #include <vector>
 #include <set>
+#include <queue>
 using namespace std;
 
 #include "..\Pipe\Pipe.h"

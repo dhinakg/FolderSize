@@ -2,19 +2,22 @@
 #include "Cache.h"
 #include "EventLog.h"
 
-class CacheManager
+class CacheManager : protected ICacheCallback
 {
 public:
 	CacheManager(SERVICE_STATUS_HANDLE hSS);
 	~CacheManager();
 
 	bool GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize);
-	void GetUpdateFoldersForBrowsedFolders(const Strings& strsFoldersBrowsed, Strings& strsFoldersToUpdate);
+	void GetUpdateFolders(LPCTSTR pszFolder, Strings& strsFoldersToUpdate);
 	void EnableScanners(bool bEnable);
 	void DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh);
 
 protected:
 	Cache* GetCacheForFolder(LPCTSTR pszVolume, bool bCreate);
+
+	// ICacheCallback
+	virtual void KillMe(Cache* pExpiredCache);
 
 	SERVICE_STATUS_HANDLE m_hSS;
 	set<HDEVNOTIFY> m_RegisteredDeviceNotifications;
@@ -34,6 +37,4 @@ protected:
 	typedef CAtlMap<CString, Cache*, CStringHashTraits> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;
-
-	EventLog m_EventLog;
 };

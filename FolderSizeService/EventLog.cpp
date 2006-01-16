@@ -2,6 +2,7 @@
 #include "EventLog.h"
 #include "FolderSizeSvc.h"
 
+
 EventLog::EventLog()
 {
 	m_hEventLog = RegisterEventSource(NULL, SERVICE_NAME);
@@ -10,6 +11,12 @@ EventLog::EventLog()
 EventLog::~EventLog()
 {
 	DeregisterEventSource(m_hEventLog);
+}
+
+EventLog& EventLog::Instance()
+{
+	static EventLog log;
+	return log;
 }
 
 bool EventLog::ReportError(LPCTSTR pszComponent, DWORD dwError)
@@ -25,5 +32,5 @@ bool EventLog::ReportError(LPCTSTR pszComponent, DWORD dwError)
 		LocalFree(pszError);
 	}
 	LPCTSTR pszMessage = szMessage;
-	return ReportEvent(m_hEventLog, EVENTLOG_ERROR_TYPE, 1, 0, NULL, 1, 0, &pszMessage, NULL) != 0;
+	return ReportEvent(m_hEventLog, EVENTLOG_ERROR_TYPE, 0, 0, NULL, 1, 0, &pszMessage, NULL) != 0;
 }

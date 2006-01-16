@@ -3,11 +3,13 @@
 class EventLog
 {
 public:
-	EventLog();
-	~EventLog();
+	static EventLog& Instance();
 
 	bool ReportError(LPCTSTR pszComponent, DWORD dwError);
 
 private:
+	EventLog();
+	~EventLog();
+
 	HANDLE m_hEventLog;
 };

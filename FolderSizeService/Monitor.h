@@ -3,8 +3,6 @@
 class IMonitorCallback
 {
 public:
-//	virtual void FileChanged(LPCTSTR pszFile, DWORD dwAction) = 0;
-
 	enum FILE_EVENT
 	{
 		FE_ADDED,
@@ -14,15 +12,13 @@ public:
 	};
 
 	virtual void PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe) = 0;
-//	virtual void FolderContentsChanged(LPCTSTR pszFolder);
-//	virtual void FolderDeleted(LPCTSTR pszFolder);
-//	virtual void FolderRenamed(LPCTSTR pszOldName, LPCTSTR pszNewName);
+	virtual void DirectoryError(DWORD dwError) = 0;
 };
 
 class Monitor
 {
 public:
-	Monitor(LPCTSTR pszVolume, IMonitorCallback* pCallback);
+	Monitor(LPCTSTR pszVolume, HANDLE hFile, IMonitorCallback* pCallback);
 	~Monitor();
 
 	HANDLE GetFileHandle();

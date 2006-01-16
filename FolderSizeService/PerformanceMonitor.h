@@ -1,6 +1,6 @@
 #pragma once
 
-#define PERFORMANCE_UPDATE_FREQUENCY 500
+#define PERFORMANCE_UPDATE_FREQUENCY 1000
 
 class PerformanceMonitor
 {

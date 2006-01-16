@@ -5,18 +5,25 @@
 
 class CacheFolder;
 class FolderManager;
+class Cache;
+
+class ICacheCallback
+{
+public:
+	virtual void KillMe(Cache* pExpiredCache) = 0;
+};
 
 class Cache : protected IScannerCallback, protected IMonitorCallback
 {
 public:
-	Cache(LPCTSTR pszVolume);
+	Cache(LPCTSTR pszVolume, HANDLE hMonitor, ICacheCallback* pCallback);
 	~Cache();
 
 	// the CacheManager calls these
-	void GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize, HANDLE& hDevice);
+	void GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize);
 	void GetUpdateFoldersForFolder(LPCTSTR pszFolder, Strings& strsFoldersToUpdate);
 	void EnableScanner(bool bEnable);
-	bool ClearIfMonitoringHandle(HANDLE h);
+	HANDLE GetMonitoringHandle();
 
 	// IScannerCallback
 	virtual void FoundFolder(LPCTSTR pszFolder);
@@ -25,6 +32,7 @@ public:
 
 	// IMonitorCallback
 	virtual void PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe);
+	virtual void DirectoryError(DWORD dwError);
 
 private:
 	void Create();
@@ -40,4 +48,7 @@ private:
 	Monitor* m_pMonitor;
 	Scanner* m_pScanner;
 	bool m_bScannerEnabled;
+
+	// suicidal tendencies
+	ICacheCallback* m_pCallback;
 };

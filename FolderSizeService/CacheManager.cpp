@@ -15,7 +15,7 @@ CacheManager::~CacheManager()
 	{
 		if (!UnregisterDeviceNotification(*i))
 		{
-			m_EventLog.ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
+			EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 		}
 	}
 	POSITION pos = m_Map.GetStartPosition();
@@ -29,39 +29,90 @@ CacheManager::~CacheManager()
 	DeleteCriticalSection(&m_cs);
 }
 
-bool PathStripFolder(LPCTSTR pszFolder, LPTSTR pszVolume)
+// max cache id is a username and network share, each of which is probably less than MAX_PATH
+#define MAX_CACHEID (MAX_PATH*2)
+
+// pszFolder is the full folder path to make the cache id from
+// pszCacheId must point to a buffer to store the cache id
+// pszVolume will return a pointer into the cache id buffer specifying the volume
+// bIsUNC returns whether or not it's a network path
+bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume, bool& bIsUNC)
 {
-	if (PathIsUNC(pszVolume))
+	bIsUNC = PathIsUNC(pszFolder) != 0;
+	if (bIsUNC)
 	{
-		LPCTSTR pszEnd = PathFindNextComponent(pszFolder);
-		if (pszEnd != NULL)
+		// for a network path, the CacheId will be the username followed by the computer and share name
+		DWORD dwChars = MAX_PATH;
+		if (!GetUserName(pszCacheId, &dwChars))
+			return false;
+		
+		// the volume starts after the username
+		pszVolume = pszCacheId + dwChars - 1;
+
+		// skip ahead 3 components
+		LPCTSTR pszEnd = pszFolder;
+		for (int i=0; i<3; i++)
 		{
 			pszEnd = PathFindNextComponent(pszEnd);
-			if (pszEnd != NULL)
-			{
-				lstrcpyn(pszVolume, pszFolder, (int)(pszEnd-pszFolder)+1);
-				return true;
-			}
+			if (pszEnd == NULL)
+				return false;
 		}
+		// and only copy up to the third component
+		lstrcpyn(pszVolume, pszFolder, (int)(pszEnd-pszFolder)+1);
+		PathRemoveBackslash(pszVolume);
 	}
-
-	lstrcpy(pszVolume, pszFolder);
-	return PathStripToRoot(pszVolume) != 0;
+	else
+	{
+		// for a local path, the CacheId is just the root of the path
+		lstrcpy(pszCacheId, pszFolder);
+		if (!PathStripToRoot(pszCacheId))
+			return false;
+		pszVolume = pszCacheId;
+	}
+	return true;
 }
 
 Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
 {
-	TCHAR szVolume[MAX_PATH];
-	if (!PathStripFolder(pszFolder, szVolume))
+	// make a cache id which will be the volume of the folder, optionally preceded by a username
+	TCHAR szCacheId[MAX_CACHEID];
+	LPTSTR pszVolume;
+	bool bIsUNC;
+	if (!MakeCacheId(pszFolder, szCacheId, pszVolume, bIsUNC))
 		return NULL;
 
 	Cache* pCache = NULL;
-	if (!m_Map.Lookup(szVolume, pCache))
+	if (!m_Map.Lookup(szCacheId, pCache))
 	{
 		if (bCreate)
 		{
-			pCache = new Cache(szVolume);
-			m_Map.SetAt(szVolume, pCache);
+			// if it's a drive that has a letter...
+			HANDLE hMonitor = INVALID_HANDLE_VALUE;
+//			if (PathGetDriveNumber(pszFolder) >= 0)
+			{
+				hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+										NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
+				if (hMonitor != INVALID_HANDLE_VALUE)
+				{
+					if (!bIsUNC && m_hSS != NULL)
+					{
+						DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
+						dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
+						dbh.dbch_handle = hMonitor;
+						HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+						if (hDevNotify == NULL)
+						{
+							EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
+						}
+						else
+						{
+							m_RegisteredDeviceNotifications.insert(hDevNotify);
+						}
+					}
+					pCache = new Cache(pszVolume, hMonitor, this);
+					m_Map.SetAt(szCacheId, pCache);
+				}
+			}
 		}
 	}
 
@@ -77,27 +128,7 @@ bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 	Cache* pCache = GetCacheForFolder(pszFolder, true);
 	if (pCache != NULL)
 	{
-		HANDLE hDevice = INVALID_HANDLE_VALUE;
-		pCache->GetInfoForFolder(pszFolder, nSize, hDevice);
-		if (hDevice != INVALID_HANDLE_VALUE)
-		{
-			// the cache manager is returning the handle of a new cache we have to wait on
-			DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
-			dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
-			dbh.dbch_handle = hDevice;
-			if (m_hSS != NULL)
-			{
-				HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
-				if (hDevNotify == NULL)
-				{
-					m_EventLog.ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
-				}
-				else
-				{
-					m_RegisteredDeviceNotifications.insert(hDevNotify);
-				}
-			}
-		}
+		pCache->GetInfoForFolder(pszFolder, nSize);
 		bRes = true;
 	}
 
@@ -106,17 +137,14 @@ bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 	return bRes;
 }
 
-void CacheManager::GetUpdateFoldersForBrowsedFolders(const Strings& strsFoldersBrowsed, Strings& strsFoldersToUpdate)
+void CacheManager::GetUpdateFolders(LPCTSTR pszFolder, Strings& strsFoldersToUpdate)
 {
 	EnterCriticalSection(&m_cs);
 
-	for (Strings::const_iterator i = strsFoldersBrowsed.begin(); i != strsFoldersBrowsed.end(); i++)
+	Cache* pCache = GetCacheForFolder(pszFolder, false);
+	if (pCache != NULL)
 	{
-		Cache* pCache = GetCacheForFolder(i->c_str(), false);
-		if (pCache != NULL)
-		{
-			pCache->GetUpdateFoldersForFolder(i->c_str(), strsFoldersToUpdate);
-		}
+		pCache->GetUpdateFoldersForFolder(pszFolder, strsFoldersToUpdate);
 	}
 
 	LeaveCriticalSection(&m_cs);
@@ -148,23 +176,51 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 	POSITION pos = m_Map.GetStartPosition();
 	while (pos != NULL)
 	{
+		POSITION nextpos = pos;
 		CString strVolume;
 		Cache* pCache;
-		m_Map.GetNextAssoc(pos, strVolume, pCache);
-		if (pCache->ClearIfMonitoringHandle(pdbh->dbch_handle))
+		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
+		if (pCache->GetMonitoringHandle() == pdbh->dbch_handle)
 		{
+			delete pCache;
+			m_Map.RemoveAtPos(pos);
 			bFound = true;
+			break;
 		}
+		pos = nextpos;
 	}
 
 	LeaveCriticalSection(&m_cs);
 
 	if (!bFound)
 	{
-		m_EventLog.ReportError(TEXT("CacheManager::RemoveDevice"), GetLastError());
+		EventLog::Instance().ReportError(TEXT("CacheManager::RemoveDevice"), GetLastError());
 	}
 	if (!UnregisterDeviceNotification(pdbh->dbch_hdevnotify))
 	{
-		m_EventLog.ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
+		EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 	}
+}
+
+void CacheManager::KillMe(Cache* pExpiredCache)
+{
+	EnterCriticalSection(&m_cs);
+
+	POSITION pos = m_Map.GetStartPosition();
+	while (pos != NULL)
+	{
+		POSITION nextpos = pos;
+		CString strVolume;
+		Cache* pCache;
+		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
+		if (pCache == pExpiredCache)
+		{
+			delete pCache;
+			m_Map.RemoveAtPos(pos);
+			break;
+		}
+		pos = nextpos;
+	}
+
+	LeaveCriticalSection(&m_cs);
 }

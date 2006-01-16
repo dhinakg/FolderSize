@@ -83,8 +83,18 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 			WCHAR szFile[MAX_PATH];
 			if (ReadString(hPipe, szFile, MAX_PATH))
 			{
+				// if szFile is on a network share, impersonate the caller so we can access that share
+				BOOL bImpersonating = FALSE;
+				if (PathIsUNC(szFile))
+				{
+					bImpersonating = ImpersonateNamedPipeClient(hPipe);
+				}
 				FOLDERINFO2 Size;
 				pCacheManager->GetInfoForFolder(szFile, Size);
+				if (bImpersonating)
+				{
+					RevertToSelf();
+				}
 				WriteGetFolderSize(hPipe, Size);
 			}
 			break;
@@ -93,7 +103,20 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 			Strings strsBrowsed, strsUpdated;
 			if (ReadStringList(hPipe, strsBrowsed))
 			{
-				pCacheManager->GetUpdateFoldersForBrowsedFolders(strsBrowsed, strsUpdated);
+				for (Strings::iterator i = strsBrowsed.begin(); i != strsBrowsed.end(); i++)
+				{
+					BOOL bImpersonating = FALSE;
+					LPCTSTR pszFolderBrowsed = i->c_str();
+					if (PathIsUNC(pszFolderBrowsed))
+					{
+						bImpersonating = ImpersonateNamedPipeClient(hPipe);
+					}
+					pCacheManager->GetUpdateFolders(pszFolderBrowsed, strsUpdated);
+					if (bImpersonating)
+					{
+						RevertToSelf();
+					}
+				}
 				WriteStringList(hPipe, strsUpdated);
 			}
 			break;
@@ -120,7 +143,8 @@ DWORD Pipe::PipeThread()
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		return GetLastError();
+		EventLog::Instance().ReportError(TEXT("CreateNamedPipe"), GetLastError());
+		return 0;
 	}
 	
 	HANDLE hWaitHandles[2];

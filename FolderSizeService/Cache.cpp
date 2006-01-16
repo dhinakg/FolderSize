@@ -7,38 +7,7 @@
 #include "FolderManager.h"
 #include "..\Pipe\Pipe.h"
 
-
 LARGE_INTEGER g_nPerformanceFrequency = {0};
-
-Cache::Cache(LPCTSTR pszVolume) :
-	m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL)
-{
-	lstrcpy(m_szVolume, pszVolume);
-	InitializeCriticalSection(&m_cs);
-	QueryPerformanceFrequency(&g_nPerformanceFrequency);
-}
-
-void Cache::Create()
-{
-	if (m_pFolderManager == NULL)
-	{
-		m_pFolderManager = new FolderManager(m_szVolume);
-	}
-	if (m_pScanner == NULL)
-	{
-		m_pScanner = new Scanner(m_szVolume, this);
-	}
-	if (m_pMonitor == NULL)
-	{
-		m_pMonitor = new Monitor(m_szVolume, this);
-	}
-}
-
-Cache::~Cache()
-{
-	Clear();
-	DeleteCriticalSection(&m_cs);
-}
 
 static void WarningEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection, LPCTSTR pszFunction)
 {
@@ -58,70 +27,63 @@ static void WarningEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection, LP
 	}
 }
 
-void Cache::Clear()
+Cache::Cache(LPCTSTR pszVolume, HANDLE hMonitor, ICacheCallback* pCallback) :
+	m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL), m_pCallback(pCallback)
 {
-	if (m_pMonitor != NULL)
-	{
-		delete m_pMonitor;
-		m_pMonitor = NULL;
-	}
-	if (m_pScanner != NULL)
-	{
-		delete m_pScanner;
-		m_pScanner = NULL;
-	}
-	// Don't need to protect deleting the Monitor and Scanner - protecting them will just cause deadlocks.
-	// Need to protect the FolderManager, since another thread could try to look up folder info while folders are being deleted.
-	WarningEnterCriticalSection(&m_cs, _T("Clear"));
-	if (m_pFolderManager != NULL)
-	{
-		delete m_pFolderManager;
-		m_pFolderManager = NULL;
-	}
-	LeaveCriticalSection(&m_cs);
+	lstrcpy(m_szVolume, pszVolume);
+	InitializeCriticalSection(&m_cs);
+	QueryPerformanceFrequency(&g_nPerformanceFrequency);
+
+	m_pFolderManager = new FolderManager(m_szVolume);
+	m_pScanner = new Scanner(m_szVolume, this);
+	if (hMonitor != INVALID_HANDLE_VALUE)
+		m_pMonitor = new Monitor(m_szVolume, hMonitor, this);
 }
 
-void Cache::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize, HANDLE& hDevice)
+Cache::~Cache()
+{
+	delete m_pMonitor;
+	delete m_pScanner;
+
+	// Don't need to protect deleting the Monitor and Scanner - protecting them will just cause deadlocks.
+	// Need to protect the FolderManager, since another thread could try to look up folder info while folders are being deleted.
+	WarningEnterCriticalSection(&m_cs, _T("~Cache"));
+	delete m_pFolderManager;
+	LeaveCriticalSection(&m_cs);
+	DeleteCriticalSection(&m_cs);
+}
+
+void Cache::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 {
 	WarningEnterCriticalSection(&m_cs, _T("GetInfoForFolder"));
 
-	if (m_pFolderManager == NULL)
+	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, true);
+
+	DoSyncScans(pFolder);
+
+	(FOLDERINFO&)nSize = pFolder->GetTotalSize();
+
+	// let the folder know that it's being displayed
+	pFolder->DisplayUpdated();
+
+	if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
 	{
-		Create();
-		hDevice = m_pMonitor->GetFileHandle();
+		nSize.giff = GIFF_DIRTY;
 	}
-	if (m_pFolderManager != NULL)
+	else if (pFolder->GetStatus() == CacheFolder::FS_EMPTY || pFolder->GetEmptyChildren())
 	{
-		CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, true);
-
-		DoSyncScans(pFolder);
-
-		(FOLDERINFO&)nSize = pFolder->GetTotalSize();
-
-		// let the folder know that it's being displayed
-		pFolder->DisplayUpdated();
-
-		if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
-		{
-			nSize.giff = GIFF_DIRTY;
-		}
-		else if (pFolder->GetStatus() == CacheFolder::FS_EMPTY || pFolder->GetEmptyChildren())
-		{
-			nSize.giff = GIFF_SCANNING;
-		}
-		else
-		{
-			nSize.giff = GIFF_CLEAN;
-		}
+		nSize.giff = GIFF_SCANNING;
+	}
+	else
+	{
+		nSize.giff = GIFF_CLEAN;
 	}
 
 	LeaveCriticalSection(&m_cs);
 
+	// if we're requesting info on unclean folders, ensure scanner is awake
 	if (nSize.giff != GIFF_CLEAN)
-	{
-		// make sure the scanner is awake
 		m_pScanner->Wakeup();
-	}
 }
 
 // The scanner is currently scanning the PARENT of pszFolder, and it
@@ -244,20 +206,11 @@ void Cache::GetUpdateFoldersForFolder(LPCTSTR pszFolder, Strings& strsFoldersToU
 	LeaveCriticalSection(&m_cs);
 }
 
-bool Cache::ClearIfMonitoringHandle(HANDLE h)
+HANDLE Cache::GetMonitoringHandle()
 {
-	bool bCleared = false;
-	WarningEnterCriticalSection(&m_cs, _T("ClearIfMonitoringHandle"));
-	if (m_pMonitor != NULL)
-	{
-		if (m_pMonitor->GetFileHandle() == h)
-		{
-			Clear();
-			bCleared = true;
-		}
-	}
-	LeaveCriticalSection(&m_cs);
-	return bCleared;
+	if (m_pMonitor == NULL)
+		return INVALID_HANDLE_VALUE;
+	return m_pMonitor->GetFileHandle();
 }
 
 void Cache::EnableScanner(bool bEnable)
@@ -265,10 +218,32 @@ void Cache::EnableScanner(bool bEnable)
 	m_bScannerEnabled = bEnable;
 }
 
+#define SYNC_SCAN_TIME 200
+
 void Cache::DoSyncScans(CacheFolder* pFolder)
 {
 	if (m_bScannerEnabled)
-	{
+	{/*
+		// we have SYNC_SCAN_TIME time to scan the folder, so get to it!
+		LARGE_INTEGER nStartCount;
+		QueryPerformanceCounter(&nStartCount);
+
+		// ok, we'll be done when the current count gets up to nTimeoutCount
+		LARGE_INTEGER nTimeoutCount;
+		nTimeoutCount.QuadPart = nStartCount.QuadPart + g_nPerformanceFrequency.QuadPart * 1000 / SYNC_SCAN_TIME;
+
+		while (true)
+		{
+			CacheFolder* pScanFolder = pFolder->GetNextScanFolder(NULL);
+			if (pScanFolder == NULL)
+			{
+				break;
+			}
+			m_pScanner->ScanFolder(pScanFolder->GetPath(), nTimeoutCount.QuadPart);
+		}
+*/
+
+
 		// if the number of unclean folders in the pFolder tree is small (NumberOfSyncScans),
 		// clean them synchronously
 		LARGE_INTEGER nStartCount, nCurrentCount;
@@ -293,5 +268,18 @@ void Cache::DoSyncScans(CacheFolder* pFolder)
 		wsprintf(szMessage, _T("SyncScans: %d\n"), nScans);
 		OutputDebugString(szMessage);
 #endif
+
 	}
+}
+
+void Cache::DirectoryError(DWORD dwError)
+{
+	// log an unexpected error
+	if (dwError != ERROR_NETNAME_DELETED)
+	{
+		EventLog::Instance().ReportError(_T("Cache"), dwError);
+	}
+
+	// the monitor can't read the disk anymore, the cache is hopelessly outdated...
+	m_pCallback->KillMe(this);
 }
