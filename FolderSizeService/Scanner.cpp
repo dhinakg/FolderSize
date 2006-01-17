@@ -69,17 +69,12 @@ void Scanner::ScanFolder(LPCTSTR pszFolder)
 	HANDLE hFind = FindFirstFile(szFolder, &FindData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
+		// don't log an error, we could be legitimately denied access to this folder
 		//EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
-		TCHAR szMessage[1024];
-		wsprintf(szMessage, _T("FindFirstFile failed in thread %d on %s\n"), GetCurrentThreadId(), pszFolder);
-		OutputDebugString(szMessage);
 		return;
 	}
 	else
 	{
-		TCHAR szMessage[1024];
-		wsprintf(szMessage, _T("FindFirstFile succeeded in thread %d on %s\n"), GetCurrentThreadId(), pszFolder);
-		OutputDebugString(szMessage);
 		do
 		{
 			// ignore reparse points... they are links to other directories.

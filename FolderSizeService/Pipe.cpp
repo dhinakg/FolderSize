@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "Pipe.h"
 #include "CacheManager.h"
+#include "EventLog.h"
+#include "Utility.h"
 
 class SecurityDescriptor
 {
@@ -17,21 +19,49 @@ private:
 SecurityDescriptor::SecurityDescriptor()
 : m_psd(NULL), m_pacl(NULL)
 {
+	// get the SID for the current process
+	PSID pSidSelf = NULL;
+	HANDLE hToken;
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+	{
+		DWORD dwReturnLength;
+		if (!GetTokenInformation(hToken, TokenUser, NULL, 0, &dwReturnLength) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+		{
+			TOKEN_USER* pTokenUser = (TOKEN_USER*)_alloca(dwReturnLength);
+			if (GetTokenInformation(hToken, TokenUser, pTokenUser, dwReturnLength, &dwReturnLength))
+			{
+				pSidSelf = pTokenUser->User.Sid;
+			}
+		}
+		CloseHandle(hToken);
+	}
+
 	PSID psidLocal;
 	SID_IDENTIFIER_AUTHORITY SIDAuthLocal = SECURITY_LOCAL_SID_AUTHORITY;
 	if (AllocateAndInitializeSid(&SIDAuthLocal, 1, SECURITY_LOCAL_RID, 0, 0, 0, 0, 0, 0, 0, &psidLocal))
 	{
-		EXPLICIT_ACCESS ea;
-		ea.grfAccessPermissions = GENERIC_WRITE|GENERIC_READ;
-		ea.grfAccessMode = SET_ACCESS;
-		ea.grfInheritance = NO_INHERITANCE;
-		ea.Trustee.pMultipleTrustee = NULL;
-		ea.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-		ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
-		ea.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
-		ea.Trustee.ptstrName = (LPTSTR)psidLocal;
+		EXPLICIT_ACCESS ea[2];
+		// any local user can read/write the pipe
+		ea[0].grfAccessPermissions = GENERIC_WRITE|GENERIC_READ;
+		ea[0].grfAccessMode = SET_ACCESS;
+		ea[0].grfInheritance = NO_INHERITANCE;
+		ea[0].Trustee.pMultipleTrustee = NULL;
+		ea[0].Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+		ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+		ea[0].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+		ea[0].Trustee.ptstrName = (LPTSTR)psidLocal;
 		
-		if (SetEntriesInAcl(1, &ea, NULL, &m_pacl) == ERROR_SUCCESS)
+		// this process can read/write and create the pipe
+		ea[1].grfAccessPermissions = GENERIC_WRITE|GENERIC_READ|FILE_CREATE_PIPE_INSTANCE;
+		ea[1].grfAccessMode = SET_ACCESS;
+		ea[1].grfInheritance = NO_INHERITANCE;
+		ea[1].Trustee.pMultipleTrustee = NULL;
+		ea[1].Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+		ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+		ea[1].Trustee.TrusteeType = TRUSTEE_IS_USER;
+		ea[1].Trustee.ptstrName = (LPTSTR)pSidSelf;
+
+		if (SetEntriesInAcl(2, ea, NULL, &m_pacl) == ERROR_SUCCESS)
 		{
 			m_psd = LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
 			if (!InitializeSecurityDescriptor(m_psd, SECURITY_DESCRIPTOR_REVISION) ||
@@ -72,6 +102,35 @@ Pipe::~Pipe()
 	CloseHandle(m_hQuitEvent);
 }
 
+
+class NamedPipeClientImpersonator
+{
+public:
+	NamedPipeClientImpersonator(HANDLE hPipe) : m_hPipe(hPipe), m_bImpersonating(false) { Impersonate(); }
+	~NamedPipeClientImpersonator() { Revert(); }
+	void Impersonate()
+	{
+		if (!m_bImpersonating)
+		{
+			if (!ImpersonateNamedPipeClient(m_hPipe))
+				EventLog::Instance().ReportError(_T("ImpersonateNamedPipeClient"), GetLastError());
+			m_bImpersonating = true;
+		}
+	}
+	void Revert()
+	{
+		if (m_bImpersonating)
+		{
+			if (!RevertToSelf())
+				EventLog::Instance().ReportError(_T("RevertToSelf"), GetLastError());
+			m_bImpersonating = false;
+		}
+	}
+private:
+	HANDLE m_hPipe;
+	bool m_bImpersonating;
+};
+
 void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 {
 	PIPE_CLIENT_REQUEST pcr;
@@ -83,18 +142,17 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 			WCHAR szFile[MAX_PATH];
 			if (ReadString(hPipe, szFile, MAX_PATH))
 			{
-				// if szFile is on a network share, impersonate the caller so we can access that share
-				BOOL bImpersonating = FALSE;
-				if (PathIsUNC(szFile))
+				// impersonate the caller so we'll interpret his mapped drives correctly
+				NamedPipeClientImpersonator Impersonator(hPipe);
+				if (!MyPathIsNetworkPath(szFile))
 				{
-					bImpersonating = ImpersonateNamedPipeClient(hPipe);
+					Impersonator.Revert();
 				}
+
 				FOLDERINFO2 Size;
 				pCacheManager->GetInfoForFolder(szFile, Size);
-				if (bImpersonating)
-				{
-					RevertToSelf();
-				}
+				Impersonator.Revert();
+
 				WriteGetFolderSize(hPipe, Size);
 			}
 			break;
@@ -103,20 +161,19 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 			Strings strsBrowsed, strsUpdated;
 			if (ReadStringList(hPipe, strsBrowsed))
 			{
+				NamedPipeClientImpersonator Impersonator(hPipe);
 				for (Strings::iterator i = strsBrowsed.begin(); i != strsBrowsed.end(); i++)
 				{
-					BOOL bImpersonating = FALSE;
 					LPCTSTR pszFolderBrowsed = i->c_str();
-					if (PathIsUNC(pszFolderBrowsed))
+					Impersonator.Impersonate();
+					if (!MyPathIsNetworkPath(pszFolderBrowsed))
 					{
-						bImpersonating = ImpersonateNamedPipeClient(hPipe);
+						Impersonator.Revert();
 					}
 					pCacheManager->GetUpdateFolders(pszFolderBrowsed, strsUpdated);
-					if (bImpersonating)
-					{
-						RevertToSelf();
-					}
 				}
+				Impersonator.Revert();
+
 				WriteStringList(hPipe, strsUpdated);
 			}
 			break;

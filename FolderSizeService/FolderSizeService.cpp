@@ -42,7 +42,7 @@ Service::Service()
 	m_ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
 	m_ss.dwWin32ExitCode = NO_ERROR;
 	m_ss.dwCheckPoint = 0;
-	m_ss.dwWaitHint = 2000;
+	m_ss.dwWaitHint = 1000;
 
 	m_hSS = RegisterServiceCtrlHandlerEx(SERVICE_NAME, HandlerEx, this);
 	SetStatus();
@@ -229,42 +229,58 @@ void RemoveService()
 
 int	WINAPI WinMain(HINSTANCE hinst,	HINSTANCE hinstExePrev,	LPSTR pszCmdLine, int nCmdShow)
 {
-	int nArgc = __argc;
-	LPCTSTR *ppArgv = (LPCTSTR*)	CommandLineToArgvW(GetCommandLine(), &nArgc);
+	int nArgc;
+	LPWSTR* ppArgv = CommandLineToArgvW(GetCommandLine(), &nArgc);
+	if (ppArgv == NULL)
+	{
+		return GetLastError();
+	}
 
-	BOOL	fStartService =	(nArgc < 2), fDebug	= FALSE;
+	bool bStartService = true;
+	bool bDebug = false;
 
-	for (int i = 1; i < nArgc; i++) {
-		if ((ppArgv[i][0] ==	__TEXT('-')) ||	(ppArgv[i][0] == __TEXT('/'))) {
-			// Command line switch
-			if (lstrcmpi(&ppArgv[i][1], __TEXT("install")) == 0)	
+	for (int i = 1; i < nArgc; i++)
+	{
+		if ((ppArgv[i][0] == TEXT('-')) || (ppArgv[i][0] == TEXT('/')))
+		{
+			if (lstrcmpi(&ppArgv[i][1], TEXT("install")) == 0)
+			{
 				InstallService();
+				bStartService = false;
+			}
 
-			if (lstrcmpi(&ppArgv[i][1], __TEXT("remove")) == 0)
+			if (lstrcmpi(&ppArgv[i][1], TEXT("remove")) == 0)
+			{
 				RemoveService();
+				bStartService = false;
+			}
 
-			if (lstrcmpi(&ppArgv[i][1], __TEXT("debug")) == 0)
-				fDebug = TRUE;
+			if (lstrcmpi(&ppArgv[i][1], TEXT("debug")) == 0)
+			{
+				bDebug = true;
+				bStartService = false;
+			}
 		}
 	}
 
-	HeapFree(GetProcessHeap(), 0, (PVOID) ppArgv);
+	GlobalFree(ppArgv);
 
-	if (fDebug)
+	if (bDebug)
 	{
 		// Running as EXE not as service, just run the service for debugging
-		LPTSTR* p = fDebug ? (LPTSTR*)1 : (LPTSTR*)0;
+		LPTSTR* p = bDebug ? (LPTSTR*)1 : (LPTSTR*)0;
 		ServiceMain(0, p);
 	}
 
-	if (fStartService)
+	if (bStartService)
 	{
 		SERVICE_TABLE_ENTRY ServiceTable[] =
 		{
 			{ SERVICE_NAME, ServiceMain },
 			{ NULL,		  NULL }   // End of list
 		};
-		StartServiceCtrlDispatcher(ServiceTable);
+		if (!StartServiceCtrlDispatcher(ServiceTable))
+			return GetLastError();
 	}
 
 	return 0;

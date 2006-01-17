@@ -2,6 +2,7 @@
 #include "CacheManager.h"
 #include "Cache.h"
 #include "EventLog.h"
+#include "Utility.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 : m_hSS(hSS)
@@ -36,19 +37,29 @@ CacheManager::~CacheManager()
 // pszCacheId must point to a buffer to store the cache id
 // pszVolume will return a pointer into the cache id buffer specifying the volume
 // bIsUNC returns whether or not it's a network path
-bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume, bool& bIsUNC)
+bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume)
 {
-	bIsUNC = PathIsUNC(pszFolder) != 0;
-	if (bIsUNC)
+	if (MyPathIsNetworkPath(pszFolder))
 	{
 		// for a network path, the CacheId will be the username followed by the computer and share name
 		DWORD dwChars = MAX_PATH;
 		if (!GetUserName(pszCacheId, &dwChars))
 			return false;
-		
-		// the volume starts after the username
-		pszVolume = pszCacheId + dwChars - 1;
 
+		// insert a path separator after the username
+		pszCacheId[dwChars - 1] = _T('\\');
+
+		// and the volume will be after the separator
+		pszVolume = pszCacheId + dwChars;
+	}
+	else
+	{
+		// for a local path, the CacheId is just the root of the path
+		pszVolume = pszCacheId;
+	}
+
+	if (PathIsUNC(pszFolder))
+	{
 		// skip ahead 3 components
 		LPCTSTR pszEnd = pszFolder;
 		for (int i=0; i<3; i++)
@@ -63,11 +74,9 @@ bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume, bool& 
 	}
 	else
 	{
-		// for a local path, the CacheId is just the root of the path
-		lstrcpy(pszCacheId, pszFolder);
-		if (!PathStripToRoot(pszCacheId))
+		lstrcpy(pszVolume, pszFolder);
+		if (!PathStripToRoot(pszVolume))
 			return false;
-		pszVolume = pszCacheId;
 	}
 	return true;
 }
@@ -77,8 +86,7 @@ Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
 	// make a cache id which will be the volume of the folder, optionally preceded by a username
 	TCHAR szCacheId[MAX_CACHEID];
 	LPTSTR pszVolume;
-	bool bIsUNC;
-	if (!MakeCacheId(pszFolder, szCacheId, pszVolume, bIsUNC))
+	if (!MakeCacheId(pszFolder, szCacheId, pszVolume))
 		return NULL;
 
 	Cache* pCache = NULL;
@@ -86,31 +94,30 @@ Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
 	{
 		if (bCreate)
 		{
-			// if it's a drive that has a letter...
-			HANDLE hMonitor = INVALID_HANDLE_VALUE;
-//			if (PathGetDriveNumber(pszFolder) >= 0)
+			// if pszVolume is a network path, we should be impersonating the client right now
+			HANDLE hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+									NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
+			if (hMonitor != INVALID_HANDLE_VALUE)
 			{
-				hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
-										NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
-				if (hMonitor != INVALID_HANDLE_VALUE)
+				// make a new cache
+				pCache = new Cache(pszVolume, hMonitor, this);
+				m_Map.SetAt(szCacheId, pCache);
+
+				// register a device notification for a local cache
+				if (!MyPathIsNetworkPath(pszFolder) && m_hSS != NULL)
 				{
-					if (!bIsUNC && m_hSS != NULL)
+					DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
+					dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
+					dbh.dbch_handle = hMonitor;
+					HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+					if (hDevNotify == NULL)
 					{
-						DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
-						dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
-						dbh.dbch_handle = hMonitor;
-						HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
-						if (hDevNotify == NULL)
-						{
-							EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
-						}
-						else
-						{
-							m_RegisteredDeviceNotifications.insert(hDevNotify);
-						}
+						EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
 					}
-					pCache = new Cache(pszVolume, hMonitor, this);
-					m_Map.SetAt(szCacheId, pCache);
+					else
+					{
+						m_RegisteredDeviceNotifications.insert(hDevNotify);
+					}
 				}
 			}
 		}

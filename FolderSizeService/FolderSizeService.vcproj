@@ -150,6 +150,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\Utility.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -169,6 +172,9 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h">
+			</File>
+			<File
+				RelativePath=".\Utility.h">
 			</File>
 		</Filter>
 		<Filter
