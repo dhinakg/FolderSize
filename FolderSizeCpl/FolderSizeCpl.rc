@@ -72,7 +72,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "ÏÔÊ¾µµ°¸¼ÐÈÝÁ¿ÊÇÓÉ Brian Oraas ¹¹Ïë, Éè¼Æ¼°Íê³É.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "ÏÔÊ¾µµ°¸¼ÐÈÝÁ¿ÊÇ¸ú¾Ý GNU Public °æÈ¨±£»¤ÏÂ½øÐÐ·¢ÐÐ.",
                     IDC_STATIC,17,137,179,19
@@ -149,13 +149,13 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Åã¥ÜÀÉ®×§¨®e¶q¬O¥Ñ Brian Oraas ºc·Q, ³]­p¤Î§¹¦¨.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "Åã¥ÜÀÉ®×§¨®e¶q¬O¸ò¾Ú GNU Public ª©Åv«OÅ@¤U¶i¦æµo¦æ.",
                     IDC_STATIC,17,137,179,19
     GROUPBOX        "ª©Åv",IDC_STATIC,7,123,198,58
-    LTEXT           "ÂI¤@¤U³o¸Ì¤F¸Ñ§ó¦h¦³Ãö GNU ªº¸ê°T.",IDC_HYPER_GNU,17,162,101,
-                    8,WS_TABSTOP
+    LTEXT           "ÂI¤@¤U³o¸Ì¤F¸Ñ§ó¦h¦³Ãö GNU ªº¸ê°T.",IDC_HYPER_GNU,17,
+                    162,101,8,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
@@ -195,8 +195,8 @@ BEGIN
                     IDC_STATIC,64,55,141,21
     LTEXT           "¼È°±¥\¯à¥i°±¤î§ó·s¤Î°O¿ý, ¥i©ó¦³»Ý­n®É¥[§ÖµwºÐ¹B§@³t«×.",
                     IDC_STATIC,64,82,141,23
-    LTEXT           "Ä~Äò¥\¯à¥iÄ~ÄòÀH®É§ó·s¨Ã°O¿ý©Ò¦³ÀÉ®×§¨®e¶q¸ê®Æ.",IDC_STATIC,64,106,
-                    141,24
+    LTEXT           "Ä~Äò¥\¯à¥iÄ~ÄòÀH®É§ó·s¨Ã°O¿ý©Ò¦³ÀÉ®×§¨®e¶q¸ê®Æ.",
+                    IDC_STATIC,64,106,141,24
 END
 
 
@@ -339,7 +339,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size für Windows war erdacht, geplant und umgesetzt von Brian Oraas.",
                     IDC_STATIC,7,38,96,29
-    LTEXT           "Folder Size für Windows 2.1",IDC_TITLE,7,7,189,22,
+    LTEXT           "Folder Size für Windows 2.2",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
     LTEXT           "Folder Size für Windows wird unter der GNU Public License veröffentlicht.",
                     IDC_STATIC,17,137,179,19
@@ -511,7 +511,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size for Windows was conceived, architected, and implemented by Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.1",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "Folder Size for Windows is released under the GNU Public License agreement.",
                     IDC_STATIC,17,137,179,19
@@ -654,7 +654,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size pour Windows a été conçu et développé par Brian Oraas.",
                     IDC_STATIC,7,38,96,29
-    LTEXT           "Folder Size pour Windows 2.1",IDC_TITLE,7,7,189,22,
+    LTEXT           "Folder Size pour Windows 2.2",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
     LTEXT           "Folder Size pour Windows est distribué selon l'accord de la Licence Publique GNU.",
                     IDC_STATIC,17,137,179,19
@@ -764,7 +764,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Dimensione Cartelle per Windows è stato concepito, progettato e implementato da Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Dimensione Cartelle per Windows 2.1",IDC_TITLE,7,7,198,
+    LTEXT           "Dimensione Cartelle per Windows 2.2",IDC_TITLE,7,7,198,
                     22,WS_TABSTOP
     LTEXT           "Dimensione Cartelle per Windows è rilasciato attraverso gli accordi della Licenza Pubblica GNU.",
                     IDC_STATIC,17,137,179,19
