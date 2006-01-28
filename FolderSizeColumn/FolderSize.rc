@@ -237,8 +237,8 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 
 STRINGTABLE 
 BEGIN
-    IDS_COLUMN_TITLE        "Taille des Dossiers"
-    IDS_COLUMN_DESCRIPTION  "Taille des Dossiers"
+    IDS_COLUMN_TITLE        "Taille de Dossier"
+    IDS_COLUMN_DESCRIPTION  "Taille de Dossier"
     IDS_COLUMN_FILES_TITLE  "Nombre de Fichiers"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Afficher le nombre totale de fichiers dans les dossiers."
