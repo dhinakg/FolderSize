@@ -14,7 +14,18 @@ ShellUpdate::ShellUpdate()
 ShellUpdate::~ShellUpdate()
 {
 	SetEvent(m_hQuitEvent);
-	WaitForSingleObject(m_hThread, INFINITE);
+	
+	// This destructor is called from DllCanUnloadNow, on a thread created by Explorer,
+	// so it may be used to route COM messages, so pump all messages.
+	while (MsgWaitForMultipleObjects(1, &m_hThread, FALSE, INFINITE, QS_ALLINPUT) == WAIT_OBJECT_0 + 1)
+	{
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			DispatchMessage(&msg);
+		}
+	}
+
 	CloseHandle(m_hQuitEvent);
 	CloseHandle(m_hThread);
 }
@@ -40,13 +51,9 @@ DWORD ShellUpdate::ThreadProc(LPVOID lpParameter)
 		{
 			DWORD dwWait = WaitForSingleObject(pShellUpdate->m_hQuitEvent, SHELL_UPDATE_INTERVAL);
 			if (dwWait == WAIT_TIMEOUT)
-			{
 				pShellUpdate->Update();
-			}
 			else
-			{
 				break;
-			}
 		}
 		ReleaseMutex(hMutex);
 	}
