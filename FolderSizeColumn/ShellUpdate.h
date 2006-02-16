@@ -1,7 +1,8 @@
 #pragma once
 
-// update columns once every two and a half seconds
-#define SHELL_UPDATE_INTERVAL 2500
+// update columns once every two seconds
+// i was using 2.5 seconds... seemed just a bit long
+#define SHELL_UPDATE_INTERVAL 2000
 
 class ShellUpdate
 {
