@@ -24,6 +24,9 @@ Monitor::~Monitor()
 	CloseHandle(m_hMonitorThread);
 	CloseHandle(m_Overlapped.hEvent);
 	CloseHandle(m_hQuitEvent);
+
+	// the Monitor owns the directory handle it's passed, so close it here
+	CloseHandle(m_hDirectory);
 }
 
 HANDLE Monitor::GetFileHandle()
