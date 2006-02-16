@@ -18,7 +18,6 @@ CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, LPCTSTR 
 	m_bNeedDisplayUpdate(true),
 	m_pManager(pManager)
 {
-	RegisterStatusWithOptions();
 	AddToParentsChildList();
 	AddToParentsChildCounters(false);
 	lstrcpyn(m_szPath, pszPath, MAX_PATH);
@@ -45,7 +44,6 @@ CacheFolder::~CacheFolder()
 
 	RemoveFromParentsChildCounters(true);
 	RemoveFromParentsChildList();
-	UnregisterStatusWithOptions();
 
 	// say goodbye to the world
 	m_pManager->Unregister(this);
@@ -95,11 +93,12 @@ void CacheFolder::MakeLastChild()
 			ppFolder = &(*ppFolder)->m_pNextSibling;
 		}
 		*ppFolder = m_pNextSibling;
-		// insert this node
+		// find the end of the list
 		while (*ppFolder != NULL)
 		{
 			ppFolder = &(*ppFolder)->m_pNextSibling;
 		}
+		// put this node at the end of the list
 		*ppFolder = this;
 		m_pNextSibling = NULL;
 	}
@@ -183,11 +182,9 @@ void CacheFolder::SetStatus(STATUS eStatus)
 	if (eStatus != m_eStatus)
 	{
 		RemoveFromParentsChildCounters(false);
-		UnregisterStatusWithOptions();
 
 		m_eStatus = eStatus;
 
-		RegisterStatusWithOptions();
 		AddToParentsChildCounters(false);
 	}
 }
@@ -307,40 +304,4 @@ void CacheFolder::RemoveFromParentsChildCounters(bool bIncludeSubtree)
 			}
 		}
 	}
-}
-
-void CacheFolder::RegisterStatusWithOptions()
-{
-/*
-	switch (m_eStatus)
-	{
-	case FS_EMPTY:
-		m_pManager->GetOptions()->IncrementFolderCounter(Options::FC_UNSCANNED);
-		break;
-	case FS_DIRTY:
-		m_pManager->GetOptions()->IncrementFolderCounter(Options::FC_DIRTY);
-		break;
-	case FS_CLEAN:
-		m_pManager->GetOptions()->IncrementFolderCounter(Options::FC_CLEAN);
-		break;
-	}
-*/
-}
-
-void CacheFolder::UnregisterStatusWithOptions()
-{
-/*
-	switch (m_eStatus)
-	{
-	case FS_EMPTY:
-		m_pManager->GetOptions()->DecrementFolderCounter(Options::FC_UNSCANNED);
-		break;
-	case FS_DIRTY:
-		m_pManager->GetOptions()->DecrementFolderCounter(Options::FC_DIRTY);
-		break;
-	case FS_CLEAN:
-		m_pManager->GetOptions()->DecrementFolderCounter(Options::FC_CLEAN);
-		break;
-	}
-*/
 }

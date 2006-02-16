@@ -50,8 +50,6 @@ protected:
 	void RemoveFromParentsChildList();
 	void AddToParentsChildCounters(bool bIncludeSubtree);
 	void RemoveFromParentsChildCounters(bool bIncludeSubtree);
-	void RegisterStatusWithOptions();
-	void UnregisterStatusWithOptions();
 
 	// folders organize themselves into a tree
 	CacheFolder* m_pParent;
