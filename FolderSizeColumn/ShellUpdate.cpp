@@ -148,7 +148,8 @@ bool GetShellWindows(IWebBrowser2**& pWebBrowsers, long& nCount)
 			{
 				V_I4(&varItem) = i;
 				IDispatch* pDispatch;
-				if (SUCCEEDED(psw->Item(varItem, &pDispatch)))
+				// Item can return S_OK even if there is no IDispatch
+				if (SUCCEEDED(psw->Item(varItem, &pDispatch)) && pDispatch)
 				{
 					IWebBrowser2* pWebBrowser;
 					if (SUCCEEDED(pDispatch->QueryInterface(IID_IWebBrowser2, (void**)&pWebBrowser)))
