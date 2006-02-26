@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Path.h"
 #include "..\Pipe\FolderInfo.h"
 
 class Scanner;
@@ -19,7 +20,7 @@ public:
 
 	// get info
 	const FOLDERINFO& GetTotalSize() const;
-	LPCTSTR GetPath() const;
+	const Path& GetPath() const;
 	STATUS GetStatus() const;
 	UINT GetDirtyChildren() const;
 	UINT GetEmptyChildren() const;
@@ -28,7 +29,7 @@ public:
 	void Dirty();
 	void Clean(const FOLDERINFO& nSize);
 
-	void Rename(LPCTSTR pszNewName);
+	void Rename(const Path& pathNew);
 
 	// special actions
 	void DisplayUpdated();
@@ -39,9 +40,9 @@ protected:
 
 	// only the FolderManager friend can create Folder objects
 	friend class FolderManager;
-	CacheFolder(FolderManager* pManager, CacheFolder* pParent, LPCTSTR pszPath);
+	CacheFolder(FolderManager* pManager, CacheFolder* pParent, const Path& path);
 
-	void InternalRename(LPCTSTR pszNewName);
+	void InternalRename(const Path& pathNew);
 
 	// helper functions
 	void SetStatus(STATUS eStatus);
@@ -81,5 +82,5 @@ protected:
 	FolderManager* m_pManager;
 
 	// full path of the CacheFolder
-	TCHAR m_szPath[MAX_PATH];
+	Path m_path;
 };

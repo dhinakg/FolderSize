@@ -30,9 +30,9 @@ enum PIPE_CLIENT_REQUEST
 
 bool ReadRequest(HANDLE h, PIPE_CLIENT_REQUEST& pcr);
 bool WriteRequest(HANDLE h, PIPE_CLIENT_REQUEST prc);
-bool ReadString(HANDLE h, LPWSTR psz, UINT cch);
-bool WriteString(HANDLE h, LPCWSTR psz);
+bool ReadString(HANDLE h, std::wstring& str);
+bool WriteString(HANDLE h, const std::wstring& str);
 bool ReadStringList(HANDLE h, Strings& strs);
-bool WriteStringList(HANDLE h, Strings strs);
+bool WriteStringList(HANDLE h, const Strings& strs);
 bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size);
 bool WriteGetFolderSize(HANDLE h, const FOLDERINFO2& Size);

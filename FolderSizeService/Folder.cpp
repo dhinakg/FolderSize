@@ -4,7 +4,7 @@
 #include "FolderManager.h"
 
 
-CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, LPCTSTR pszPath)
+CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, const Path& path)
 :
 	m_pParent(pParent),
 	m_pChild(NULL),
@@ -16,11 +16,11 @@ CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, LPCTSTR 
 	m_bScanning(false),
 	m_bIsScanValid(false),
 	m_bNeedDisplayUpdate(true),
-	m_pManager(pManager)
+	m_pManager(pManager),
+	m_path(path)
 {
 	AddToParentsChildList();
 	AddToParentsChildCounters(false);
-	lstrcpyn(m_szPath, pszPath, MAX_PATH);
 
 	// say hello to the world
 	m_pManager->Register(this);
@@ -54,9 +54,9 @@ const FOLDERINFO& CacheFolder::GetTotalSize() const
 	return m_nTotalSize;
 }
 
-LPCTSTR CacheFolder::GetPath() const
+const Path& CacheFolder::GetPath() const
 {
-	return m_szPath;
+	return m_path;
 }
 
 CacheFolder::STATUS CacheFolder::GetStatus() const
@@ -171,7 +171,7 @@ void CacheFolder::GetChildrenToDisplay(Strings& strsFolders)
 	{
 		if (pChild->m_bNeedDisplayUpdate)
 		{
-			strsFolders.insert(pChild->m_szPath);
+			strsFolders.insert(pChild->m_path);
 			pChild->m_bNeedDisplayUpdate = false;
 		}
 	}
@@ -189,41 +189,36 @@ void CacheFolder::SetStatus(STATUS eStatus)
 	}
 }
 
-void CacheFolder::Rename(LPCTSTR pszNewName)
+void CacheFolder::Rename(const Path& pathNew)
 {
-	TCHAR szNewParent[MAX_PATH];
-	_tcscpy(szNewParent, pszNewName);
-	PathRemoveFileSpec(szNewParent);
-
-	size_t nParentLength = PathFindFileName(m_szPath) - m_szPath;
-	if (_tcsncmp(m_szPath, pszNewName, nParentLength) != 0)
+	if (m_path.GetParent() != pathNew.GetParent())
 	{
 		RemoveFromParentsChildCounters(true);
 		RemoveFromParentsChildList();
-		m_pParent = m_pManager->GetFolderForPath(szNewParent, true);
+
+		m_pParent = m_pManager->GetFolderForPath(pathNew.GetParent(), true);
+
 		AddToParentsChildList();
 		AddToParentsChildCounters(true);
 	}
 	
-	InternalRename(pszNewName);
+	InternalRename(pathNew);
 }
 
-void CacheFolder::InternalRename(LPCTSTR pszNewName)
+void CacheFolder::InternalRename(const Path& pathNew)
 {
 	// rename all the children
 	for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
 	{
-		TCHAR szChildPath[MAX_PATH];
-		_tcscpy(szChildPath, pszNewName);
-		LPCTSTR pszChildName = pChild->GetPath() + _tcslen(m_szPath);
-		PathAppend(szChildPath, pszChildName);
-		pChild->InternalRename(szChildPath);
+		Path pathChild = pathNew;
+		pathChild += pChild->GetPath().c_str() + m_path.length();
+		pChild->InternalRename(pathChild);
 	}
 
 	// update the lookup table in the manager
-	m_pManager->ChangeFolderPath(this, pszNewName);
+	m_pManager->ChangeFolderPath(this, pathNew);
 
-	_tcscpy(m_szPath, pszNewName);
+	m_path = pathNew;
 }
 
 void CacheFolder::AddToParentsChildList()

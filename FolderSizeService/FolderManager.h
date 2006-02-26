@@ -1,4 +1,5 @@
 #pragma once
+#include "Path.h"
 
 class CacheFolder;
 
@@ -6,35 +7,35 @@ class CacheFolder;
 class FolderManager
 {
 public:
-	FolderManager(LPCTSTR pszVolume);
+	FolderManager(const Path& pathVolume);
 	~FolderManager();
 
-	CacheFolder* GetFolderForPath(LPCTSTR pszPath, bool bCreate);
+	CacheFolder* GetFolderForPath(const Path& path, bool bCreate);
 	CacheFolder* GetNextScanFolder();
 
 	// these are for the folder objects to register and unregister themselves with the manager
 	void Register(CacheFolder* pFolder);
-	void ChangeFolderPath(CacheFolder* pFolder, LPCTSTR pszNewPath);
+	void ChangeFolderPath(CacheFolder* pFolder, const Path& pathNew);
 	void Unregister(CacheFolder* pFolder);
 	void UserRequested(CacheFolder* pFolder);
 
 protected:
 	// internal function
-	CacheFolder* CreateNewFolder(LPCTSTR pszPath);
+	CacheFolder* CreateNewFolder(const Path& path);
 
-	class CStringHashTraits : public CElementTraits<CString>
+	class PathHashTraits : public CElementTraits<Path>
 	{
 	public:
-		static ULONG Hash(const CString& str)
+		static ULONG Hash(const Path& path)
 		{
 			ULONG nHash = 0;
-			for (int i=0; i<str.GetLength(); i++)
-				nHash = (nHash<<5) + nHash + str[i];
+			for (size_t i=0; i<path.length(); i++)
+				nHash = (nHash<<5) + nHash + path[i];
 			return nHash;
 		}
 	};
 
-	typedef CAtlMap<CString, CacheFolder*, CStringHashTraits> MapType;
+	typedef CAtlMap<Path, CacheFolder*, PathHashTraits> MapType;
 	MapType m_Map;
 	CacheFolder* m_pFolderRoot;
 

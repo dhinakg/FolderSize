@@ -3,13 +3,13 @@
 
 #define PERFORMANCE_THRESHOLD 0.7
 
-PerformanceMonitor::PerformanceMonitor(LPCTSTR pszVolume) :
+PerformanceMonitor::PerformanceMonitor(const Path& pathVolume) :
 	m_bDiskQueueTooLong(false), m_hQuitEvent(NULL), m_hThread(NULL)
 {
-	if (PathGetDriveNumber(pszVolume) >= 0)
+	if (PathGetDriveNumber(pathVolume.c_str()) >= 0)
 	{
 		// create the name of the counter to monitor
-		wsprintf(m_szCounter, _T("\\LogicalDisk(%c:)\\Avg. Disk Queue Length"), pszVolume[0]);
+		wsprintf(m_szCounter, _T("\\LogicalDisk(%c:)\\Avg. Disk Queue Length"), pathVolume[0]);
 
 		m_hQuitEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 		DWORD dwThreadId;

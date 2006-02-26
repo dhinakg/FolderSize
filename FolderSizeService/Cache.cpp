@@ -27,17 +27,16 @@ static void WarningEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection, LP
 	}
 }
 
-Cache::Cache(LPCTSTR pszVolume, HANDLE hMonitor, ICacheCallback* pCallback) :
-	m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL), m_pCallback(pCallback)
+Cache::Cache(const Path& pathVolume, HANDLE hMonitor, ICacheCallback* pCallback) :
+	m_pathVolume(pathVolume), m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL), m_pCallback(pCallback)
 {
-	lstrcpy(m_szVolume, pszVolume);
 	InitializeCriticalSection(&m_cs);
 	QueryPerformanceFrequency(&g_nPerformanceFrequency);
 
-	m_pFolderManager = new FolderManager(m_szVolume);
-	m_pScanner = new Scanner(m_szVolume, this);
+	m_pFolderManager = new FolderManager(m_pathVolume);
+	m_pScanner = new Scanner(m_pathVolume, this);
 	if (hMonitor != INVALID_HANDLE_VALUE)
-		m_pMonitor = new Monitor(m_szVolume, hMonitor, this);
+		m_pMonitor = new Monitor(m_pathVolume, hMonitor, this);
 }
 
 Cache::~Cache()
@@ -53,11 +52,11 @@ Cache::~Cache()
 	DeleteCriticalSection(&m_cs);
 }
 
-void Cache::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
+void Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 {
 	WarningEnterCriticalSection(&m_cs, _T("GetInfoForFolder"));
 
-	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, true);
+	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, true);
 
 	DoSyncScans(pFolder);
 
@@ -82,24 +81,24 @@ void Cache::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 	LeaveCriticalSection(&m_cs);
 
 	// if we're requesting info on unclean folders, ensure scanner is awake
-	if (nSize.giff != GIFF_CLEAN)
+	if (nSize.giff != GIFF_CLEAN && m_bScannerEnabled)
 		m_pScanner->Wakeup();
 }
 
 // The scanner is currently scanning the PARENT of pszFolder, and it
 // found this subfolder.
-void Cache::FoundFolder(LPCTSTR pszFolder)
+void Cache::FoundFolder(const Path& path)
 {
 	WarningEnterCriticalSection(&m_cs, _T("FoundFolder"));
-	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, true);
+	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, true);
 	LeaveCriticalSection(&m_cs);
 }
 
-void Cache::GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize)
+void Cache::GotScanResult(const Path& path, const FOLDERINFO& nSize)
 {
 	WarningEnterCriticalSection(&m_cs,  _T("GotScanResult"));
 	// clean the scanned folder
-	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, false);
+	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, false);
 	if (pFolder != NULL)
 	{
 		pFolder->Clean(nSize);
@@ -107,7 +106,7 @@ void Cache::GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize)
 	LeaveCriticalSection(&m_cs);
 }
 
-bool Cache::GetNextScanFolder(LPTSTR pszFolder)
+bool Cache::GetNextScanFolder(Path& path)
 {
 	bool bRet = false;
 	if (m_bScannerEnabled)
@@ -117,7 +116,7 @@ bool Cache::GetNextScanFolder(LPTSTR pszFolder)
 		CacheFolder* pFolder = m_pFolderManager->GetNextScanFolder();
 		if (pFolder != NULL)
 		{
-			_tcscpy(pszFolder, pFolder->GetPath());
+			path = pFolder->GetPath();
 			bRet = true;
 		}
 		LeaveCriticalSection(&m_cs);
@@ -125,21 +124,18 @@ bool Cache::GetNextScanFolder(LPTSTR pszFolder)
 	return bRet;
 }
 
-void Cache::PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe)
+void Cache::PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew)
 {
 	// i'd rather not call PathIsDirectory(), since the disk could be out of sync
 	// with the received file system notifications
 
-	TCHAR szFolder[MAX_PATH];
 	CacheFolder* pFolder = NULL;
 
 	switch (fe)
 	{
 	case FE_ADDED:
-		_tcscpy(szFolder, pszPath);
-		PathRemoveFileSpec(szFolder);
 		WarningEnterCriticalSection(&m_cs, _T("PathChanged FE_ADDED"));
-		pFolder = m_pFolderManager->GetFolderForPath(szFolder, false);
+		pFolder = m_pFolderManager->GetFolderForPath(path.GetParent(), false);
 		if (pFolder != NULL)
 		{
 			pFolder->Dirty();
@@ -148,11 +144,8 @@ void Cache::PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe)
 		break;
 
 	case FE_CHANGED:
-		assert(!PathIsDirectory(pszPath));
-		_tcscpy(szFolder, pszPath);
-		PathRemoveFileSpec(szFolder);
 		WarningEnterCriticalSection(&m_cs, _T("PathChanged FE_CHANGED"));
-		pFolder = m_pFolderManager->GetFolderForPath(szFolder, false);
+		pFolder = m_pFolderManager->GetFolderForPath(path.GetParent(), false);
 		if (pFolder != NULL)
 		{
 			pFolder->Dirty();
@@ -162,22 +155,20 @@ void Cache::PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe)
 
 	case FE_RENAMED:
 		WarningEnterCriticalSection(&m_cs, _T("PathChanged FE_RENAMED"));
-		pFolder = m_pFolderManager->GetFolderForPath(pszPath, false);
+		pFolder = m_pFolderManager->GetFolderForPath(path, false);
 		if (pFolder != NULL)
 		{
-			pFolder->Rename(pszNewPath);
+			pFolder->Rename(pathNew);
 		}
 		LeaveCriticalSection(&m_cs);
 		break;
 
 	case FE_REMOVED:
 		WarningEnterCriticalSection(&m_cs, _T("PathChanged FE_REMOVED"));
-		pFolder = m_pFolderManager->GetFolderForPath(pszPath, false);
+		pFolder = m_pFolderManager->GetFolderForPath(path, false);
 		if (pFolder == NULL)
 		{
-			_tcscpy(szFolder, pszPath);
-			PathRemoveFileSpec(szFolder);
-			pFolder = m_pFolderManager->GetFolderForPath(szFolder, false);
+			pFolder = m_pFolderManager->GetFolderForPath(path.GetParent(), false);
 			if (pFolder != NULL)
 			{
 				pFolder->Dirty();
@@ -192,12 +183,12 @@ void Cache::PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe)
 	}
 }
 
-void Cache::GetUpdateFoldersForFolder(LPCTSTR pszFolder, Strings& strsFoldersToUpdate)
+void Cache::GetUpdateFoldersForFolder(const Path& path, Strings& strsFoldersToUpdate)
 {
 	WarningEnterCriticalSection(&m_cs, _T("GetUpdateFoldersForFolder"));
 	if (m_pFolderManager != NULL)
 	{
-		CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(pszFolder, false);
+		CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, false);
 		if (pFolder != NULL)
 		{
 			pFolder->GetChildrenToDisplay(strsFoldersToUpdate);
@@ -216,6 +207,8 @@ HANDLE Cache::GetMonitoringHandle()
 void Cache::EnableScanner(bool bEnable)
 {
 	m_bScannerEnabled = bEnable;
+	if (m_bScannerEnabled)
+		m_pScanner->Wakeup();
 }
 
 #define SYNC_SCAN_TIME 200

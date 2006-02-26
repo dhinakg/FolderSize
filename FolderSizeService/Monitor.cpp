@@ -2,12 +2,10 @@
 #include "Monitor.h"
 
 
-Monitor::Monitor(LPCTSTR pszVolume, HANDLE hFile, IMonitorCallback* pCallback)
-: m_hDirectory(hFile), m_pCallback(pCallback), m_hMonitorThread(NULL)
+Monitor::Monitor(const Path& pathVolume, HANDLE hFile, IMonitorCallback* pCallback)
+: m_hDirectory(hFile), m_pCallback(pCallback), m_hMonitorThread(NULL), m_pathVolume(pathVolume)
 {
 	ZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
-
-	lstrcpy(m_szVolume, pszVolume);
 
 	m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -41,11 +39,14 @@ DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)
 	return 0;
 }
 
+// the path name that crashes
+//"Documents and Settings\Brio1\Local Settings\Application Data\Microsoft\Messenger\brio1337@hotmail.com\SharingMetadata\jason.hanfordsmith@thinkmbs.com\DfsrPrivate\Staging\ContentSet{74C17ACE-94CA-C14B-63A0-4441B4EAF5F0}-{00000000-0000-0000-0000-000000000000}\01\18-{74C17ACE-94CA-C14B-63A0-4441B4EAF5F0}-v1-{04978FC0-7034-4522-A17F-B03EF94D4874}-v18-Downloading.frx"
+
 void Monitor::MonitorThread()
 {
 	// this thread will just keep waiting for directory change events,
 	// and respond to them by dirtying the cache
-	TCHAR szRenameBuffer[MAX_PATH] = _T("");
+	Path pathRename;
 
 	while (true)
 	{
@@ -74,46 +75,35 @@ void Monitor::MonitorThread()
 		PFILE_NOTIFY_INFORMATION pfni = (PFILE_NOTIFY_INFORMATION)m_Buffer;
 		while (true)
 		{
-			// NULL-terminated version of the notify info filename
-			TCHAR szNotifyFile[MAX_PATH];
-			lstrcpyn(szNotifyFile, pfni->FileName, pfni->FileNameLength/sizeof(WCHAR) + 1);
+			Path pathNotifyFile(pfni->FileName, pfni->FileNameLength/sizeof(WCHAR));
 
-			// full path
-			TCHAR szFile[MAX_PATH];
-			_tcscpy(szFile, m_szVolume);
-			PathAppend(szFile, szNotifyFile);
+			Path pathFile = m_pathVolume + pathNotifyFile;
 
 			// can't do PathIsDirectory on this because OLD_NAMEs don't exist anymore!
 			if (pfni->Action == FILE_ACTION_ADDED)
 			{
-				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_ADDED);
+				m_pCallback->PathChanged(IMonitorCallback::FE_ADDED, pathFile, Path());
 			}
 			else if (pfni->Action == FILE_ACTION_MODIFIED)
 			{
-				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_CHANGED);
+				m_pCallback->PathChanged(IMonitorCallback::FE_CHANGED, pathFile, Path());
 			}
 			else if (pfni->Action == FILE_ACTION_RENAMED_OLD_NAME)
 			{
-				if (szRenameBuffer[0] == _T('\0'))
-				{
-					_tcscpy(szRenameBuffer, szFile);
-				}
-				else
-				{
-					assert(false);
-				}
+				assert(pathRename.empty());
+				pathRename = pathFile;
 			}
 			else if (pfni->Action == FILE_ACTION_RENAMED_NEW_NAME)
 			{
 				// there better be an old name stored
-				assert(szRenameBuffer[0] != _T('\0'));
-				m_pCallback->PathChanged(szRenameBuffer, szFile, IMonitorCallback::FE_RENAMED);
+				assert(!pathRename.empty());
+				m_pCallback->PathChanged(IMonitorCallback::FE_RENAMED, pathRename, pathFile);
 				// empty the buffer - we're ready for the next FILE_ACTION_RENAMED_OLD_NAME now
-				szRenameBuffer[0] = _T('\0');
+				pathRename.clear();
 			}
 			else if (pfni->Action == FILE_ACTION_REMOVED)
 			{
-				m_pCallback->PathChanged(szFile, NULL, IMonitorCallback::FE_REMOVED);
+				m_pCallback->PathChanged(IMonitorCallback::FE_REMOVED, pathFile, Path());
 			}
 
 			if (pfni->NextEntryOffset == 0)

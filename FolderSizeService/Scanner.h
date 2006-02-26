@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Path.h"
 #include "..\Pipe\FolderInfo.h"
 
 class PerformanceMonitor;
@@ -7,24 +8,24 @@ class PerformanceMonitor;
 class IScannerCallback
 {
 public:
-	virtual void FoundFolder(LPCTSTR pszFolder) = 0;
-	virtual void GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize) = 0;
-	virtual bool GetNextScanFolder(LPTSTR pszFolder) = 0;
+	virtual void FoundFolder(const Path& path) = 0;
+	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize) = 0;
+	virtual bool GetNextScanFolder(Path& path) = 0;
 };
 
 class Scanner
 {
 public:
-	Scanner(LPCTSTR pszVolume, IScannerCallback* pCallback);
+	Scanner(const Path& pathVolume, IScannerCallback* pCallback);
 	~Scanner();
 
-	void ScanFolder(LPCTSTR pszFolder);
+	void ScanFolder(const Path& path);
 	void Wakeup();
 
 protected:
 	static DWORD WINAPI ThreadProc(LPVOID lpParameter);
 	void ThreadProc();
-	bool GetAnItemFromTheQueue(LPTSTR pszFolder);
+	bool GetAnItemFromTheQueue(Path& path);
 
 	PerformanceMonitor* m_pPerformanceMonitor;
 	IScannerCallback* m_pCallback;

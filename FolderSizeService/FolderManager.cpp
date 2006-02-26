@@ -3,10 +3,10 @@
 #include "Folder.h"
 
 
-FolderManager::FolderManager(LPCTSTR pszVolume)
+FolderManager::FolderManager(const Path& pathVolume)
 {
-	m_pFolderRoot = new CacheFolder(this, NULL, pszVolume);
-	m_Map.SetAt(pszVolume, m_pFolderRoot);
+	m_pFolderRoot = new CacheFolder(this, NULL, pathVolume);
+	m_Map.SetAt(pathVolume, m_pFolderRoot);
 }
 
 FolderManager::~FolderManager()
@@ -14,14 +14,14 @@ FolderManager::~FolderManager()
 	delete m_pFolderRoot;
 }
 
-CacheFolder* FolderManager::GetFolderForPath(LPCTSTR pszPath, bool bCreate)
+CacheFolder* FolderManager::GetFolderForPath(const Path& path, bool bCreate)
 {
 	CacheFolder* pFolder = NULL;
-	if (!m_Map.Lookup(pszPath, pFolder))
+	if (!m_Map.Lookup(path, pFolder))
 	{
 		if (bCreate)
 		{
-			pFolder = CreateNewFolder(pszPath);
+			pFolder = CreateNewFolder(path);
 		}
 	}
 	return pFolder;
@@ -47,10 +47,10 @@ void FolderManager::Register(CacheFolder* pFolder)
 	m_Map.SetAt(pFolder->GetPath(), pFolder);
 }
 
-void FolderManager::ChangeFolderPath(CacheFolder* pFolder, LPCTSTR pszNewPath)
+void FolderManager::ChangeFolderPath(CacheFolder* pFolder, const Path& pathNew)
 {
 	m_Map.RemoveKey(pFolder->GetPath());
-	m_Map.SetAt(pszNewPath, pFolder);
+	m_Map.SetAt(pathNew, pFolder);
 }
 
 void FolderManager::Unregister(CacheFolder* pFolder)
@@ -102,19 +102,18 @@ void FolderManager::UserRequested(CacheFolder* pFolder)
 	}
 }
 
-CacheFolder* FolderManager::CreateNewFolder(LPCTSTR pszPath)
+CacheFolder* FolderManager::CreateNewFolder(const Path& path)
 {
 	// create parent nodes as necessary
-	TCHAR szParentPath[MAX_PATH];
-	_tcscpy(szParentPath, pszPath);
-	PathRemoveFileSpec(szParentPath);
+	Path pathParent = path.GetParent();
+	assert (!pathParent.empty());
 	CacheFolder* pParentFolder;
-	if (!m_Map.Lookup(szParentPath, pParentFolder))
+	if (!m_Map.Lookup(pathParent, pParentFolder))
 	{
-		pParentFolder = CreateNewFolder(szParentPath);
+		pParentFolder = CreateNewFolder(pathParent);
 	}
 	// link it into the tree and initialize the fields
-	CacheFolder* pFolder = new CacheFolder(this, pParentFolder, pszPath);
+	CacheFolder* pFolder = new CacheFolder(this, pParentFolder, path);
 	
 	return pFolder;
 }

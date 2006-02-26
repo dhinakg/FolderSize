@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Path.h"
+
 class IMonitorCallback
 {
 public:
@@ -11,14 +13,14 @@ public:
 		FE_RENAMED
 	};
 
-	virtual void PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe) = 0;
+	virtual void PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew) = 0;
 	virtual void DirectoryError(DWORD dwError) = 0;
 };
 
 class Monitor
 {
 public:
-	Monitor(LPCTSTR pszVolume, HANDLE hFile, IMonitorCallback* pCallback);
+	Monitor(const Path& pathVolume, HANDLE hFile, IMonitorCallback* pCallback);
 	~Monitor();
 
 	HANDLE GetFileHandle();
@@ -34,6 +36,6 @@ protected:
 	OVERLAPPED m_Overlapped;
 	BYTE m_Buffer[4096];
 
-	TCHAR m_szVolume[MAX_PATH];
+	Path m_pathVolume;
 	IMonitorCallback* m_pCallback;
 };

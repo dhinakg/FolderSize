@@ -2,7 +2,6 @@
 #include "Pipe.h"
 #include "CacheManager.h"
 #include "EventLog.h"
-#include "Utility.h"
 
 class SecurityDescriptor
 {
@@ -139,44 +138,47 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 		switch (pcr)
 		{
 		case PCR_GETFOLDERSIZE:
-			WCHAR szFile[MAX_PATH];
-			if (ReadString(hPipe, szFile, MAX_PATH))
 			{
-				// impersonate the caller so we'll interpret his mapped drives correctly
-				NamedPipeClientImpersonator Impersonator(hPipe);
-				if (!MyPathIsNetworkPath(szFile))
+				Path path;
+				if (ReadString(hPipe, path))
 				{
+					// impersonate the caller so we'll interpret his mapped drives correctly
+					NamedPipeClientImpersonator Impersonator(hPipe);
+
+					if (!path.IsNetwork())
+						Impersonator.Revert();
+
+					FOLDERINFO2 Size;
+					pCacheManager->GetInfoForFolder(path, Size);
 					Impersonator.Revert();
+
+					WriteGetFolderSize(hPipe, Size);
 				}
-
-				FOLDERINFO2 Size;
-				pCacheManager->GetInfoForFolder(szFile, Size);
-				Impersonator.Revert();
-
-				WriteGetFolderSize(hPipe, Size);
+				break;
 			}
-			break;
 
 		case PCR_GETUPDATEDFOLDERS:
-			Strings strsBrowsed, strsUpdated;
-			if (ReadStringList(hPipe, strsBrowsed))
 			{
-				NamedPipeClientImpersonator Impersonator(hPipe);
-				for (Strings::iterator i = strsBrowsed.begin(); i != strsBrowsed.end(); i++)
+				Strings strsBrowsed, strsUpdated;
+				if (ReadStringList(hPipe, strsBrowsed))
 				{
-					LPCTSTR pszFolderBrowsed = i->c_str();
-					Impersonator.Impersonate();
-					if (!MyPathIsNetworkPath(pszFolderBrowsed))
+					NamedPipeClientImpersonator Impersonator(hPipe);
+					for (Strings::iterator i = strsBrowsed.begin(); i != strsBrowsed.end(); i++)
 					{
-						Impersonator.Revert();
-					}
-					pCacheManager->GetUpdateFolders(pszFolderBrowsed, strsUpdated);
-				}
-				Impersonator.Revert();
+						Path pathBrowsed = i->c_str();
 
-				WriteStringList(hPipe, strsUpdated);
+						Impersonator.Impersonate();
+						if (!pathBrowsed.IsNetwork())
+							Impersonator.Revert();
+
+						pCacheManager->GetUpdateFolders(pathBrowsed, strsUpdated);
+					}
+					Impersonator.Revert();
+
+					WriteStringList(hPipe, strsUpdated);
+				}
+				break;
 			}
-			break;
 		}
 	}
 	FlushFileBuffers(hPipe);

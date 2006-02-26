@@ -8,13 +8,13 @@ public:
 	CacheManager(SERVICE_STATUS_HANDLE hSS);
 	~CacheManager();
 
-	bool GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize);
-	void GetUpdateFolders(LPCTSTR pszFolder, Strings& strsFoldersToUpdate);
+	bool GetInfoForFolder(const Path& path, FOLDERINFO2& nSize);
+	void GetUpdateFolders(const Path& path, Strings& strsFoldersToUpdate);
 	void EnableScanners(bool bEnable);
 	void DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh);
 
 protected:
-	Cache* GetCacheForFolder(LPCTSTR pszVolume, bool bCreate);
+	Cache* GetCacheForFolder(const Path& pathVolume, bool bCreate);
 
 	// ICacheCallback
 	virtual void KillMe(Cache* pExpiredCache);

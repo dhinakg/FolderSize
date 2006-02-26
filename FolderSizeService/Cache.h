@@ -2,6 +2,7 @@
 #include "..\Pipe\FolderInfo.h"
 #include "Scanner.h"
 #include "Monitor.h"
+#include "Path.h"
 
 class CacheFolder;
 class FolderManager;
@@ -16,22 +17,22 @@ public:
 class Cache : protected IScannerCallback, protected IMonitorCallback
 {
 public:
-	Cache(LPCTSTR pszVolume, HANDLE hMonitor, ICacheCallback* pCallback);
+	Cache(const Path& pathVolume, HANDLE hMonitor, ICacheCallback* pCallback);
 	~Cache();
 
 	// the CacheManager calls these
-	void GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize);
-	void GetUpdateFoldersForFolder(LPCTSTR pszFolder, Strings& strsFoldersToUpdate);
+	void GetInfoForFolder(const Path& path, FOLDERINFO2& nSize);
+	void GetUpdateFoldersForFolder(const Path& path, Strings& strsFoldersToUpdate);
 	void EnableScanner(bool bEnable);
 	HANDLE GetMonitoringHandle();
 
 	// IScannerCallback
-	virtual void FoundFolder(LPCTSTR pszFolder);
-	virtual void GotScanResult(LPCTSTR pszFolder, const FOLDERINFO& nSize);
-	virtual bool GetNextScanFolder(LPTSTR pszFolder);
+	virtual void FoundFolder(const Path& path);
+	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize);
+	virtual bool GetNextScanFolder(Path& path);
 
 	// IMonitorCallback
-	virtual void PathChanged(LPCTSTR pszPath, LPCTSTR pszNewPath, FILE_EVENT fe);
+	virtual void PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew);
 	virtual void DirectoryError(DWORD dwError);
 
 private:
@@ -40,7 +41,7 @@ private:
 	void DoSyncScans(CacheFolder* pFolder);
 
 	// the cache data and the lock for it
-	TCHAR m_szVolume[MAX_PATH];
+	Path m_pathVolume;
 	CRITICAL_SECTION m_cs;
 	FolderManager* m_pFolderManager;
 

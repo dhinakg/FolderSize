@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Path.h"
+
 #define PERFORMANCE_UPDATE_FREQUENCY 700
 
 class PerformanceMonitor
 {
 public:
-	PerformanceMonitor(LPCTSTR pszVolume);
+	PerformanceMonitor(const Path& pathVolume);
 	~PerformanceMonitor();
 
 	bool IsDiskQueueTooLong();

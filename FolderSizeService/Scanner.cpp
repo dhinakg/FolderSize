@@ -3,10 +3,10 @@
 #include "PerformanceMonitor.h"
 #include "EventLog.h"
 
-Scanner::Scanner(LPCTSTR pszVolume, IScannerCallback* pCallback)
+Scanner::Scanner(const Path& pathVolume, IScannerCallback* pCallback)
 : m_hThread(NULL)
 {
-	m_pPerformanceMonitor = new PerformanceMonitor(pszVolume);
+	m_pPerformanceMonitor = new PerformanceMonitor(pathVolume);
 	m_pCallback = pCallback;
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hScanEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -59,18 +59,24 @@ Scanner::~Scanner()
 	delete m_pPerformanceMonitor;
 }
 
-void Scanner::ScanFolder(LPCTSTR pszFolder)
+void Scanner::ScanFolder(const Path& path)
 {
 	FOLDERINFO nSize;
-	TCHAR szFolder[MAX_PATH];
-	_tcscpy(szFolder, pszFolder);
-	PathAppend(szFolder, _T("*"));
+	Path pathFind = path + Path(_T("*"));
+
+	// for long path support
+	std::wstring strFind = _T("\\\\?\\");
+	strFind += pathFind;
+
 	WIN32_FIND_DATA FindData;
-	HANDLE hFind = FindFirstFile(szFolder, &FindData);
+	HANDLE hFind = FindFirstFile(strFind.c_str(), &FindData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		// don't log an error, we could be legitimately denied access to this folder
-		//EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+		// we could be legitimately denied access to this folder
+		if (GetLastError() != ERROR_ACCESS_DENIED)
+		{
+			EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+		}
 		return;
 	}
 	else
@@ -86,9 +92,8 @@ void Scanner::ScanFolder(LPCTSTR pszFolder)
 				{
 					if (FindData.cFileName[0] != L'.' || (FindData.cFileName[1] != L'\0' && (FindData.cFileName[1] != L'.' || FindData.cFileName[2] != L'\0')))
 					{
-						_tcscpy(szFolder, pszFolder);
-						PathAppend(szFolder, FindData.cFileName);
-						m_pCallback->FoundFolder(szFolder);
+						Path pathFound = path + Path(FindData.cFileName);
+						m_pCallback->FoundFolder(pathFound);
 
 						nSize.nFolders++;
 					}
@@ -104,7 +109,7 @@ void Scanner::ScanFolder(LPCTSTR pszFolder)
 		FindClose(hFind);
 	}
 
-	m_pCallback->GotScanResult(pszFolder, nSize);
+	m_pCallback->GotScanResult(path, nSize);
 }
 
 void Scanner::Wakeup()
@@ -112,7 +117,7 @@ void Scanner::Wakeup()
 	SetEvent(m_hScanEvent);
 }
 
-bool Scanner::GetAnItemFromTheQueue(LPTSTR pszFolder)
+bool Scanner::GetAnItemFromTheQueue(Path& path)
 {
 	// check if we should quit
 	if (WaitForSingleObject(m_hQuitEvent, 0) == WAIT_OBJECT_0)
@@ -126,7 +131,7 @@ bool Scanner::GetAnItemFromTheQueue(LPTSTR pszFolder)
 		// or we might wipe out the event set by a Wakeup call.
 		// So, always set it before.
 		ResetEvent(m_hScanEvent);
-		if (m_pCallback->GetNextScanFolder(pszFolder))
+		if (m_pCallback->GetNextScanFolder(path))
 		{
 			return true;
 		}
@@ -151,10 +156,10 @@ DWORD WINAPI Scanner::ThreadProc(LPVOID lpParameter)
 
 void Scanner::ThreadProc()
 {
-	TCHAR szFolder[MAX_PATH];
-	while ((GetAnItemFromTheQueue(szFolder)))
+	Path path;
+	while ((GetAnItemFromTheQueue(path)))
 	{
-		ScanFolder(szFolder);
+		ScanFolder(path);
 		// if the queue length is too long, wait for a bit
 		while (m_pPerformanceMonitor->IsDiskQueueTooLong())
 		{

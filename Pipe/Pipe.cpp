@@ -20,35 +20,41 @@ bool WriteRequest(HANDLE h, PIPE_CLIENT_REQUEST pcr)
 	return WriteFile(h, &r, sizeof(r), &dwBytesWritten, NULL) && dwBytesWritten == sizeof(r);
 }
 
-bool ReadString(HANDLE h, LPWSTR psz, UINT cch)
+bool ReadString(HANDLE h, std::wstring& str)
 {
 	bool bRead = false;
 	DWORD dwBytesRead;
 	unsigned short nLen;
 	if (ReadFile(h, &nLen, sizeof(nLen), &dwBytesRead, NULL))
 	{
-		if (dwBytesRead == sizeof(nLen) && nLen < cch)
+		if (dwBytesRead == sizeof(nLen))
 		{
-			if (ReadFile(h, psz, nLen*sizeof(WCHAR), &dwBytesRead, NULL))
+			wchar_t* ps = (wchar_t*)_alloca((nLen + 1) * sizeof(wchar_t));
+			if (ReadFile(h, ps, nLen * sizeof(wchar_t), &dwBytesRead, NULL))
 			{
-				if (dwBytesRead == nLen*sizeof(WCHAR))
+				if (dwBytesRead == nLen * sizeof(wchar_t))
 				{
-					psz[nLen] = L'\0';
+					ps[nLen] = L'\0';
+					str = ps;
 					bRead = true;
 				}
 			}
+
 		}
 	}
 	return bRead;
 }
 
-bool WriteString(HANDLE h, LPCWSTR psz)
+bool WriteString(HANDLE h, const std::wstring& str)
 {
-	unsigned short nLen = lstrlen(psz);
+	if (str.length() > USHRT_MAX)
+		return false;
+
+	unsigned short nLen = (unsigned short)str.length();
 	DWORD dwBytesWritten;
 	if (WriteFile(h, &nLen, sizeof(nLen), &dwBytesWritten, NULL) && dwBytesWritten == sizeof(nLen))
 	{
-		if (WriteFile(h, psz, lstrlen(psz)*sizeof(WCHAR), &dwBytesWritten, NULL))
+		if (WriteFile(h, str.data(), nLen*sizeof(wchar_t), &dwBytesWritten, NULL))
 		{
 			return true;
 		}
@@ -64,23 +70,23 @@ bool ReadStringList(HANDLE h, Strings& strs)
 		return false;
 	for (unsigned short i=0; i<nCount; i++)
 	{
-		WCHAR szFile[MAX_PATH];
-		if (!ReadString(h, szFile, MAX_PATH))
+		std::wstring strFile;
+		if (!ReadString(h, strFile))
 			return false;
-		strs.insert(szFile);
+		strs.insert(strFile);
 	}
 	return true;
 }
 
-bool WriteStringList(HANDLE h, Strings strs)
+bool WriteStringList(HANDLE h, const Strings& strs)
 {
 	unsigned short nCount = (unsigned short)strs.size();
 	DWORD dwBytesWritten;
 	if (!WriteFile(h, &nCount, sizeof(nCount), &dwBytesWritten, NULL))
 		return false;
-	for (Strings::iterator i=strs.begin(); i!=strs.end(); i++)
+	for (Strings::const_iterator i=strs.begin(); i!=strs.end(); i++)
 	{
-		if (!WriteString(h, i->c_str()))
+		if (!WriteString(h, *i))
 		{
 			return false;
 		}

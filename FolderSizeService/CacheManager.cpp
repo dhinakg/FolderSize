@@ -2,7 +2,6 @@
 #include "CacheManager.h"
 #include "Cache.h"
 #include "EventLog.h"
-#include "Utility.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 : m_hSS(hSS)
@@ -37,9 +36,9 @@ CacheManager::~CacheManager()
 // pszCacheId must point to a buffer to store the cache id
 // pszVolume will return a pointer into the cache id buffer specifying the volume
 // bIsUNC returns whether or not it's a network path
-bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume)
+bool MakeCacheId(const Path& path, LPTSTR pszCacheId, LPTSTR& pszVolume)
 {
-	if (MyPathIsNetworkPath(pszFolder))
+	if (path.IsNetwork())
 	{
 		// for a network path, the CacheId will be the username followed by the computer and share name
 		DWORD dwChars = MAX_PATH;
@@ -58,35 +57,17 @@ bool MakeCacheId(LPCTSTR pszFolder, LPTSTR pszCacheId, LPTSTR& pszVolume)
 		pszVolume = pszCacheId;
 	}
 
-	if (PathIsUNC(pszFolder))
-	{
-		// skip ahead 3 components
-		LPCTSTR pszEnd = pszFolder;
-		for (int i=0; i<3; i++)
-		{
-			pszEnd = PathFindNextComponent(pszEnd);
-			if (pszEnd == NULL)
-				return false;
-		}
-		// and only copy up to the third component
-		lstrcpyn(pszVolume, pszFolder, (int)(pszEnd-pszFolder)+1);
-		PathRemoveBackslash(pszVolume);
-	}
-	else
-	{
-		lstrcpy(pszVolume, pszFolder);
-		if (!PathStripToRoot(pszVolume))
-			return false;
-	}
+	lstrcpy(pszVolume, path.GetVolume().c_str());
+
 	return true;
 }
 
-Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
+Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 {
 	// make a cache id which will be the volume of the folder, optionally preceded by a username
 	TCHAR szCacheId[MAX_CACHEID];
 	LPTSTR pszVolume;
-	if (!MakeCacheId(pszFolder, szCacheId, pszVolume))
+	if (!MakeCacheId(path, szCacheId, pszVolume))
 		return NULL;
 
 	Cache* pCache = NULL;
@@ -104,7 +85,7 @@ Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
 				m_Map.SetAt(szCacheId, pCache);
 
 				// register a device notification for a local cache
-				if (!MyPathIsNetworkPath(pszFolder) && m_hSS != NULL)
+				if (!path.IsNetwork() && m_hSS != NULL)
 				{
 					DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
 					dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
@@ -126,16 +107,16 @@ Cache* CacheManager::GetCacheForFolder(LPCTSTR pszFolder, bool bCreate)
 	return pCache;
 }
 
-bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
+bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 {
 	bool bRes = false;
 
 	EnterCriticalSection(&m_cs);
 
-	Cache* pCache = GetCacheForFolder(pszFolder, true);
+	Cache* pCache = GetCacheForFolder(path, true);
 	if (pCache != NULL)
 	{
-		pCache->GetInfoForFolder(pszFolder, nSize);
+		pCache->GetInfoForFolder(path, nSize);
 		bRes = true;
 	}
 
@@ -144,14 +125,14 @@ bool CacheManager::GetInfoForFolder(LPCTSTR pszFolder, FOLDERINFO2& nSize)
 	return bRes;
 }
 
-void CacheManager::GetUpdateFolders(LPCTSTR pszFolder, Strings& strsFoldersToUpdate)
+void CacheManager::GetUpdateFolders(const Path& path, Strings& strsFoldersToUpdate)
 {
 	EnterCriticalSection(&m_cs);
 
-	Cache* pCache = GetCacheForFolder(pszFolder, false);
+	Cache* pCache = GetCacheForFolder(path, false);
 	if (pCache != NULL)
 	{
-		pCache->GetUpdateFoldersForFolder(pszFolder, strsFoldersToUpdate);
+		pCache->GetUpdateFoldersForFolder(path, strsFoldersToUpdate);
 	}
 
 	LeaveCriticalSection(&m_cs);
