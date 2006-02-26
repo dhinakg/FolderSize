@@ -206,13 +206,13 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_TITLE        "Folder Size"
     IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
-    IDS_COLUMN_FILES_TITLE  "File Count"
+    IDS_COLUMN_FILES_TITLE  "File Children"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Display the total number of files within folders."
-    IDS_COLUMN_FOLDERS_TITLE "Folder Count"
+    IDS_COLUMN_FOLDERS_TITLE "Folder Children"
     IDS_COLUMN_FOLDERS_DESCRIPTION 
                             "Display the total number of subfolders within folders."
-    IDS_COLUMN_SIBLINGS_TITLE "Sibling Count"
+    IDS_COLUMN_SIBLINGS_TITLE "All Children"
     IDS_COLUMN_SIBLINGS_DESCRIPTION 
                             "Display the total number of files and subfolders within folders."
 END
