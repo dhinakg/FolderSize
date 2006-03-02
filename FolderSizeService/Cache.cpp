@@ -52,37 +52,44 @@ Cache::~Cache()
 	DeleteCriticalSection(&m_cs);
 }
 
-void Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
+bool Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 {
 	WarningEnterCriticalSection(&m_cs, _T("GetInfoForFolder"));
 
 	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, true);
-
-	DoSyncScans(pFolder);
-
-	(FOLDERINFO&)nSize = pFolder->GetTotalSize();
-
-	// let the folder know that it's being displayed
-	pFolder->DisplayUpdated();
-
-	if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
+	if (pFolder != NULL)
 	{
-		nSize.giff = GIFF_DIRTY;
-	}
-	else if (pFolder->GetStatus() == CacheFolder::FS_EMPTY || pFolder->GetEmptyChildren())
-	{
-		nSize.giff = GIFF_SCANNING;
-	}
-	else
-	{
-		nSize.giff = GIFF_CLEAN;
+		DoSyncScans(pFolder);
+
+		(FOLDERINFO&)nSize = pFolder->GetTotalSize();
+
+		// let the folder know that it's being displayed
+		pFolder->DisplayUpdated();
+
+		if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
+		{
+			nSize.giff = GIFF_DIRTY;
+		}
+		else if (pFolder->GetStatus() == CacheFolder::FS_EMPTY || pFolder->GetEmptyChildren())
+		{
+			nSize.giff = GIFF_SCANNING;
+		}
+		else
+		{
+			nSize.giff = GIFF_CLEAN;
+		}
 	}
 
 	LeaveCriticalSection(&m_cs);
 
+	if (pFolder == NULL)
+		return false;
+
 	// if we're requesting info on unclean folders, ensure scanner is awake
 	if (nSize.giff != GIFF_CLEAN && m_bScannerEnabled)
 		m_pScanner->Wakeup();
+
+	return true;
 }
 
 // The scanner is currently scanning the PARENT of pszFolder, and it
@@ -90,7 +97,7 @@ void Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 void Cache::FoundFolder(const Path& path)
 {
 	WarningEnterCriticalSection(&m_cs, _T("FoundFolder"));
-	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, true);
+	m_pFolderManager->GetFolderForPath(path, true);
 	LeaveCriticalSection(&m_cs);
 }
 

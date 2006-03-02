@@ -104,16 +104,22 @@ void FolderManager::UserRequested(CacheFolder* pFolder)
 
 CacheFolder* FolderManager::CreateNewFolder(const Path& path)
 {
-	// create parent nodes as necessary
+	// don't want to have a folder object if we can't read it,
+	// and we don't want NTFS junctions
+	DWORD dwAttributes = GetFileAttributes(path.GetLongAPIRepresentation().c_str());
+	if (dwAttributes == INVALID_FILE_ATTRIBUTES || dwAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+		return NULL;
+
+	// create parent nodes recursively
 	Path pathParent = path.GetParent();
-	assert (!pathParent.empty());
 	CacheFolder* pParentFolder;
 	if (!m_Map.Lookup(pathParent, pParentFolder))
 	{
 		pParentFolder = CreateNewFolder(pathParent);
+		if (pParentFolder == NULL)
+			return NULL;
 	}
+
 	// link it into the tree and initialize the fields
-	CacheFolder* pFolder = new CacheFolder(this, pParentFolder, path);
-	
-	return pFolder;
+	return new CacheFolder(this, pParentFolder, path);
 }

@@ -21,7 +21,7 @@ public:
 	~Cache();
 
 	// the CacheManager calls these
-	void GetInfoForFolder(const Path& path, FOLDERINFO2& nSize);
+	bool GetInfoForFolder(const Path& path, FOLDERINFO2& nSize);
 	void GetUpdateFoldersForFolder(const Path& path, Strings& strsFoldersToUpdate);
 	void EnableScanner(bool bEnable);
 	HANDLE GetMonitoringHandle();

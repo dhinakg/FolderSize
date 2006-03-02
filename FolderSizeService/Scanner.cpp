@@ -64,12 +64,8 @@ void Scanner::ScanFolder(const Path& path)
 	FOLDERINFO nSize;
 	Path pathFind = path + Path(_T("*"));
 
-	// for long path support
-	std::wstring strFind = _T("\\\\?\\");
-	strFind += pathFind;
-
 	WIN32_FIND_DATA FindData;
-	HANDLE hFind = FindFirstFile(strFind.c_str(), &FindData);
+	HANDLE hFind = FindFirstFile(pathFind.GetLongAPIRepresentation().c_str(), &FindData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
 		// we could be legitimately denied access to this folder

@@ -149,10 +149,12 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 						Impersonator.Revert();
 
 					FOLDERINFO2 Size;
-					pCacheManager->GetInfoForFolder(path, Size);
+					bool bGotInfo = pCacheManager->GetInfoForFolder(path, Size);
 					Impersonator.Revert();
 
-					WriteGetFolderSize(hPipe, Size);
+					// if we didn't get info, just disconnect the client
+					if (bGotInfo)
+						WriteGetFolderSize(hPipe, Size);
 				}
 				break;
 			}

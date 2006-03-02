@@ -116,8 +116,7 @@ bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 	Cache* pCache = GetCacheForFolder(path, true);
 	if (pCache != NULL)
 	{
-		pCache->GetInfoForFolder(path, nSize);
-		bRes = true;
+		bRes = pCache->GetInfoForFolder(path, nSize);
 	}
 
 	LeaveCriticalSection(&m_cs);
