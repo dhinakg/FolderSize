@@ -317,6 +317,32 @@ bool ModifyService(MODIFY_SERVICE ms)
 	return bModified;
 }
 
+void SetBiggerFont(HWND hwndCtrl)
+{
+	HFONT hFont = (HFONT)SendMessage(hwndCtrl, WM_GETFONT, 0, 0);
+	if (hFont != NULL)
+	{
+		LOGFONT lf;
+		GetObject(hFont, sizeof(LOGFONT), &lf);
+		lf.lfHeight = (lf.lfHeight * 3) / 2;
+		lf.lfWidth = (lf.lfWidth * 3) / 2;
+		HFONT hBigFont = CreateFontIndirect(&lf);
+		if (hBigFont != NULL)
+		{
+			SendMessage(hwndCtrl, WM_SETFONT, (WPARAM)hBigFont, TRUE);
+		}
+	}
+}
+
+void ReleaseBiggerFont(HWND hwndCtrl)
+{
+	HFONT hFont = (HFONT)SendMessage(hwndCtrl, WM_GETFONT, 0, 0);
+	if (hFont != NULL)
+	{
+		DeleteObject(hFont);
+	}
+}
+
 INT_PTR CALLBACK ServiceProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -373,23 +399,10 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	{
 	case WM_INITDIALOG:
 		{
-			// double the title font size
-			HWND hwndTitle = GetDlgItem(hwndDlg, IDC_TITLE);
-			HFONT hFont = (HFONT)SendMessage(hwndTitle, WM_GETFONT, 0, 0);
-			if (hFont != NULL)
-			{
-				LOGFONT lf;
-				GetObject(hFont, sizeof(LOGFONT), &lf);
-				lf.lfHeight *= 2;
-				lf.lfWidth *= 2;
-				HFONT hBigFont = CreateFontIndirect(&lf);
-				if (hBigFont != NULL)
-				{
-					SendMessage(hwndTitle, WM_SETFONT, (WPARAM)hBigFont, TRUE);
-				}
-			}
+			SetBiggerFont(GetDlgItem(hwndDlg, IDC_TITLE));
 
 			ConvertStaticToHyperlink(hwndDlg, IDC_TITLE);
+			ConvertStaticToHyperlink(hwndDlg, IDC_HYPER_GPL);
 			ConvertStaticToHyperlink(hwndDlg, IDC_HYPER_GNU);
 			ConvertStaticToHyperlink(hwndDlg, IDC_PIC_BRIO);
 
@@ -402,6 +415,9 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case IDC_TITLE:
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("http://foldersize.sourceforge.net"), NULL, NULL, SW_SHOWNORMAL);
 			return TRUE;
+		case IDC_HYPER_GPL:
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("http://www.gnu.org/copyleft/gpl.html"), NULL, NULL, SW_SHOWNORMAL);
+			return TRUE;
 		case IDC_HYPER_GNU:
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("http://www.gnu.org"), NULL, NULL, SW_SHOWNORMAL);
 			return TRUE;
@@ -410,16 +426,12 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			return TRUE;
 		}
 		break;
+
 	case WM_DESTROY:
 		{
-			HFONT hFont = (HFONT)SendMessage(GetDlgItem(hwndDlg, IDC_TITLE), WM_GETFONT, 0, 0);
-			if (hFont != NULL)
-			{
-				DeleteObject(hFont);
-			}
+			ReleaseBiggerFont(GetDlgItem(hwndDlg, IDC_TITLE));
 			return TRUE;
 		}
-
 	}
 	return FALSE;
 }

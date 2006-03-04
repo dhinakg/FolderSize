@@ -72,10 +72,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "ÏÔÊ¾µµ°¸¼ÐÈÝÁ¿ÊÇÓÉ Brian Oraas ¹¹Ïë, Éè¼Æ¼°Íê³É.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "ÏÔÊ¾µµ°¸¼ÐÈÝÁ¿ÊÇ¸ú¾Ý GNU Public °æÈ¨±£»¤ÏÂ½øÐÐ·¢ÐÐ.",
-                    IDC_STATIC,17,137,179,19
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "°æÈ¨",IDC_STATIC,7,123,198,58
     LTEXT           "µãÒ»ÏÂÕâÀïÁË½â¸ü¶àÓÐ¹Ø GNU µÄ×ÊÑ¶.",IDC_HYPER_GNU,17,
                     162,101,8,WS_TABSTOP
@@ -149,10 +149,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Åã¥ÜÀÉ®×§¨®e¶q¬O¥Ñ Brian Oraas ºc·Q, ³]­p¤Î§¹¦¨.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "Åã¥ÜÀÉ®×§¨®e¶q¬O¸ò¾Ú GNU Public ª©Åv«OÅ@¤U¶i¦æµo¦æ.",
-                    IDC_STATIC,17,137,179,19
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "ª©Åv",IDC_STATIC,7,123,198,58
     LTEXT           "ÂI¤@¤U³o¸Ì¤F¸Ñ§ó¦h¦³Ãö GNU ªº¸ê°T.",IDC_HYPER_GNU,17,
                     162,101,8,WS_TABSTOP
@@ -281,8 +281,8 @@ IDB_BRIO                BITMAP                  "brio.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,1
- PRODUCTVERSION 2,2,0,0
+ FILEVERSION 1,2,0,1
+ PRODUCTVERSION 2,3,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -299,12 +299,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Brio"
             VALUE "FileDescription", "Folder Size Control Panel"
-            VALUE "FileVersion", "1, 1, 0, 1"
+            VALUE "FileVersion", "1, 2, 0, 1"
             VALUE "InternalName", "FolderSizeCpl"
-            VALUE "LegalCopyright", "Copyright © 2005"
+            VALUE "LegalCopyright", "Copyright © 2006"
             VALUE "OriginalFilename", "FolderSize.cpl"
             VALUE "ProductName", "Folder Size for Windows"
-            VALUE "ProductVersion", "2, 2, 0, 0"
+            VALUE "ProductVersion", "2, 3, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -337,12 +337,12 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "Über"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Folder Size für Windows war erdacht, geplant und umgesetzt von Brian Oraas.",
+    LTEXT           "Folder Size für Windows wurde erdacht, geplant und umgesetzt von Brian Oraas.",
                     IDC_STATIC,7,38,96,29
-    LTEXT           "Folder Size für Windows 2.2",IDC_TITLE,7,7,189,22,
+    LTEXT           "Folder Size für Windows 2.3",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
     LTEXT           "Folder Size für Windows wird unter der GNU Public License veröffentlicht.",
-                    IDC_STATIC,17,137,179,19
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Lizenz",IDC_STATIC,7,123,198,58
     LTEXT           "Mehr über GNU finden Sie hier.",IDC_HYPER_GNU,17,162,
                     100,8,WS_TABSTOP
@@ -485,21 +485,21 @@ CAPTION "Service"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Service status:",IDC_STATIC,7,7,49,8
-    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
-    PUSHBUTTON      "&Start",IDC_SERVICE_START,7,25,50,14
-    PUSHBUTTON      "S&top",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
+    PUSHBUTTON      "&Start",IDC_SERVICE_START,7,37,50,14
+    PUSHBUTTON      "S&top",IDC_SERVICE_STOP,7,67,50,14
     LTEXT           "You must have Administrator privileges to modify the service.",
                     IDC_STATIC,64,161,141,20
-    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
-    PUSHBUTTON      "&Pause",IDC_SERVICE_PAUSE,7,82,50,14
-    PUSHBUTTON      "&Resume",IDC_SERVICE_RESUME,7,107,50,14
+    ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
+    PUSHBUTTON      "&Pause",IDC_SERVICE_PAUSE,7,94,50,14
+    PUSHBUTTON      "&Resume",IDC_SERVICE_RESUME,7,120,50,14
     LTEXT           "While the service is running, a Folder Size cache is in memory and monitoring your folders.",
-                    IDC_STATIC,64,24,141,27
+                    IDC_STATIC,64,36,141,27
     LTEXT           "When the service is stopped, folder size information is not available in Explorer.",
-                    IDC_STATIC,64,55,141,21
+                    IDC_STATIC,64,67,141,21
     LTEXT           "Pause the background scanning to free disk bandwidth.",
-                    IDC_STATIC,64,82,141,23
-    LTEXT           "Resume to keep the cache updated.",IDC_STATIC,64,106,
+                    IDC_STATIC,64,94,141,23
+    LTEXT           "Resume to keep the cache updated.",IDC_STATIC,64,119,
                     141,24
 END
 
@@ -511,10 +511,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size for Windows was conceived, architected, and implemented by Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.2",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
-    LTEXT           "Folder Size for Windows is released under the GNU Public License agreement.",
-                    IDC_STATIC,17,137,179,19
+    LTEXT           "Folder Size for Windows may be distributed under the terms of the GNU General Public License.",
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "License",IDC_STATIC,7,123,198,58
     LTEXT           "Find out more about GNU here.",IDC_HYPER_GNU,17,162,101,
                     8,WS_TABSTOP
@@ -638,9 +638,9 @@ BEGIN
     PUSHBUTTON      "Re&prendre",IDC_SERVICE_RESUME,7,109,50,14
     LTEXT           "Quand le service est démarré, un cache Folder Size est en mémoire et surveille vos dossiers.",
                     IDC_STATIC,64,24,141,27
-    LTEXT           "Quand le service est arrêter, les informations sur la taille des dossiers n'est pas disponible.",
+    LTEXT           "Quand le service est arrêté, les informations sur la taille des dossiers n'est pas disponible.",
                     IDC_STATIC,64,55,141,27
-    LTEXT           "Mettez le scanning en arrière plan sur pause pour libérer l'activité du disque dur.",
+    LTEXT           "Mettre le scanning en arrière plan sur pause pour libérer l'activité du disque dur.",
                     IDC_STATIC,64,84,141,22
     LTEXT           "Reprendre le scanning pour conserver le cache à jour.",
                     IDC_STATIC,64,108,141,24
@@ -654,10 +654,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size pour Windows a été conçu et développé par Brian Oraas.",
                     IDC_STATIC,7,38,96,29
-    LTEXT           "Folder Size pour Windows 2.2",IDC_TITLE,7,7,189,22,
+    LTEXT           "Folder Size pour Windows 2.3",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
     LTEXT           "Folder Size pour Windows est distribué selon l'accord de la Licence Publique GNU.",
-                    IDC_STATIC,17,137,179,19
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licence",IDC_STATIC,7,123,198,58
     LTEXT           "Apprenez en plus à propos de GNU ici.",IDC_HYPER_GNU,17,
                     162,123,8,WS_TABSTOP
@@ -764,10 +764,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Dimensione Cartelle per Windows è stato concepito, progettato e implementato da Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Dimensione Cartelle per Windows 2.2",IDC_TITLE,7,7,198,
+    LTEXT           "Dimensione Cartelle per Windows 2.3",IDC_TITLE,7,7,198,
                     22,WS_TABSTOP
     LTEXT           "Dimensione Cartelle per Windows è rilasciato attraverso gli accordi della Licenza Pubblica GNU.",
-                    IDC_STATIC,17,137,179,19
+                    IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licenza",IDC_STATIC,7,123,198,58
     LTEXT           "Ulteriori informazioni sullo GNU.",IDC_HYPER_GNU,17,162,
                     100,8,WS_TABSTOP
