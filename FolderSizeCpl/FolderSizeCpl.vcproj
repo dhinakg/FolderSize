@@ -161,6 +161,9 @@
 				RelativePath=".\resource.h">
 			</File>
 			<File
+				RelativePath=".\resrc1.h">
+			</File>
+			<File
 				RelativePath=".\stdafx.h">
 			</File>
 		</Filter>
@@ -179,6 +182,27 @@
 			</File>
 			<File
 				RelativePath=".\FolderSizeCpl.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_de.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_en.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_fr.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_it.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_ja.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_zh-cn.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_zh-tw.rc">
 			</File>
 			<File
 				RelativePath=".\icon.ico">

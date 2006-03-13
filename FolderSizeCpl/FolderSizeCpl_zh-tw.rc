@@ -1,0 +1,136 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (Taiwan) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHT)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
+#pragma code_page(950)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "關於"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "顯示檔案夾容量是由 Brian Oraas 構想, 設計及完成.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "顯示檔案夾容量是跟據 GNU Public 版權保護下進行發行.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "版權",IDC_STATIC,7,123,198,58
+    LTEXT           "點一下這裡了解更多有關 GNU 的資訊.",IDC_HYPER_GNU,17,
+                    162,101,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "顯示"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "格式",IDC_STATIC,7,7,198,48
+    CONTROL         "固定 (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "自動調節 (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "系統功能"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "功能運作:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
+    PUSHBUTTON      "起動",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "停止",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "You must have Administrator privileges to modify the service.",
+                    IDC_STATIC,64,161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
+    PUSHBUTTON      "暫停",IDC_SERVICE_PAUSE,7,82,50,14
+    PUSHBUTTON      "繼續",IDC_SERVICE_RESUME,7,107,50,14
+    LTEXT           "當功能起動後, 檔案夾容量將會隨時更新並記錄所有檔案夾容量資料.",
+                    IDC_STATIC,64,24,141,27
+    LTEXT           "當功能停止後, 檔案夾容量將會停止監察並且不會更新所有檔案夾容量資料.",
+                    IDC_STATIC,64,55,141,21
+    LTEXT           "暫停功能可停止更新及記錄, 可於有需要時加快硬碟運作速度.",
+                    IDC_STATIC,64,82,141,23
+    LTEXT           "繼續功能可繼續隨時更新並記錄所有檔案夾容量資料.",
+                    IDC_STATIC,64,106,141,24
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "顯示檔案夾容量"
+    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_SERVICE_RUNNING     "正常運作"
+    IDS_SERVICE_STOPPED     "Stopped"
+    IDS_SERVICE_UNKNOWN     "Unknown"
+    IDS_SERVICE_PAUSED      "Paused"
+    IDS_SERVICE_START_PENDING "Starting"
+    IDS_SERVICE_STOP_PENDING "Stopping"
+    IDS_SERVICE_CONTINUE_PENDING "Resuming"
+    IDS_SERVICE_PAUSE_PENDING "Pausing"
+END
+
+#endif    // Chinese (Taiwan) resources
+/////////////////////////////////////////////////////////////////////////////

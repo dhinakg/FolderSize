@@ -1,0 +1,46 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_COLUMN_TITLE        "Taille de Dossier"
+    IDS_COLUMN_DESCRIPTION  "Taille de Dossier"
+    IDS_COLUMN_FILES_TITLE  "Nombre de Fichiers"
+    IDS_COLUMN_FILES_DESCRIPTION 
+                            "Afficher le nombre totale de fichiers dans les dossiers."
+    IDS_COLUMN_FOLDERS_TITLE "Nombre de Dossiers"
+    IDS_COLUMN_FOLDERS_DESCRIPTION 
+                            "Afficher le nombre totale des dossiers dans les dossiers."
+    IDS_COLUMN_SIBLINGS_TITLE "Fichiers et Dossiers"
+    IDS_COLUMN_SIBLINGS_DESCRIPTION 
+                            "Afficher le nombre totale de fichiers et dossiers dans les dossiers."
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////

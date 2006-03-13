@@ -227,6 +227,27 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\FolderSize_de.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_en.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_fr.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_it.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_ja.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_zh-cn.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_zh-tw.rc">
+			</File>
+			<File
 				RelativePath=".\Manifest.xml">
 			</File>
 			<File

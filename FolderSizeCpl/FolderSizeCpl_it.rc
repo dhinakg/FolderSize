@@ -1,0 +1,146 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Italian (Italy) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+#ifdef _WIN32
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Informazioni"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Dimensione Cartelle per Windows è stato concepito, progettato e implementato da Brian Oraas.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Dimensione Cartelle per Windows 2.3",IDC_TITLE,7,7,198,
+                    22,WS_TABSTOP
+    LTEXT           "Dimensione Cartelle per Windows è rilasciato attraverso gli accordi della Licenza Pubblica GNU.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "Licenza",IDC_STATIC,7,123,198,58
+    LTEXT           "Ulteriori informazioni sullo GNU.",IDC_HYPER_GNU,17,162,
+                    100,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Visualizzazione"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Format",IDC_STATIC,7,7,198,48
+    CONTROL         "Stile Esplora Risorse (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "&Compatto (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Servizio"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Stato del servizio:",IDC_STATIC,7,7,58,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,72,7,133,8
+    PUSHBUTTON      "Attiva",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "Disattiva",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "Per modificare lo stato del servizio occorre avere sul sistema i privilegi di Amministratore.",
+                    IDC_STATIC,63,156,142,25
+    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
+    PUSHBUTTON      "Pausa",IDC_SERVICE_PAUSE,7,84,50,14
+    PUSHBUTTON      "Riprendi",IDC_SERVICE_RESUME,7,115,50,14
+    LTEXT           "Quando il servizio è attivo, una cache della dimensione delle cartelle è caricata in memoria e monitorizza le cartelle.",
+                    IDC_STATIC,63,24,142,27
+    LTEXT           "Quando il servizio è disattivo, la dimesione delle cartelle in Esplora risorse non è disponibile.",
+                    IDC_STATIC,63,55,142,26
+    LTEXT           "Disattiva momentaneamente la scansione in background e riduce il carico di lavoro del disco.",
+                    IDC_STATIC,63,84,142,23
+    LTEXT           "Il Servizio riprende a mantenere la cache aggiornata.",
+                    IDC_STATIC,63,115,142,24
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        VERTGUIDE, 17
+        VERTGUIDE, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+        HORZGUIDE, 38
+    END
+
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "Folder Size"
+    IDS_INFO                "Personalizza la colonna Dimensione Cartelle di Esplora Risorse e controlla il servizio Dimensione Cartelle."
+    IDS_SERVICE_RUNNING     "Attivo"
+    IDS_SERVICE_STOPPED     "Disattivo"
+    IDS_SERVICE_UNKNOWN     "Sconosciuto"
+    IDS_SERVICE_PAUSED      "Pauso"
+    IDS_SERVICE_START_PENDING "Avvio in corso"
+    IDS_SERVICE_STOP_PENDING "Arresto in corso"
+    IDS_SERVICE_CONTINUE_PENDING "Ripristino in corso"
+    IDS_SERVICE_PAUSE_PENDING "Sospensione in corso"
+END
+
+#endif    // Italian (Italy) resources
+/////////////////////////////////////////////////////////////////////////////

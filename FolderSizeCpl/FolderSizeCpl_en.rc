@@ -1,0 +1,161 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Display"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Format",IDC_STATIC,7,7,198,48
+    CONTROL         "&Explorer style (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Service"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Service status:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
+    PUSHBUTTON      "&Start",IDC_SERVICE_START,7,37,50,14
+    PUSHBUTTON      "S&top",IDC_SERVICE_STOP,7,67,50,14
+    LTEXT           "You must have Administrator privileges to modify the service.",
+                    IDC_STATIC,64,161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
+    PUSHBUTTON      "&Pause",IDC_SERVICE_PAUSE,7,94,50,14
+    PUSHBUTTON      "&Resume",IDC_SERVICE_RESUME,7,120,50,14
+    LTEXT           "While the service is running, a Folder Size cache is in memory and monitoring your folders.",
+                    IDC_STATIC,64,36,141,27
+    LTEXT           "When the service is stopped, folder size information is not available in Explorer.",
+                    IDC_STATIC,64,67,141,21
+    LTEXT           "Pause the background scanning to free disk bandwidth.",
+                    IDC_STATIC,64,94,141,23
+    LTEXT           "Resume to keep the cache updated.",IDC_STATIC,64,119,
+                    141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Folder Size for Windows was conceived, architected, and implemented by Brian Oraas.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "Folder Size for Windows may be distributed under the terms of the GNU General Public License.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "License",IDC_STATIC,7,123,198,58
+    LTEXT           "Find out more about GNU here.",IDC_HYPER_GNU,17,162,101,
+                    8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "Folder Size"
+    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_SERVICE_RUNNING     "Running"
+    IDS_SERVICE_STOPPED     "Stopped"
+    IDS_SERVICE_UNKNOWN     "Unknown"
+    IDS_SERVICE_PAUSED      "Paused"
+    IDS_SERVICE_START_PENDING "Starting"
+    IDS_SERVICE_STOP_PENDING "Stopping"
+    IDS_SERVICE_CONTINUE_PENDING "Resuming"
+    IDS_SERVICE_PAUSE_PENDING "Pausing"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////

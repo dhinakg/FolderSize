@@ -1,0 +1,148 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Service"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Statut du service:",IDC_STATIC,7,7,58,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,77,7,128,8
+    PUSHBUTTON      "&Démarrer",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "A&rrêter",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "Vous devez avoir les privilèges Administrateur pour modifier le Service.",
+                    IDC_STATIC,64,163,141,18
+    ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
+    PUSHBUTTON      "&Suspendre",IDC_SERVICE_PAUSE,7,84,50,14
+    PUSHBUTTON      "Re&prendre",IDC_SERVICE_RESUME,7,109,50,14
+    LTEXT           "Quand le service est démarré, un cache Folder Size est en mémoire et surveille vos dossiers.",
+                    IDC_STATIC,64,24,141,27
+    LTEXT           "Quand le service est arrêté, les informations sur la taille des dossiers n'est pas disponible.",
+                    IDC_STATIC,64,55,141,27
+    LTEXT           "Mettre le scanning en arrière plan sur pause pour libérer l'activité du disque dur.",
+                    IDC_STATIC,64,84,141,22
+    LTEXT           "Reprendre le scanning pour conserver le cache à jour.",
+                    IDC_STATIC,64,108,141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "A Propos"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Folder Size pour Windows a été conçu et développé par Brian Oraas.",
+                    IDC_STATIC,7,38,96,29
+    LTEXT           "Folder Size pour Windows 2.3",IDC_TITLE,7,7,189,22,
+                    WS_TABSTOP
+    LTEXT           "Folder Size pour Windows est distribué selon l'accord de la Licence Publique GNU.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "Licence",IDC_STATIC,7,123,198,58
+    LTEXT           "Apprenez en plus à propos de GNU ici.",IDC_HYPER_GNU,17,
+                    162,123,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Affichage"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Format",IDC_STATIC,7,7,198,48
+    CONTROL         "Style &Explorateur Windows(%s)",IDC_DISPLAY_EXPLORER,
+                    "Button",BS_AUTORADIOBUTTON,17,22,180,10
+    CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,180,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        VERTGUIDE, 64
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        VERTGUIDE, 17
+        VERTGUIDE, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+        HORZGUIDE, 38
+    END
+
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "Folder Size"
+    IDS_INFO                "Personnalise la colonne Folder Size de l'Explorateur et modifier le service Folder Size."
+    IDS_SERVICE_RUNNING     "Démarré"
+    IDS_SERVICE_STOPPED     "Arrêté"
+    IDS_SERVICE_UNKNOWN     "Inconnu"
+    IDS_SERVICE_PAUSED      "Suspendu"
+    IDS_SERVICE_START_PENDING "En cours de démarrage"
+    IDS_SERVICE_STOP_PENDING "En cours d'arrêt"
+    IDS_SERVICE_CONTINUE_PENDING "En cours de reprendre"
+    IDS_SERVICE_PAUSE_PENDING "En cours de suspendre"
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////

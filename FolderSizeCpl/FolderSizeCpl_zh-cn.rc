@@ -1,0 +1,127 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "显示"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "格式",IDC_STATIC,7,7,198,48
+    CONTROL         "固定 (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "自动调节 (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "系统功能"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "功能运作:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
+    PUSHBUTTON      "起动",IDC_SERVICE_START,7,25,50,14
+    PUSHBUTTON      "停止",IDC_SERVICE_STOP,7,55,50,14
+    LTEXT           "你需要拥有系统管理权限才可以更改设定.",IDC_STATIC,64,
+                    161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
+    PUSHBUTTON      "暂停",IDC_SERVICE_PAUSE,7,82,50,14
+    PUSHBUTTON      "继续",IDC_SERVICE_RESUME,7,107,50,14
+    LTEXT           "当功能起动后, 档案夹容量将会随时更新并记录所有档案夹容量资料.",
+                    IDC_STATIC,64,24,141,27
+    LTEXT           "当功能停止后, 档案夹容量将会停止监察并且不会更新所有档案夹容量资料.",
+                    IDC_STATIC,64,55,141,21
+    LTEXT           "暂停功能可停止更新及记录, 可于有需要时加快硬碟运作速度.",
+                    IDC_STATIC,64,82,141,23
+    LTEXT           "继续功能可继续随时更新并记录所有档案夹容量资料.",
+                    IDC_STATIC,64,106,141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "关于"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "显示档案夹容量是由 Brian Oraas 构想, 设计及完成.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "显示档案夹容量是跟据 GNU Public 版权保护下进行发行.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "版权",IDC_STATIC,7,123,198,58
+    LTEXT           "点一下这里了解更多有关 GNU 的资讯.",IDC_HYPER_GNU,17,
+                    162,101,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "显示档案夹容量"
+    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_SERVICE_RUNNING     "Running"
+    IDS_SERVICE_STOPPED     "Stopped"
+    IDS_SERVICE_UNKNOWN     "Unknown"
+    IDS_SERVICE_PAUSED      "Paused"
+    IDS_SERVICE_START_PENDING "Starting"
+    IDS_SERVICE_STOP_PENDING "Stopping"
+    IDS_SERVICE_CONTINUE_PENDING "Resuming"
+    IDS_SERVICE_PAUSE_PENDING "Pausing"
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
