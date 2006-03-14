@@ -178,6 +178,18 @@
 			<File
 				RelativePath=".\FolderSizeService.rc">
 			</File>
+			<File
+				RelativePath=".\FolderSizeService_en.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeService_fr.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeService_it.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeService_ja.rc">
+			</File>
 		</Filter>
 		<Filter
 			Name="Cache"
