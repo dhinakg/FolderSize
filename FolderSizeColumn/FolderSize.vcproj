@@ -242,6 +242,12 @@
 				RelativePath=".\FolderSize_ja.rc">
 			</File>
 			<File
+				RelativePath=".\FolderSize_nl.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSize_sv.rc">
+			</File>
+			<File
 				RelativePath=".\FolderSize_zh-cn.rc">
 			</File>
 			<File

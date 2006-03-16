@@ -199,6 +199,12 @@
 				RelativePath=".\FolderSizeCpl_ja.rc">
 			</File>
 			<File
+				RelativePath=".\FolderSizeCpl_nl.rc">
+			</File>
+			<File
+				RelativePath=".\FolderSizeCpl_sv.rc">
+			</File>
+			<File
 				RelativePath=".\FolderSizeCpl_zh-cn.rc">
 			</File>
 			<File

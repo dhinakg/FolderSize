@@ -1,0 +1,120 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Swedish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
+#ifdef _WIN32
+LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Visa"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Format",IDC_STATIC,7,7,198,48
+    CONTROL         "som &Utforskaren (%s)",IDC_DISPLAY_EXPLORER,"Button",BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "&Kompakt (%s)",IDC_DISPLAY_COMPACT,"Button",BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Tjänst"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Tjänstens status:",IDC_STATIC,7,7,49,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
+    PUSHBUTTON      "&Starta",IDC_SERVICE_START,7,37,50,14
+    PUSHBUTTON      "S&toppa",IDC_SERVICE_STOP,7,67,50,14
+    LTEXT           "Du måste vara inloggad som Administrator för att kunna hantera tjänsten.",IDC_STATIC,64,161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
+    PUSHBUTTON      "&Pausa",IDC_SERVICE_PAUSE,7,94,50,14
+    PUSHBUTTON      "&Fortsätt",IDC_SERVICE_RESUME,7,120,50,14
+    LTEXT           "När tjänsten är startad finns ett Folder Size-cache i minnet som övervakar dina mappar.",IDC_STATIC,64,36,141,27
+    LTEXT           "När tjänsten är stoppad finns inte informationen om mappars storlek tillgänglig i Utforskaren.",IDC_STATIC,64,67,141,21
+    LTEXT           "Pausa övervakningen för att frigöra bandbredd till disk.",IDC_STATIC,64,94,141,23
+    LTEXT           "Fortsätt för att hålla cachet uppdaterat.",IDC_STATIC,64,119,141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Folder Size för Windows uppfanns, planerades och implementerades av Brian Oraas.",IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size för Windows 2.3",IDC_TITLE,7,7,198,22,WS_TABSTOP
+    LTEXT           "Folder Size för Windows får distribueras fritt under GNU General Public License",IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "Licens",IDC_STATIC,7,123,198,58
+    LTEXT           "Få reda på mer om GNU här.",IDC_HYPER_GNU,17,162,101,8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME						"Folder Size"
+    IDS_INFO						"Anpassa kolumnen för Mappstorlek och hantera tjänsten för Folder Size-cachet."
+    IDS_SERVICE_RUNNING				"Startad"
+    IDS_SERVICE_STOPPED				"Stoppad"
+    IDS_SERVICE_UNKNOWN				"Okänd"
+    IDS_SERVICE_PAUSED				"Pausad"
+    IDS_SERVICE_START_PENDING		"Startar"
+    IDS_SERVICE_STOP_PENDING		"Stoppar"
+    IDS_SERVICE_CONTINUE_PENDING	"Fortsätter"
+    IDS_SERVICE_PAUSE_PENDING		"Pausar"
+END
+
+#endif    // Swedish resources
+/////////////////////////////////////////////////////////////////////////////
+

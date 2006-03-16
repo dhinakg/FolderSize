@@ -1,0 +1,43 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Swedish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
+#ifdef _WIN32
+LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_COLUMN_TITLE				"Mappstorlek"
+    IDS_COLUMN_DESCRIPTION			"Visar den sammanlagda storleken på en mapp."
+    IDS_COLUMN_FILES_TITLE			"Filer"
+    IDS_COLUMN_FILES_DESCRIPTION	"Visar det totala antalet filer i mappar."
+    IDS_COLUMN_FOLDERS_TITLE		"Mappar"
+    IDS_COLUMN_FOLDERS_DESCRIPTION	"Visar det totala antalet undermappar i mappar."
+    IDS_COLUMN_SIBLINGS_TITLE		"Filer och Mappar"
+    IDS_COLUMN_SIBLINGS_DESCRIPTION	"Visar det totala antalet filer och undermappar i mappar."
+END
+
+#endif    // Swedish resources
+/////////////////////////////////////////////////////////////////////////////
