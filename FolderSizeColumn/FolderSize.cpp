@@ -39,6 +39,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 	HRESULT hr = _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 	if (hr == S_OK)
 	{
+		// Start polling
 		if (g_pShellUpdate == NULL)
 		{
 			g_pShellUpdate = new ShellUpdate;

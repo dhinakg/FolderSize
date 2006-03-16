@@ -50,6 +50,7 @@ void Monitor::MonitorThread()
 
 	while (true)
 	{
+		// TODO maybe add NTFS journalling support
 		DWORD dwBytesReturned;
 		if (!ReadDirectoryChangesW(m_hDirectory, m_Buffer, 4096, TRUE,
 			FILE_NOTIFY_CHANGE_FILE_NAME|FILE_NOTIFY_CHANGE_DIR_NAME|FILE_NOTIFY_CHANGE_SIZE,

@@ -92,6 +92,8 @@ bool Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 	return true;
 }
 
+// IScanner callbacks
+
 // The scanner is currently scanning the PARENT of pszFolder, and it
 // found this subfolder.
 void Cache::FoundFolder(const Path& path)
@@ -220,6 +222,22 @@ void Cache::EnableScanner(bool bEnable)
 
 #define SYNC_SCAN_TIME 200
 
+// Scenario 1:
+//
+// 1. No Explorer Window open
+// 2. Files are changing
+// 3. Received notification about files changed
+// 4. We don't want to scan things, the user is currently looking at
+//
+// Scenario 2:
+// 
+// 1. Explorer Window open
+// 2. Something changed in the window
+// 3. We wan't the updated size, but it hasn't scanned yet
+//
+// 2 options left:
+// 4 a) If we can do it fast, return the correct result
+// 4 b) It might take longer, just return *dirty* and let the Scanner do its job
 void Cache::DoSyncScans(CacheFolder* pFolder)
 {
 	if (m_bScannerEnabled)
@@ -250,6 +268,7 @@ void Cache::DoSyncScans(CacheFolder* pFolder)
 		QueryPerformanceCounter(&nStartCount);
 		QueryPerformanceCounter(&nCurrentCount);
 
+		// try to do it in less than 200ms
 		int nScans = 0;
 		while ((nCurrentCount.QuadPart-nStartCount.QuadPart)*1000/g_nPerformanceFrequency.QuadPart < 200 &&
 			((pFolder->GetStatus() != CacheFolder::FS_CLEAN ? 1 : 0) + pFolder->GetDirtyChildren() + pFolder->GetEmptyChildren()) <= 5)

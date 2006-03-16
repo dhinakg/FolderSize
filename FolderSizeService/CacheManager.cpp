@@ -11,6 +11,7 @@ CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 
 CacheManager::~CacheManager()
 {
+	// clean up handle
 	for (set<HDEVNOTIFY>::iterator i=m_RegisteredDeviceNotifications.begin(); i!=m_RegisteredDeviceNotifications.end(); i++)
 	{
 		if (!UnregisterDeviceNotification(*i))
@@ -18,6 +19,7 @@ CacheManager::~CacheManager()
 			EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 		}
 	}
+	// cleanup caches for each volume
 	POSITION pos = m_Map.GetStartPosition();
 	while (pos != NULL)
 	{
@@ -62,6 +64,7 @@ bool MakeCacheId(const Path& path, LPTSTR pszCacheId, LPTSTR& pszVolume)
 	return true;
 }
 
+// Do fancy stuff to support network
 Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 {
 	// make a cache id which will be the volume of the folder, optionally preceded by a username

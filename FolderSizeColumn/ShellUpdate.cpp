@@ -64,6 +64,8 @@ DWORD ShellUpdate::ThreadProc(LPVOID lpParameter)
 	return 0;
 }
 
+// Get the list of Folders we are currently looking at from the WebBrowsers into strsFolders
+// It's a hashset, so we omit duplicates.
 void GetBrowsedFolders(Strings& strsFolders, IWebBrowser2** apWebBrowsers, int nCount)
 {
 	for (int i=0; i<nCount; i++)
@@ -151,12 +153,15 @@ bool GetShellWindows(IWebBrowser2**& pWebBrowsers, long& nCount)
 				// Item can return S_OK even if there is no IDispatch
 				if (SUCCEEDED(psw->Item(varItem, &pDispatch)) && pDispatch)
 				{
-					IWebBrowser2* pWebBrowser;
-					if (SUCCEEDED(pDispatch->QueryInterface(IID_IWebBrowser2, (void**)&pWebBrowser)))
+					if(pDispatch) // avoid segfault
 					{
-						pWebBrowsers[nCount++] = pWebBrowser;
+						IWebBrowser2* pWebBrowser;
+						if (SUCCEEDED(pDispatch->QueryInterface(IID_IWebBrowser2, (void**)&pWebBrowser)))
+						{
+							pWebBrowsers[nCount++] = pWebBrowser;
+						}
+						pDispatch->Release();
 					}
-					pDispatch->Release();
 				}
 			}
 
@@ -212,10 +217,12 @@ bool WindowLooksLikeAnAddressEdit(HWND hwnd)
 	return false;
 }
 
+// This is called every SHELL_UPDATE_INTERVAL seconds by the Thread
 void ShellUpdate::Update()
 {
 	Strings strsFoldersBrowsed;
 
+	// Get all the explorers
 	IWebBrowser2** apWebBrowsers;
 	long nCount;
 	if (GetShellWindows(apWebBrowsers, nCount))
@@ -238,6 +245,7 @@ void ShellUpdate::Update()
 			}
 		}
 
+		// No update at all..
 		if (!bUserEditingAddress)
 		{
 			GetBrowsedFolders(strsFoldersBrowsed, apWebBrowsers, nCount);
@@ -269,11 +277,14 @@ void ShellUpdate::Update()
 		{
 			if (WriteRequest(hPipe, PCR_GETUPDATEDFOLDERS))
 			{
+				// Tell the Service what Folders we are interested at
 				if (WriteStringList(hPipe, strsFoldersBrowsed))
 				{
+					// What folders need updating...
 					Strings strsFoldersToUpdate;
 					if (ReadStringList(hPipe, strsFoldersToUpdate))
 					{
+						// Update the Shell
 						for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
 						{
 							SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH|SHCNF_FLUSH, i->c_str(), NULL);

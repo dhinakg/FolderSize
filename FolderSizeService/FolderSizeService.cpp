@@ -132,6 +132,7 @@ DWORD Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData)
 		SetEvent(m_hQuitEvent);
 		return NO_ERROR;
 
+	// Get notified if a device (e.g. usb drive) gets removed
 	case SERVICE_CONTROL_DEVICEEVENT:
 		if ((dwEventType == DBT_DEVICEQUERYREMOVE || dwEventType == DBT_DEVICEREMOVECOMPLETE) &&
 		   ((PDEV_BROADCAST_HDR)lpEventData)->dbch_devicetype == DBT_DEVTYP_HANDLE)

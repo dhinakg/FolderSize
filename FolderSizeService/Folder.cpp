@@ -56,6 +56,7 @@ const FOLDERINFO& CacheFolder::GetTotalSize() const
 
 const Path& CacheFolder::GetPath() const
 {
+	// TODO walk up the tree
 	return m_path;
 }
 
@@ -227,6 +228,7 @@ void CacheFolder::AddToParentsChildList()
 	{
 		m_pNextSibling = m_pParent->m_pChild;
 		m_pParent->m_pChild = this;
+		// TODO add ourself to the parents map
 	}
 }
 

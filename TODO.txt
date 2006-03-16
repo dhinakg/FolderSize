@@ -1,0 +1,3 @@
+- NTFS Journalling for updates (timestamp based)
+- NTFS Attributes for persisting the cache
+  (watchout for ACL)

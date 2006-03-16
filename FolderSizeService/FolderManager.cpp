@@ -72,6 +72,7 @@ void FolderManager::Unregister(CacheFolder* pFolder)
 	}
 }
 
+// Comes in from Folder::DisplayUpdated(), coming from CacheManager
 void FolderManager::UserRequested(CacheFolder* pFolder)
 {
 	LARGE_INTEGER nTime;

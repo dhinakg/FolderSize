@@ -193,6 +193,7 @@ DWORD WINAPI Pipe::PipeThread(LPVOID lpParameter)
 	return pPipe->PipeThread();
 }
 
+// Handle a request from clients
 DWORD Pipe::PipeThread()
 {
 	SecurityDescriptor sd;

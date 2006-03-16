@@ -2,6 +2,8 @@
 #include "Cache.h"
 #include "EventLog.h"
 
+// Handles creation/deletion of Cache objects
+// Resolves volumes from paths and dispatches onto the right Cache obj
 class CacheManager : protected ICacheCallback
 {
 public:
@@ -33,7 +35,7 @@ protected:
 			return nHash;
 		}
 	};
-
+	// TODO change to stl map
 	typedef CAtlMap<CString, Cache*, CStringHashTraits> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;

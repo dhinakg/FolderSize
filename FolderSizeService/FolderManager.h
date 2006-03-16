@@ -35,6 +35,9 @@ protected:
 		}
 	};
 
+	// TODO  Replace me with a map in each folder hashmap<wchar_t*, CacheFolder*>
+	//       hashmap<local part of the path, CacheFolder*>
+	//       on rename the map needs to be updated
 	typedef CAtlMap<Path, CacheFolder*, PathHashTraits> MapType;
 	MapType m_Map;
 	CacheFolder* m_pFolderRoot;

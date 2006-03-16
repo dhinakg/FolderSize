@@ -127,6 +127,7 @@ ULONGLONG GetFileSize(LPCTSTR pFileName)
 {
 	// GetFileAttributesEx and CreateFile fail if the file is open by the system (for example, the swap file).
 	// FindFirstFile seems to be the only reliable way to get the size.
+	// e.g. the PageFile fails.
 
 	ULONGLONG llFileSize = 0;
 	WIN32_FILE_ATTRIBUTE_DATA fad;

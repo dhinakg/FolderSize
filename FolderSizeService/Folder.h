@@ -54,8 +54,8 @@ protected:
 
 	// folders organize themselves into a tree
 	CacheFolder* m_pParent;
-	CacheFolder* m_pChild;
-	CacheFolder* m_pNextSibling;
+	CacheFolder* m_pChild;		 // down the structure
+	CacheFolder* m_pNextSibling; // single linked list
 
 	// the accuracy of nSize is determined by m_eStatus
 	FOLDERINFO m_nSize;
