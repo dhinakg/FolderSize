@@ -45,7 +45,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "サービス"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "サービスの状態:",IDC_STATIC,7,7,49,8
+    LTEXT           "サービスの状態:",IDC_STATIC,7,7,50,8
     LTEXT           "Static",IDC_SERVICE_STATUS,64,7,92,8
     PUSHBUTTON      "開始(&S)",IDC_SERVICE_START,7,25,50,14
     PUSHBUTTON      "停止(&T)",IDC_SERVICE_STOP,7,55,50,14
@@ -60,7 +60,7 @@ BEGIN
                     IDC_STATIC,64,55,141,29
     LTEXT           "バックグラウンドでのスキャンを一時停止して、\nディスク帯域幅を開放します。",
                     IDC_STATIC,64,87,141,32
-    LTEXT           "キャッシュの継続的更新を再開します。",IDC_STATIC,64,119,
+    LTEXT           "キャッシュの持続的更新を再開します。",IDC_STATIC,64,119,
                     141,24
 END
 
@@ -119,9 +119,11 @@ BEGIN
     IDS_SERVICE_PAUSED      "一時停止"
     IDS_SERVICE_START_PENDING "開始中"
     IDS_SERVICE_STOP_PENDING "停止処理中"
-    IDS_SERVICE_CONTINUE_PENDING "再開"
+    IDS_SERVICE_CONTINUE_PENDING "再開中"
     IDS_SERVICE_PAUSE_PENDING "一時停止処理中"
 END
 
 #endif    // Japanese resources
 /////////////////////////////////////////////////////////////////////////////
+
+
