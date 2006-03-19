@@ -57,7 +57,7 @@ END
 
 IDD_ABOUT DIALOGEX 0, 0, 212, 188
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About"
+CAPTION "Om"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size för Windows uppfanns, planerades och implementerades av Brian Oraas.",IDC_STATIC,7,38,96,34
@@ -117,4 +117,5 @@ END
 
 #endif    // Swedish resources
 /////////////////////////////////////////////////////////////////////////////
+
 
