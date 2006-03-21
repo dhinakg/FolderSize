@@ -1,0 +1,135 @@
+// Microsoft Visual C++ generated resource script.
+//
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "resource.h"
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESP)
+#ifdef _WIN32
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISPLAY DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Mostrar"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Formato",IDC_STATIC,7,7,198,48
+    CONTROL         "&Explorer style (%s)",IDC_DISPLAY_EXPLORER,"Button",
+                    BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",
+                    BS_AUTORADIOBUTTON,17,36,176,10
+END
+
+IDD_SERVICE DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Servicio"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Estado del servicio:",IDC_STATIC,7,7,65,8
+    LTEXT           "Estático",IDC_SERVICE_STATUS,77,7,113,10
+    PUSHBUTTON      "&Inicio",IDC_SERVICE_START,7,31,50,14
+    PUSHBUTTON      "A&lto",IDC_SERVICE_STOP,7,62,50,14
+    LTEXT           "Debe contar con permisos de Administrador para modificar el servicio.",
+                    IDC_STATIC,64,161,141,20
+    ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
+    PUSHBUTTON      "&Pausa",IDC_SERVICE_PAUSE,7,94,50,14
+    PUSHBUTTON      "&Reanudar",IDC_SERVICE_RESUME,7,121,50,14
+    LTEXT           "Mientras se ejecuta el servicio, el caché del Folder Size reside en memoria y esta monitoreando sus carpetas.",
+                    IDC_STATIC,64,29,141,27
+    LTEXT           "Cuando el servicio se detenga, la información sobre el tamaño de la carpeta no estará disponible en el Explorador.",
+                    IDC_STATIC,64,60,141,27
+    LTEXT           "Suspenda el escaneado en segundo plano para liberar ancho de banda de disco.",
+                    IDC_STATIC,64,94,141,23
+    LTEXT           "Reanude para mantener el caché actualizado.",IDC_STATIC,
+                    64,120,141,24
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 212, 188
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Acerca"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Folder Size para Windows fue concebido, diseñado e implementado por Brian Oraas.",
+                    IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size para Windows 2.3",IDC_TITLE,7,7,198,22,
+                    WS_TABSTOP
+    LTEXT           "Folder Size para Windows puede ser distribuido bajo los tárminos de GNU General Public License.",
+                    IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "Licencia",IDC_STATIC,7,123,198,58
+    LTEXT           "Encuentre más sobre GNU aquí.",IDC_HYPER_GNU,17,162,141,
+                    8,WS_TABSTOP
+    CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
+                    WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_SERVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NAME                "Folder Size"
+    IDS_INFO                "Personalice la columna de Tamaño de Carpeta del Explorador y controle el servicio de Folder Size."
+    IDS_SERVICE_RUNNING     "Ejecutando"
+    IDS_SERVICE_STOPPED     "Detenido"
+    IDS_SERVICE_UNKNOWN     "Desconocido"
+    IDS_SERVICE_PAUSED      "Pausado"
+    IDS_SERVICE_START_PENDING "Iniciando"
+    IDS_SERVICE_STOP_PENDING "Deteniendo"
+    IDS_SERVICE_CONTINUE_PENDING "Reanudando"
+    IDS_SERVICE_PAUSE_PENDING "Pausando"
+END
+
+#endif    // Spanish resources
+/////////////////////////////////////////////////////////////////////////////

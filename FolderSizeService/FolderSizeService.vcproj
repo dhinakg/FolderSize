@@ -182,6 +182,9 @@
 				RelativePath=".\FolderSizeService_en.rc">
 			</File>
 			<File
+				RelativePath=".\FolderSizeService_es.rc">
+			</File>
+			<File
 				RelativePath=".\FolderSizeService_fr.rc">
 			</File>
 			<File

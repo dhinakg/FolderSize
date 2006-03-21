@@ -1,0 +1,46 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESP)
+#ifdef _WIN32
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_COLUMN_TITLE        "Tamaño de Carpeta"
+    IDS_COLUMN_DESCRIPTION  "Muestra el tamaño total de los archivos dentro de las carpetas."
+    IDS_COLUMN_FILES_TITLE  "Archivos"
+    IDS_COLUMN_FILES_DESCRIPTION 
+                            "Muestra el número total de archivos dentro de las carpetas."
+    IDS_COLUMN_FOLDERS_TITLE "Subcarpetas"
+    IDS_COLUMN_FOLDERS_DESCRIPTION 
+                            "Muestra el número total de subcarpetas dentro de las carpetas."
+    IDS_COLUMN_SIBLINGS_TITLE "Archivos y Subcarpetas"
+    IDS_COLUMN_SIBLINGS_DESCRIPTION 
+                            "Muestra el número total de archivos y subcarpetas dentro de las carpetas."
+END
+
+#endif    // Spanish resources
+/////////////////////////////////////////////////////////////////////////////
+
