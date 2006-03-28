@@ -1,6 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -47,21 +46,21 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Service status:",IDC_STATIC,7,7,49,8
     LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
-    PUSHBUTTON      "Starten",IDC_SERVICE_START,7,19,50,14
-    PUSHBUTTON      "Stoppen",IDC_SERVICE_STOP,7,59,50,14
+    PUSHBUTTON      "Starten",IDC_SERVICE_START,7,22,50,14
+    PUSHBUTTON      "Stoppen",IDC_SERVICE_STOP,7,58,50,14
     LTEXT           "Je hebt administrator rechten nodig om de status van een service te wijzigen.",
                     IDC_STATIC,64,165,141,16
     ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
     PUSHBUTTON      "Onderbreken",IDC_SERVICE_PAUSE,7,85,50,14
-    PUSHBUTTON      "Doorgaan",IDC_SERVICE_RESUME,7,132,50,14
-    LTEXT           "Wanneer de Folder Size service gestart is wordt een cache in het geheugen opgebouwd en zal Folder Size uw systeem monitoren en de geselecteerde gegevens in de Windows Verkenner tonen.",
-                    IDC_STATIC,64,16,141,42
-    LTEXT           "Wanneer de Folder Size service gestopt is, wordt de Folder Size informatie in de Windows Verkenner niet meer getoond.",
-                    IDC_STATIC,64,57,141,24
-    LTEXT           "Het onderbreken van de Folder Size service stopt het monitoren van uw systeem. De Folder Size gegevens blijven zichtbaar in de Windows Verkenner maar worden niet meer bijgewerkt daar de cache niet vernieuwd wordt.",
-                    IDC_STATIC,64,83,141,50
-    LTEXT           "De Folder Size service hervatten zorgt ervoor dat de Folder Size cache opnieuw vernieuwd wordt zodat de gegevens in de Windows Verkenner bijgewerkt worden.",
-                    IDC_STATIC,64,131,141,34
+    PUSHBUTTON      "Doorgaan",IDC_SERVICE_RESUME,7,130,50,14
+    LTEXT           "Wanneer Folder Size gestart is wordt een cache in het geheugen opgebouwd en zal de service uw systeem monitoren en de gegevens in de Windows Verkenner tonen.",
+                    IDC_STATIC,64,20,141,34
+    LTEXT           "Wanneer Folder Size gestopt is, wordt de Folder Size informatie in de Windows Verkenner niet meer getoond.",
+                    IDC_STATIC,64,56,141,24
+    LTEXT           "Het onderbreken van Folder Size stopt het monitoren van uw systeem. De Folder Size gegevens blijven zichtbaar in de Windows Verkenner maar worden niet meer bijgewerkt.",
+                    IDC_STATIC,64,84,141,43
+    LTEXT           "De Folder Size service hervatten zorgt ervoor dat de cache opnieuw vernieuwd wordt zodat de gegevens in de Windows Verkenner bijgewerkt worden.",
+                    IDC_STATIC,64,128,141,34
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 212, 188
@@ -74,11 +73,11 @@ BEGIN
                     IDC_STATIC,7,38,96,34
     LTEXT           "Folder Size voor Windows 2.3",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
-    LTEXT           "Folder Size voor Windows is vrijgegeven onder de 'GNU Public License' overeenkomst.",
+    LTEXT           "Folder Size voor Windows wordt verdeeld onder de voorwaarden van de GNU/GPL licentie.",
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licentie",IDC_STATIC,7,123,198,58
     LTEXT           "Klik hier om meer te weten te komen over de 'GNU Public License' overeenkomst.",
-                    IDC_HYPER_GNU,17,158,187,17,WS_TABSTOP
+                    IDC_HYPER_GNU,17,158,186,17,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
