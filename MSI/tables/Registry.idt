@@ -1,6 +1,6 @@
 Registry	Root	Key	Name	Value	Component_
 s72	i2	l255	L255	L0	s72
 Registry	Registry
-RegColumn	0	Folder\ShellEx\ColumnHandlers\{04DAAD08-70EF-450E-834A-DCFAF9B48748}	*		ColumnHandler
+RegColumn	0	Folder\ShellEx\ColumnHandlers\{04DAAD08-70EF-450E-834A-DCFAF9B48748}		Folder Size column	ColumnHandler
 RegCpl	2	SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cpls	Folder Size	[#FolderSize.cpl]	ControlPanel
 ThreadingModel	0	CLSID\{04DAAD08-70EF-450E-834A-DCFAF9B48748}\InprocServer32	ThreadingModel	Apartment	ColumnHandler
