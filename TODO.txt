@@ -1,3 +1,13 @@
+Ideas for 2.4:
+- Add display option: Show logical folder sizes, or size on disk (GetCompressedFileSize)
+- Fix scanner getting blocked on large folders - scan from the scanner thread only?
+- Select which device types to scan (network, removable, cd)
+- Fix the bad shell updating when viewing parent and child folders
+- Walk down the tree rather than hash the full folder name for memory savings
+- Fix the delay when displaying a column - reuse the pipe? maybe cache results in the shell extension?
+
+Ideas for the future:
 - NTFS Journalling for updates (timestamp based)
 - NTFS Attributes for persisting the cache
   (watchout for ACL)
+
