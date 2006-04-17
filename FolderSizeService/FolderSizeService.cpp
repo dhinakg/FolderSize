@@ -39,10 +39,10 @@ Service::Service()
 {
 	m_ss.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	m_ss.dwCurrentState = SERVICE_START_PENDING;
-	m_ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
+	m_ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_PARAMCHANGE;
 	m_ss.dwWin32ExitCode = NO_ERROR;
 	m_ss.dwCheckPoint = 0;
-	m_ss.dwWaitHint = 1000;
+	m_ss.dwWaitHint = 500;
 
 	m_hSS = RegisterServiceCtrlHandlerEx(SERVICE_NAME, HandlerEx, this);
 	SetStatus();
@@ -97,9 +97,7 @@ void Service::SetStatus(DWORD dwCurrentState, DWORD dwError)
 
 void Service::WaitUntilServiceStops()
 {
-	SetStatus(SERVICE_RUNNING);
 	WaitForSingleObject(m_hQuitEvent, INFINITE);
-	SetStatus(SERVICE_STOP_PENDING);
 }
 
 DWORD WINAPI Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext)
@@ -129,6 +127,7 @@ DWORD Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData)
 		return NO_ERROR;
 		
 	case SERVICE_CONTROL_STOP:
+		SetStatus(SERVICE_STOP_PENDING);
 		SetEvent(m_hQuitEvent);
 		return NO_ERROR;
 
@@ -164,6 +163,7 @@ void WINAPI	ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 		for (int i=0; i<NUM_PIPES; i++)
 			apPipes[i] = new Pipe(&theCacheManager);
 
+		s.SetStatus(SERVICE_RUNNING);
 		s.WaitUntilServiceStops();
 
 		for (int i=0; i<NUM_PIPES; i++)
