@@ -29,17 +29,17 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 
 STRINGTABLE 
 BEGIN
-    IDS_COLUMN_TITLE        "Grösse"
-    IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
+    IDS_COLUMN_TITLE        "Ordnergröße"
+    IDS_COLUMN_DESCRIPTION  "Anzeige der Gesamtgröße aller Dateien in Ordnern."
     IDS_COLUMN_FILES_TITLE  "Anzahl Dateien"
     IDS_COLUMN_FILES_DESCRIPTION 
-                            "Display the total number of files within folders."
+                            "Anzeige der Gesamtanzahl aller Dateien in Ordnern."
     IDS_COLUMN_FOLDERS_TITLE "Anzahl Ordner"
     IDS_COLUMN_FOLDERS_DESCRIPTION 
-                            "Display the total number of subfolders within folders."
+                            "Anzeige der Gesamtanzahl aller Unterordner in Ordnern."
     IDS_COLUMN_SIBLINGS_TITLE "Anzahl Objekte"
     IDS_COLUMN_SIBLINGS_DESCRIPTION 
-                            "Display the total number of files and subfolders within folders."
+                            "Anzeige der Gesamtanzahl aller Dateien und Unterordner in Ordnern."
 END
 
 #endif    // German (Germany) resources

@@ -40,7 +40,7 @@ BEGIN
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Lizenz",IDC_STATIC,7,123,198,58
     LTEXT           "Mehr über GNU finden Sie hier.",IDC_HYPER_GNU,17,162,
-                    100,8,WS_TABSTOP
+                    179,8,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
@@ -53,10 +53,19 @@ CAPTION "Darstellung"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Format",IDC_STATIC,7,7,198,48
-    CONTROL         "&Explorer stil (%s)",IDC_DISPLAY_EXPLORER,"Button",
+    CONTROL         "&Explorer-Stil (%s)",IDC_DISPLAY_EXPLORER,"Button",
                     BS_AUTORADIOBUTTON,17,22,171,10
     CONTROL         "&Kompakt (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,176,10
+    GROUPBOX        "Datenträgertypen",IDC_STATIC,7,63,198,51
+    CONTROL         "&Festplatten",IDC_DISPLAY_LOCAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,79,78,10
+    CONTROL         "&Wechseldatenträger",IDC_DISPLAY_REMOVABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,79,78,10
+    CONTROL         "&Optische Laufwerke",IDC_DISPLAY_CD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,95,78,10
+    CONTROL         "&Netzwerkfreigaben",IDC_DISPLAY_NETWORK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,95,78,10
 END
 
 IDD_SERVICE DIALOGEX 0, 0, 212, 188
@@ -74,9 +83,9 @@ BEGIN
     ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
     PUSHBUTTON      "Anhalten",IDC_SERVICE_PAUSE,7,83,50,14
     PUSHBUTTON      "Fortsetzen",IDC_SERVICE_RESUME,7,108,50,14
-    LTEXT           "Während der Dienst läuft, verwaltet Folder Size ein Cache im Arbeitsspeicher und überwacht die Ordner.",
+    LTEXT           "Während der Dienst läuft, verwaltet Folder Size einen Cache im Arbeitsspeicher und überwacht die Ordner.",
                     IDC_STATIC,64,24,141,27
-    LTEXT           "Wenn der Dienst angehalten ist, sind die Folder Size Informationen im Explorer nicht verfügbar.",
+    LTEXT           "Wenn der Dienst angehalten ist, sind die Informationen über Ordnergrößen im Explorer nicht verfügbar.",
                     IDC_STATIC,64,55,141,26
     LTEXT           "Hintergrundüberwachung anhalten, um die Harddisk zu entlasten.",
                     IDC_STATIC,64,83,141,23
@@ -131,14 +140,14 @@ END
 STRINGTABLE 
 BEGIN
     IDS_NAME                "Folder Size"
-    IDS_INFO                "Anpassung der Explorer Folder Size Spalten und Steuerung des Folder Size Dienstes."
+    IDS_INFO                "Anpassung der Ordnergrößen-Spalten im Explorer und Steuerung des Folder Size Dienstes."
     IDS_SERVICE_RUNNING     "Gestartet"
     IDS_SERVICE_STOPPED     "Beendet"
     IDS_SERVICE_UNKNOWN     "Unbekannt"
     IDS_SERVICE_PAUSED      "Angehalten"
     IDS_SERVICE_START_PENDING "Wird gestartet"
     IDS_SERVICE_STOP_PENDING "Wird beendet"
-    IDS_SERVICE_CONTINUE_PENDING "Wird fortgefahren"
+    IDS_SERVICE_CONTINUE_PENDING "Wird fortgesetzt"
     IDS_SERVICE_PAUSE_PENDING "Wird angehalten"
 END
 
