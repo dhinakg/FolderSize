@@ -191,9 +191,9 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
    ULONGLONG nSize1;
    int nDimension;
 
-   if (bCompact)
+   if (!bCompact)
    {
-      for (nDimension = 0, nSize1 = nSize / 1024; nSize1 > 0; nSize1 /= 10, nDimension++) ;
+      for (nDimension = 0, nSize1 = (nSize + 1023) / 1024; nSize1 > 0; nSize1 /= 10, nDimension++) ;
    }
    else
    {
