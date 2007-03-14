@@ -5,6 +5,7 @@ Ideas for 2.4:
 - Fix the bad shell updating when viewing parent and child folders
 - Walk down the tree rather than hash the full folder name for memory savings
 - Fix the delay when displaying a column - reuse the pipe? maybe cache results in the shell extension?
+- Improve NTFS junction handling
 
 Ideas for the future:
 - NTFS Journalling for updates (timestamp based)
