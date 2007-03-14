@@ -192,6 +192,11 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 	}
 }
 
+void CacheManager::ParamChange()
+{
+	// probably need some code here
+}
+
 void CacheManager::KillMe(Cache* pExpiredCache)
 {
 	EnterCriticalSection(&m_cs);
