@@ -2,25 +2,42 @@
 #include <shlobj.h>   // for IShellWindows
 #include <olectl.h>
 #include "PropSheet.h"
-#include "..\FolderSizeService\FolderSizeSvc.h"
 #include "Resource.h"
 #include "Hyperlinks.h"
+#include "Service.h"
 
+#define COLUMN_SETTINGS_KEY      TEXT("Software\\Brio\\FolderSize")
+#define SERVICE_PARAMETERS_KEY   TEXT("SYSTEM\\CurrentControlSet\\Services\\FolderSize\\Parameters")
+
+bool LoadDWord(HKEY hKey, LPCTSTR lpValueName, DWORD& dw)
+{
+	DWORD dwType, dwData, cbData;
+	cbData = sizeof(DWORD);
+	if (RegQueryValueEx(hKey, lpValueName, NULL, &dwType, (LPBYTE)&dwData, &cbData) == ERROR_SUCCESS)
+	{
+		if (dwType == REG_DWORD)
+		{
+			dw = dwData;
+			return true;
+		}
+	}
+	return false;
+}
+
+void SaveDWord(HKEY hKey, LPCTSTR lpValueName, DWORD dw)
+{
+	RegSetValueEx(hKey, lpValueName, 0, REG_DWORD, (CONST BYTE*)&dw, sizeof(DWORD));
+}
 
 void LoadDisplayOptions(int& nDisplayFormat)
 {
 	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Brio\\FolderSize"), 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, COLUMN_SETTINGS_KEY, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
 	{
-		DWORD dwType, dwData, cbData;
-		cbData = sizeof(DWORD);
-		if (RegQueryValueEx(hKey, TEXT("DisplayFormat"), NULL, &dwType, (LPBYTE)&dwData, &cbData) == ERROR_SUCCESS)
-		{
-			if (dwType == REG_DWORD)
-			{
-				nDisplayFormat = dwData;
-			}
-		}
+		DWORD dw;
+		if (LoadDWord(hKey, TEXT("DisplayFormat"), dw))
+			nDisplayFormat = dw;
+
 		RegCloseKey(hKey);
 	}
 }
@@ -28,10 +45,51 @@ void LoadDisplayOptions(int& nDisplayFormat)
 void SaveDisplayOptions(int nDisplayFormat)
 {
 	HKEY hKey;
-	if (RegCreateKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Brio\\FolderSize"), 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
+	if (RegCreateKeyEx(HKEY_CURRENT_USER, COLUMN_SETTINGS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
 	{
 		DWORD dwData = nDisplayFormat;
 		RegSetValueEx(hKey, TEXT("DisplayFormat"), 0, REG_DWORD, (CONST BYTE*)&dwData, sizeof(DWORD));
+		RegCloseKey(hKey);
+	}
+}
+
+#define SCANDRIVETYPE_LOCAL        0x01
+#define SCANDRIVETYPE_CD           0x02
+#define SCANDRIVETYPE_REMOVABLE    0x04
+#define SCANDRIVETYPE_NETWORK      0x08
+
+int LoadScanDriveTypes()
+{
+	int DriveTypes = 0;
+
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+	{
+		DWORD dw;
+		if (!LoadDWord(hKey, TEXT("ScanLocal"), dw) || dw != 0)
+			DriveTypes |= SCANDRIVETYPE_LOCAL;
+		if (!LoadDWord(hKey, TEXT("ScanCD"), dw) || dw != 0)
+			DriveTypes |= SCANDRIVETYPE_CD;
+		if (!LoadDWord(hKey, TEXT("ScanRemovable"), dw) || dw != 0)
+			DriveTypes |= SCANDRIVETYPE_REMOVABLE;
+		if (!LoadDWord(hKey, TEXT("ScanNetwork"), dw) || dw != 0)
+			DriveTypes |= SCANDRIVETYPE_NETWORK;
+
+		RegCloseKey(hKey);
+	}
+
+	return DriveTypes;
+}
+
+void SaveScanDriveTypes(int DriveTypes)
+{
+	HKEY hKey;
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
+	{
+		SaveDWord(hKey, TEXT("ScanLocal"), DriveTypes & SCANDRIVETYPE_LOCAL ? 1 : 0);
+		SaveDWord(hKey, TEXT("ScanCD"), DriveTypes & SCANDRIVETYPE_CD ? 1 : 0);
+		SaveDWord(hKey, TEXT("ScanRemovable"), DriveTypes & SCANDRIVETYPE_REMOVABLE ? 1 : 0);
+		SaveDWord(hKey, TEXT("ScanNetwork"), DriveTypes & SCANDRIVETYPE_NETWORK ? 1 : 0);
 		RegCloseKey(hKey);
 	}
 }
@@ -137,10 +195,18 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			wsprintf(szDisplayMsg, szFormatMsg, szSize);
 			SetDlgItemText(hwndDlg, IDC_DISPLAY_COMPACT, szDisplayMsg);
 
+			// load the format option
 			int nDisplayFormat = 0;
 			LoadDisplayOptions(nDisplayFormat);
 			UINT nIDCheck = nDisplayFormat == 1 ? IDC_DISPLAY_COMPACT : IDC_DISPLAY_EXPLORER;
 			CheckDlgButton(hwndDlg, nIDCheck, BST_CHECKED);
+
+			// load the drive type options
+			int DriveTypes = LoadScanDriveTypes();
+			CheckDlgButton(hwndDlg, IDC_DISPLAY_LOCAL, DriveTypes & SCANDRIVETYPE_LOCAL ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_DISPLAY_CD, DriveTypes & SCANDRIVETYPE_CD ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_DISPLAY_REMOVABLE, DriveTypes & SCANDRIVETYPE_REMOVABLE ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_DISPLAY_NETWORK, DriveTypes & SCANDRIVETYPE_NETWORK ? BST_CHECKED : BST_UNCHECKED);
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -161,6 +227,18 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				// read the settings and write them to the registry
 				int nDisplayFormat = IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_EXPLORER) == BST_CHECKED ? 0 : 1;
 				SaveDisplayOptions(nDisplayFormat);
+
+				int DriveTypes = 0;
+				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_LOCAL) == BST_CHECKED)
+					DriveTypes |= SCANDRIVETYPE_LOCAL;
+				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_CD) == BST_CHECKED)
+					DriveTypes |= SCANDRIVETYPE_CD;
+				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_REMOVABLE) == BST_CHECKED)
+					DriveTypes |= SCANDRIVETYPE_REMOVABLE;
+				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_NETWORK) == BST_CHECKED)
+					DriveTypes |= SCANDRIVETYPE_NETWORK;
+				SaveScanDriveTypes(DriveTypes);
+
 				RefreshShell();
 				return TRUE;
 			}
@@ -193,34 +271,15 @@ SERVER_STATE g_ServerStateLookup[] =
 
 void UpdateServiceStatus(HWND hwndDlg)
 {
-	DWORD dwCurrentState = 0;
-
-	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-	if (hSCM != NULL)
-	{
-		SC_HANDLE hService = OpenService(hSCM, TEXT("FolderSize"), SERVICE_QUERY_STATUS);
-		if (hService != NULL)
-		{
-			SERVICE_STATUS ss;
-			if (QueryServiceStatus(hService, &ss))
-			{
-				if (ss.dwCurrentState <= SERVICE_PAUSED)
-				{
-					dwCurrentState = ss.dwCurrentState;
-				}
-			}
-			CloseServiceHandle(hService);
-		}
-		CloseServiceHandle(hSCM);
-	}
+	DWORD dwStatus = GetServiceStatus();
 
 	TCHAR szStatus[256];
-	LoadString(g_hInstance, g_ServerStateLookup[dwCurrentState].nNameID, szStatus, countof(szStatus));
+	LoadString(g_hInstance, g_ServerStateLookup[dwStatus].nNameID, szStatus, countof(szStatus));
 	SetDlgItemText(hwndDlg, IDC_SERVICE_STATUS, szStatus);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_START), g_ServerStateLookup[dwCurrentState].bEnableStart);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_STOP), g_ServerStateLookup[dwCurrentState].bEnableStop);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_PAUSE), g_ServerStateLookup[dwCurrentState].bEnablePause);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_RESUME), g_ServerStateLookup[dwCurrentState].bEnableContinue);
+	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_START), g_ServerStateLookup[dwStatus].bEnableStart);
+	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_STOP), g_ServerStateLookup[dwStatus].bEnableStop);
+	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_PAUSE), g_ServerStateLookup[dwStatus].bEnablePause);
+	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_RESUME), g_ServerStateLookup[dwStatus].bEnableContinue);
 }
 
 void DisplayError(HWND hwnd, HRESULT hr)
@@ -235,87 +294,7 @@ void DisplayError(HWND hwnd, HRESULT hr)
 	}
 }
 
-enum MODIFY_SERVICE
-{
-	MS_START,
-	MS_STOP,
-	MS_PAUSE,
-	MS_CONTINUE,
-	MS_MAX
-};
 
-struct MODIFY_SERVICE_PARAMS
-{
-	DWORD dwServiceAccess;
-	DWORD dwControl;
-	DWORD dwPending;
-	DWORD dwState;
-};
-
-MODIFY_SERVICE_PARAMS msp[MS_MAX] =
-{
-	{ SERVICE_START,          0,                        SERVICE_START_PENDING,    SERVICE_RUNNING },
-	{ SERVICE_STOP,           SERVICE_CONTROL_STOP,     SERVICE_STOP_PENDING,     SERVICE_STOPPED },
-	{ SERVICE_PAUSE_CONTINUE, SERVICE_CONTROL_PAUSE,    SERVICE_PAUSE_PENDING,    SERVICE_PAUSED  },
-	{ SERVICE_PAUSE_CONTINUE, SERVICE_CONTROL_CONTINUE, SERVICE_CONTINUE_PENDING, SERVICE_RUNNING }
-};
-
-bool ModifyService(MODIFY_SERVICE ms)
-{
-	bool bModified = false;
-	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-	if (hSCM != NULL)
-	{
-		SC_HANDLE hService = OpenService(hSCM, SERVICE_NAME, msp[ms].dwServiceAccess|SERVICE_QUERY_STATUS);
-		if (hService != NULL)
-		{
-			SERVICE_STATUS ss;
-			BOOL bRet;
-			if (ms == MS_START)
-			{
-				bRet = StartService(hService, 0, NULL);
-			}
-			else
-			{
-				bRet = ControlService(hService, msp[ms].dwControl, &ss);
-			}
-			if (bRet)
-			{
-				// show the user that we'll be waiting for the service
-				HCURSOR hPrevCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-
-				// wait for the service to enter the pending state
-				Sleep(500);
-
-				while (QueryServiceStatus(hService, &ss))
-				{
-					if (ss.dwCurrentState == msp[ms].dwPending)
-					{
-						Sleep(500);
-					}
-					else
-					{
-						if (ss.dwCurrentState == msp[ms].dwState)
-						{
-							bModified = true;
-						}
-						else
-						{
-							// We didn't end up in the state we thought we were going to be in.
-							// Hopefully the server gave us a handy error code.
-							SetLastError(ss.dwWin32ExitCode);
-						}
-						break;
-					}
-				}
-				SetCursor(hPrevCursor);
-			}
-			CloseServiceHandle(hService);
-		}
-		CloseServiceHandle(hSCM);
-	}
-	return bModified;
-}
 
 void SetBiggerFont(HWND hwndCtrl)
 {
@@ -361,30 +340,22 @@ INT_PTR CALLBACK ServiceProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 		case IDC_SERVICE_START:
 			if (!ModifyService(MS_START))
-			{
 				DisplayError(hwndDlg, GetLastError());
-			}
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_STOP:
 			if (!ModifyService(MS_STOP))
-			{
 				DisplayError(hwndDlg, GetLastError());
-			}
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_PAUSE:
 			if (!ModifyService(MS_PAUSE))
-			{
 				DisplayError(hwndDlg, GetLastError());
-			}
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_RESUME:
 			if (!ModifyService(MS_CONTINUE))
-			{
 				DisplayError(hwndDlg, GetLastError());
-			}
 			UpdateServiceStatus(hwndDlg);
 			break;
 		}

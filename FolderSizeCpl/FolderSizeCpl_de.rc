@@ -36,7 +36,7 @@ BEGIN
                     IDC_STATIC,7,38,96,29
     LTEXT           "Folder Size für Windows 2.3",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
-    LTEXT           "Folder Size für Windows wird unter der GNU Public License veröffentlicht.",
+    LTEXT           "Folder Size für Windows wird unter der GNU General Public License veröffentlicht.",
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Lizenz",IDC_STATIC,7,123,198,58
     LTEXT           "Mehr über GNU finden Sie hier.",IDC_HYPER_GNU,17,162,

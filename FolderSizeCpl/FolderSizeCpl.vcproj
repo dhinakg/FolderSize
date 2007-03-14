@@ -132,6 +132,9 @@
 				RelativePath=".\PropSheet.cpp">
 			</File>
 			<File
+				RelativePath=".\Service.cpp">
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -161,7 +164,7 @@
 				RelativePath=".\resource.h">
 			</File>
 			<File
-				RelativePath=".\resrc1.h">
+				RelativePath=".\Service.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.h">

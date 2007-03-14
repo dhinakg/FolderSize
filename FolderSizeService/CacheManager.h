@@ -14,6 +14,7 @@ public:
 	void GetUpdateFolders(const Path& path, Strings& strsFoldersToUpdate);
 	void EnableScanners(bool bEnable);
 	void DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh);
+	void ParamChange();
 
 protected:
 	Cache* GetCacheForFolder(const Path& pathVolume, bool bCreate);

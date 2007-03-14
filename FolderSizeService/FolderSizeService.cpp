@@ -139,6 +139,11 @@ DWORD Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData)
 			m_pCacheManager->DeviceRemoveEvent((PDEV_BROADCAST_HANDLE)lpEventData);
 		}
 		return NO_ERROR;
+
+	case SERVICE_CONTROL_PARAMCHANGE:
+		SetStatus();
+		m_pCacheManager->ParamChange();
+		return NO_ERROR;
 	}
 
 	return ERROR_CALL_NOT_IMPLEMENTED;
