@@ -180,26 +180,26 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 	}
 
 	// Retrieve the dimension of the size value:
-   //
-   // The dimension is an integer so that for each pair of sizes with
-   // the same dimension the sort order of "string sort" is the same
-   // as the intended sort order
-   // Retrieve the string representation for the size
-   // as usual.
-   //
-   // The dimension depends on the prefix.
-   ULONGLONG nSize1;
-   int nDimension;
+	//
+	// The dimension is an integer so that for each pair of sizes with
+	// the same dimension the sort order of "string sort" is the same
+	// as the intended sort order.
+	// Retrieve the string representation for the size
+	// as usual.
+	//
+	// The dimension depends on whether compact or explorer-style display is used.
+	ULONGLONG nSize1;
+	int nDimension;
 
-   if (!bCompact)
-   {
-      for (nDimension = 0, nSize1 = (nSize + 1023) / 1024; nSize1 > 0; nSize1 /= 10, nDimension++) ;
-   }
-   else
-   {
-      for (nDimension = 0, nSize1 = nSize; nSize1 >= 1024; nSize1 /= 1024, nDimension += 4) ;
-      for (; nSize1 > 0; nSize1 /= 10, nDimension++ ) ;
-   }
+	if (!bCompact)
+	{
+		for (nDimension = 0, nSize1 = (nSize + 1023) / 1024; nSize1 > 0; nSize1 /= 10, nDimension++) ;
+	}
+	else
+	{
+		for (nDimension = 0, nSize1 = nSize; nSize1 >= 1024; nSize1 /= 1024, nDimension += 4) ;
+		for (; nSize1 > 0; nSize1 /= 10, nDimension++ ) ;
+	}
 
 	// Insert invisible prefix according to the dimension to maintain
 	// the correct sort order for the string representation of the
@@ -211,13 +211,13 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 	// in a way that a prefix for a larger size is sorted after a 
 	// prefix for a smaller size with string sort. So, when sorting
 	// by our "Folder size" column, sizes are sorted according to 
-	// their dimension.
+	// their dimension in the first place.
 	//
 	// String representations for sizes of the same dimension maintain
-	// the correct sort order. 
-	// The combination of prefix and the size's string 
+	// the correct sort order.
+	// The combination of prefix and the size's string
 	// representation yields a (visually unchanged)
-	// representation for the size while maintaining correct sort 
+	// representation for the size while maintaining correct sort
 	// order.
 	//
 	// However, three restrictions apply:
@@ -228,8 +228,7 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 	//    They are now appended to the size.
 	// 3. Files and folders with the same string representation for
 	//    their size but different sizes are sorted according to their
-	//    name, not to their real size. For more accurate performance,
-	//    use the "Folder Size Sort" column.
+	//    name, not their real size.
 	for (int i1 = N_PREFIX; (i1--) > 0;)
 	{
 		if (nDimension & (1 << i1)) 
@@ -368,7 +367,7 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 					return S_FALSE;
 
 				FOLDERINFO2 nSize;
-	            if (!GetInfoForFolder(pscd->wszFile, nSize))
+				if (!GetInfoForFolder(pscd->wszFile, nSize))
 					return S_FALSE;
 
 				V_VT(pvarData) = VT_UI8;
