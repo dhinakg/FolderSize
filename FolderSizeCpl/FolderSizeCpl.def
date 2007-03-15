@@ -1,4 +1,4 @@
-LIBRARY	FolderSize
+LIBRARY	FolderSize.cpl
 
 EXPORTS
 	CPlApplet
