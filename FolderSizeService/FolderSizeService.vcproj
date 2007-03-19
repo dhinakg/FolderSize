@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="FolderSizeService"
 	ProjectGUID="{E37D15FA-4575-44A1-82C8-710C33AA653D}"
 	Keyword="Win32Proj"
@@ -63,6 +63,7 @@
 				AdditionalDependencies="pdh.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="2"
+				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FolderSizeService.pdb"
 				SubSystem="2"
@@ -100,6 +101,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -139,6 +141,7 @@
 				AdditionalDependencies="pdh.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="1"
+				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
