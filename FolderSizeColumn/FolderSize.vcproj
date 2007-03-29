@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="FolderSizeColumn"
 	ProjectGUID="{4E5F76E4-7237-4337-83AB-32EAF99532CB}"
+	RootNamespace="FolderSizeColumn"
 	Keyword="AtlProj"
 	>
 	<Platforms>
@@ -238,6 +239,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\FolderSizeModule.h"
+				>
+			</File>
+			<File
 				RelativePath="FolderSizeObj.cpp"
 				>
 				<FileConfiguration
@@ -253,6 +258,14 @@
 			</File>
 			<File
 				RelativePath="FolderSizeObj.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RegDwordValue.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RegDwordValue.h"
 				>
 			</File>
 			<File

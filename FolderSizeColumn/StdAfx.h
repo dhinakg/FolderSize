@@ -20,3 +20,9 @@
 // CRT
 #include <tchar.h>
 #include <assert.h>
+
+// STL
+#include <string>
+#ifdef LOG_REGKEY
+#include <fstream>
+#endif

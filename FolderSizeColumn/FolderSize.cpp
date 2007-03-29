@@ -1,19 +1,51 @@
 #include "StdAfx.h"
-#include "ShellUpdate.h"
+#include "FolderSizeModule.h"
 
 
-class CFolderSizeModule : public CAtlDllModuleT<CFolderSizeModule>
+CFolderSizeModule::CFolderSizeModule()
 {
-};
+	m_pShellUpdate = NULL;
+	m_pRegDisplayFormat = NULL;
+}
+
+
+void CFolderSizeModule::InitWatchers()
+{
+	if (m_pShellUpdate == NULL)
+	{
+		m_pShellUpdate = new ShellUpdate;
+	}
+
+	if (m_pRegDisplayFormat == NULL)
+	{
+		m_pRegDisplayFormat = new RegDwordValue(HKEY_CURRENT_USER, TEXT("Software\\Brio\\FolderSize"), TEXT("DisplayFormat"));
+	}
+}
+
+
+void CFolderSizeModule::DestroyWatchers()
+{
+	if (m_pShellUpdate != NULL)
+	{
+		delete m_pShellUpdate;
+		m_pShellUpdate = NULL;
+	}
+
+	if (m_pRegDisplayFormat != NULL)
+	{
+		delete m_pRegDisplayFormat;
+		m_pRegDisplayFormat = NULL;
+	}
+}
+
+
 
 CFolderSizeModule _AtlModule;
-
-static ShellUpdate* g_pShellUpdate = NULL;
 
 // DLL Entry Point
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
-    return _AtlModule.DllMain(dwReason, lpReserved); 
+	return _AtlModule.DllMain(dwReason, lpReserved); 
 }
 
 
@@ -23,11 +55,7 @@ STDAPI DllCanUnloadNow(void)
 	HRESULT hr = _AtlModule.DllCanUnloadNow();
 	if (hr == S_OK)
 	{
-		if (g_pShellUpdate != NULL)
-		{
-			delete g_pShellUpdate;
-			g_pShellUpdate = NULL;
-		}
+		_AtlModule.DestroyWatchers();
 	}
 	return hr;
 }
@@ -40,20 +68,17 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 	if (hr == S_OK)
 	{
 		// Start polling
-		if (g_pShellUpdate == NULL)
-		{
-			g_pShellUpdate = new ShellUpdate;
-		}
+		_AtlModule.InitWatchers();
 	}
-    return hr;
+	return hr;
 }
 
 
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer(void)
 {
-    // registers object, typelib and all interfaces in typelib
-    HRESULT hr = _AtlModule.DllRegisterServer();
+	// registers object, typelib and all interfaces in typelib
+	HRESULT hr = _AtlModule.DllRegisterServer();
 	return hr;
 }
 

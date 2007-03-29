@@ -1,9 +1,9 @@
 #include "StdAfx.h"
+#include "FolderSizeModule.h"
 #include "FolderSize.h"
 #include "FolderSizeObj.h"
 #include "Utility.h"
 #include "Resource.h"
-#include "ShellUpdate.h"
 #include "..\Pipe\Pipe.h"
 
 
@@ -148,7 +148,7 @@ ULONGLONG GetFileSize(LPCTSTR pFileName)
 	return llFileSize;
 }
 
-void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
+void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 {
 	// Assume folders won't get larger than 10^(2^4 - 4) = 10^16 bytes = 1 TB
 	// Adjust if necessary
@@ -159,25 +159,8 @@ void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 	if (uiBufSize <= N_PREFIX)
 		return;
 
-	bool bCompact = false;
-
-	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Brio\\FolderSize"), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
-	{
-		DWORD dwType, dwData, cbData;
-		cbData = sizeof(DWORD);
-		if (RegQueryValueEx(hKey, TEXT("DisplayFormat"), NULL, &dwType, (LPBYTE)&dwData, &cbData) == ERROR_SUCCESS)
-		{
-			if (dwType == REG_DWORD)
-			{
-				if (dwData == 1)
-				{
-					bCompact = true;
-				}
-			}
-		}
-		RegCloseKey(hKey);
-	}
+	// Check value of registry key.
+	bool bCompact = (_AtlModule.m_pRegDisplayFormat->GetValue() != 0);
 
 	// Retrieve the dimension of the size value:
 	//
@@ -302,7 +285,7 @@ bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
 	return bRet;
 }
 
-bool GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
+bool CFolderSizeObj::GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 {
 	pszBuffer[0] = _T('\0');
 	FOLDERINFO2 nSize;
