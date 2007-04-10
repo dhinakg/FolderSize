@@ -8,30 +8,19 @@ public:
 	DWORD GetValue();
 
 private:
-	void ProvideValue();
-	void InitNotify();
-	void TryQueryValue();
-	void SetValueEvent();
+	void ReadAndWatchValue();
 
 	static void CALLBACK WaitCallback(PVOID lpParameter, BOOLEAN TimerOrWaitFired);
 	void WaitCallback();
 
 private:
 	// Read-only:
-	const HKEY m_hKey;
+	const HKEY m_hRootKey;
 	const std::basic_string<TCHAR> m_strKeyName;
 	const std::basic_string<TCHAR> m_strValueName;
 
-	// Atomic DWORD value:
-	DWORD m_dwValue;
-	BOOL m_bValid;
-
-	// Used by QueryValue:
-	HKEY m_hSubKey;
-	std::basic_string<TCHAR> m_strSubKeyName;
-
 	// Modified in main thread only:
-	HANDLE m_hNotify;
+	HANDLE m_hNotifyEvent;
 	HANDLE m_hWaitObject;
 
 #ifdef LOG_REGKEY
@@ -39,5 +28,12 @@ private:
 	LONG m_lCount;
 #endif
 
+	// All following data members are synchronized by this critical section
 	CRITICAL_SECTION m_Cs;
+
+	// Atomic DWORD value:
+	DWORD m_dwValue;
+	bool m_bValid;
+	// Handle of the key currently being watched
+	HKEY m_hSubKey;
 };

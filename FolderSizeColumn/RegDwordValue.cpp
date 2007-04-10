@@ -7,18 +7,19 @@
 // CRegDwordValue
 
 RegDwordValue::RegDwordValue(HKEY hKey, LPCTSTR pszKeyName, LPCTSTR pszValueName) :
-m_hKey(hKey),
+m_hRootKey(hKey),
 m_strKeyName(pszKeyName),
-m_strValueName(pszValueName)
+m_strValueName(pszValueName),
+m_dwValue(0),
+m_bValid(false),
+m_hSubKey(NULL)
 {
-	m_dwValue = 0;
-	m_bValid = FALSE;
-
-	m_hSubKey = NULL;
+	assert(hKey);
+	assert(pszKeyName);
+	assert(pszValueName);
 
 	// Create the event object now and register the wait object later.
-	m_hNotify = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hWaitObject = NULL;
+	m_hNotifyEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
 #ifdef LOG_REGKEY
 	std::wostringstream str;
@@ -37,7 +38,7 @@ m_strValueName(pszValueName)
 	// (WT_EXECUTEINWAITTHREAD) to avoid race conditions
 	// of unknown origin.
 	// We can afford it since the callback only resets a flag and an event object.
-	::RegisterWaitForSingleObject(&m_hWaitObject, m_hNotify, WaitCallback,
+	::RegisterWaitForSingleObject(&m_hWaitObject, m_hNotifyEvent, WaitCallback,
 		this, INFINITE, WT_EXECUTEDEFAULT | WT_EXECUTEINWAITTHREAD);
 }
 
@@ -46,43 +47,32 @@ RegDwordValue::~RegDwordValue()
 {
 	// Unregister Wait for pending notifications:
 	::UnregisterWaitEx(m_hWaitObject, INVALID_HANDLE_VALUE);
-	m_hWaitObject = NULL;
 
 	// Close the notification handle:
-	::CloseHandle(m_hNotify);
-	m_hNotify = NULL;
+	::CloseHandle(m_hNotifyEvent);
 
 	// Close the subkey waited for.
-	if (m_hSubKey) {
+	if (m_hSubKey)
 		::CloseHandle(m_hSubKey);
-		m_hSubKey = NULL;
-	}
 
 	// Finally, delete the critical section.
 	::DeleteCriticalSection(&m_Cs);
 }
 
-
 DWORD RegDwordValue::GetValue()
 {
-	ProvideValue();
-	assert(m_bValid);
-	return m_dwValue;
+	DWORD dwValue = 0;
+	::EnterCriticalSection(&m_Cs);
+	// if we're not waiting on a key, try to read it and wait on it
+	if (m_hSubKey == NULL)
+		ReadAndWatchValue();
+	if (m_bValid)
+		dwValue = m_dwValue;
+	::LeaveCriticalSection(&m_Cs);
+	return dwValue;
 }
 
-
-void RegDwordValue::ProvideValue()
-{
-	if (!m_bValid) {
-		::EnterCriticalSection(&m_Cs);
-		if (!m_bValid)
-			InitNotify();
-		::LeaveCriticalSection(&m_Cs);
-	}
-}
-
-
-void RegDwordValue::InitNotify()
+void RegDwordValue::ReadAndWatchValue()
 {
 #ifdef LOG_REGKEY
 	m_ofLog << L"InitNotify" << std::endl;
@@ -90,84 +80,48 @@ void RegDwordValue::InitNotify()
 
 	// Try to query the value and wait for modifications in the deepest subkey
 	// that exists. Do not create any keys.
-	TryQueryValue();
-	SetValueEvent();
-}
-
-
-void RegDwordValue::TryQueryValue()
-{
-	m_dwValue = 0;
-
-	if (!m_hKey)
-		return;
-
-	if (m_hSubKey) {
-		::RegCloseKey(m_hSubKey);
-		m_hSubKey = NULL;
-	}
-
-	// Clone m_hKey.
-	::RegOpenKeyEx(m_hKey, NULL, 0, KEY_READ, &m_hSubKey);
-	m_strSubKeyName = m_strKeyName;
-
-	// Query each subkey, return on failure.
-	while (m_strSubKeyName.length() > 0) {
-#ifdef LOG_REGKEY
-		m_ofLog << m_strSubKeyName << std::endl;
-#endif
-
-		size_t iPos = m_strSubKeyName.find('\\');
-
-		std::basic_string<TCHAR> strSubKeyName = m_strSubKeyName.substr(0, iPos);
-
-		HKEY hSubKey = NULL;
-		::RegOpenKeyEx(m_hSubKey, strSubKeyName.c_str(), 0, KEY_READ, &hSubKey);
-
-		if (!hSubKey)
-			return;
-
-		::RegCloseKey(m_hSubKey);
-		m_hSubKey = hSubKey;
-
-		m_strSubKeyName.erase(0, iPos);
-		if (m_strSubKeyName.length())
-			m_strSubKeyName.erase(0, 1);
-	}
-
-	// Query value, return on failure.
-	DWORD dwType, dwData, cbData;
-	cbData = sizeof(DWORD);
-	if (RegQueryValueEx(m_hSubKey, m_strValueName.c_str(), NULL,
-		&dwType, (LPBYTE)&dwData, &cbData) != ERROR_SUCCESS)
+	bool bDeepestKey = true;
+	for (std::basic_string<TCHAR> strSubKeyName = m_strKeyName;
+		 !strSubKeyName.empty();
+		 strSubKeyName.erase(strSubKeyName.rfind('\\')))
 	{
-		return;
+		HKEY hSubKey;
+		REGSAM samDesired = bDeepestKey ? KEY_QUERY_VALUE|KEY_NOTIFY : KEY_NOTIFY;
+		if (RegOpenKeyEx(m_hRootKey, strSubKeyName.c_str(), 0, samDesired, &hSubKey) == ERROR_SUCCESS)
+		{
+			// Keep this handle around so we can watch it.
+			m_hSubKey = hSubKey;
+
+			// bGotDeepestKey is still true if this is the key that has the value we want to check.
+			if (bDeepestKey)
+			{
+				// Signal m_hNotifyEvent if any value in m_hSubKey changes.
+				::RegNotifyChangeKeyValue(m_hSubKey, FALSE, REG_NOTIFY_CHANGE_LAST_SET, m_hNotifyEvent, TRUE);
+
+				DWORD dwType, dwData, cbData;
+				cbData = sizeof(DWORD);
+				if (RegQueryValueEx(m_hSubKey, m_strValueName.c_str(), NULL,
+					&dwType, (LPBYTE)&dwData, &cbData) == ERROR_SUCCESS)
+				{
+					if (dwType == REG_DWORD)
+					{
+						m_dwValue = dwData;
+						m_bValid = true;
+					}
+				}
+			}
+			else
+			{
+				// Signal m_hNotifyEvent if a new subkey is added.
+				::RegNotifyChangeKeyValue(m_hSubKey, FALSE, REG_NOTIFY_CHANGE_NAME, m_hNotifyEvent, TRUE);
+			}
+
+			return;
+		}
+
+		bDeepestKey = false;
 	}
-
-	// No DWORD? Return.
-	if (dwType != REG_DWORD)
-		return;
-
-	// Modify value atomically:
-	m_dwValue = dwData;
 }
-
-
-void RegDwordValue::SetValueEvent()
-{
-	m_bValid = TRUE;
-
-	// Signal m_hNotify upon any change to m_hSubKey, including deletion.
-	// This in turn invokes WaitCallbac.
-	::RegNotifyChangeKeyValue(m_hSubKey, m_strValueName.length() > 0 ? TRUE : FALSE,
-		REG_NOTIFY_CHANGE_NAME |
-		REG_NOTIFY_CHANGE_ATTRIBUTES |
-		REG_NOTIFY_CHANGE_LAST_SET |
-		REG_NOTIFY_CHANGE_SECURITY,
-		m_hNotify,
-		TRUE);
-}
-
 
 void CALLBACK RegDwordValue::WaitCallback(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
 {
@@ -175,14 +129,19 @@ void CALLBACK RegDwordValue::WaitCallback(PVOID lpParameter, BOOLEAN TimerOrWait
 	reinterpret_cast<RegDwordValue*>(lpParameter)->WaitCallback();
 }
 
-
 void RegDwordValue::WaitCallback()
 {
 #ifdef LOG_REGKEY
 	m_ofLog << L"WaitCallback(" << m_lCount++ << L")" << std::endl;
 #endif
 
-	// Invalidate value and reset event.
-	m_bValid = FALSE;
-	::ResetEvent(m_hNotify);
+	// Invalidate value.
+	::EnterCriticalSection(&m_Cs);
+	m_bValid = false;
+	if (m_hSubKey != NULL)
+	{
+		CloseHandle(m_hSubKey);
+		m_hSubKey = NULL;
+	}
+	::LeaveCriticalSection(&m_Cs);
 }
