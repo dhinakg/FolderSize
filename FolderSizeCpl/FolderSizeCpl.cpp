@@ -39,15 +39,22 @@ LONG APIENTRY CPlApplet(HWND hwndCPl, UINT uMsg, LPARAM lParam1, LPARAM lParam2)
 		{
 			LPNEWCPLINFO pInfo = (LPNEWCPLINFO)lParam2;
 			pInfo->dwSize = sizeof(NEWCPLINFO);
+			pInfo->lData = NULL;
+			LoadString(g_hInstance, IDS_NAME, pInfo->szName, countof(pInfo->szName));
+			LoadString(g_hInstance, IDS_INFO, pInfo->szInfo, countof(pInfo->szInfo));
+			pInfo->hIcon = NULL;
 			if (SUCCEEDED(CoInitialize(NULL)))
 			{
 				// get the icon from the shell
 				SHFILEINFO shfi;
-				SHGetFileInfo("", FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES | SHGFI_ICON);
-//				pInfo->lData = IDI_ICON;
-				pInfo->hIcon = shfi.hIcon;
+				if (SHGetFileInfo(TEXT(""), FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES | SHGFI_ICON))
+				{
+					pInfo->hIcon = shfi.hIcon;
+				}
 				CoUninitialize();
 			}
+			if (pInfo->hIcon == NULL)
+				MessageBox(NULL, L"failed to load icon", NULL, MB_OK);
 			return 0;
 		}
 		break;
