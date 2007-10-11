@@ -1,21 +1,21 @@
 #pragma once
 // Here's how a client communicates with the service:
 // Connect to the pipe called PIPE_NAME.
-// Send 4 bytes for PIPE_CLIENT_REQUEST.
+// Send 2 bytes for PIPE_CLIENT_REQUEST.
 
-// For PCR_GETFOLDERSIZE, send a NULL-terminated string.
-// Then read from the pipe a GETFOLDERSIZE_REPLY struct.
+// For PCR_GETFOLDERSIZE, send a size-prefixed string.
+// Then read from the pipe a FOLDERINFO2 struct.
 
-// For PCR_GETUPDATEDFOLDERS, send a NULL-terminated list
-// of NULL-terminated strings, and then read back the same type.
+// For PCR_GETUPDATEDFOLDERS, send a size-prefixed list
+// of size-prefixed strings, and then read back the same type.
 
-// All strings are wide characters.
+// All sizes are unsigned shorts; all strings are wide characters.
 
 #include <string>
-#include <hash_set>
+#include <set>
 #include "FolderInfo.h"
 
-typedef stdext::hash_set<std::wstring> Strings;
+typedef std::set<std::wstring> Strings;
 
 #define PIPE_NAME              TEXT("FolderSize")
 #define PIPE_BUFFER_SIZE_IN    4096
@@ -29,9 +29,11 @@ enum PIPE_CLIENT_REQUEST
 };
 
 bool ReadRequest(HANDLE h, PIPE_CLIENT_REQUEST& pcr);
-bool WriteRequest(HANDLE h, PIPE_CLIENT_REQUEST prc);
 bool ReadString(HANDLE h, std::wstring& str);
-bool WriteString(HANDLE h, const std::wstring& str);
+
+bool WriteGetFolderSizeRequest(HANDLE h, const std::wstring& strFolder);
+bool WriteGetUpdatedFoldersRequest(HANDLE h, const Strings& strsFolders);
+
 bool ReadStringList(HANDLE h, Strings& strs);
 bool WriteStringList(HANDLE h, const Strings& strs);
 bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size);

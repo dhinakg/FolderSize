@@ -29,17 +29,16 @@ bool ReadString(HANDLE h, std::wstring& str)
 	{
 		if (dwBytesRead == sizeof(nLen))
 		{
-			wchar_t* ps = (wchar_t*)_alloca((nLen + 1) * sizeof(wchar_t));
+			wchar_t* ps = (wchar_t*)_malloca(nLen * sizeof(wchar_t));
 			if (ReadFile(h, ps, nLen * sizeof(wchar_t), &dwBytesRead, NULL))
 			{
 				if (dwBytesRead == nLen * sizeof(wchar_t))
 				{
-					ps[nLen] = L'\0';
-					str = ps;
+					str.assign(ps, nLen);
 					bRead = true;
 				}
 			}
-
+			_freea(ps);
 		}
 	}
 	return bRead;
@@ -60,6 +59,30 @@ bool WriteString(HANDLE h, const std::wstring& str)
 		}
 	}
 	return false;
+}
+
+#define DWORD_MAX 0xFFFFFFFFUL
+
+bool WriteGetFolderSizeRequest(HANDLE h, const std::wstring& strFolder)
+{
+	if (strFolder.size() > USHRT_MAX)
+		return false;
+	size_t buflen = sizeof(short) * 2 + strFolder.size() * sizeof(wchar_t);
+	BYTE* buffer = (BYTE*)_malloca(buflen);
+	BYTE* p = buffer;
+	unsigned short data = PCR_GETFOLDERSIZE;
+	memcpy(p, &data, sizeof(short));
+	p += sizeof(short);
+	data = (unsigned short)strFolder.size();
+	memcpy(p, &data, sizeof(short));
+	p += sizeof(short);
+	memcpy(p, strFolder.data(), data * sizeof(wchar_t));
+	p += data * sizeof(wchar_t);
+	assert (p - buffer == buflen);
+	DWORD dwBytesWritten;
+	BOOL bWrote = WriteFile(h, buffer, (DWORD)buflen, &dwBytesWritten, NULL);
+	_freea(buffer);
+	return bWrote && dwBytesWritten == buflen;
 }
 
 bool ReadStringList(HANDLE h, Strings& strs)
