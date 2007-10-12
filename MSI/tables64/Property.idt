@@ -2,7 +2,7 @@ Property	Value
 s72	l0
 Property	Property
 ALLUSERS	1
-ARPHELPLINK	http://brio.dyndns.org
+ARPHELPLINK	http://foldersize.sourceforge.net
 BannerBitmap	bannrbmp
 ButtonText_Back	< &Back
 ButtonText_Browse	Br&owse
@@ -40,7 +40,7 @@ ProductCode	{FC8D21C8-7B29-4104-ADB0-FEE9CA1C7922}
 ProductID	none
 ProductLanguage	1033
 ProductName	Folder Size for Windows
-ProductVersion	2.3
+ProductVersion	2.4
 Progress1	Installing
 Progress2	installs
 PROMPTROLLBACKCOST	P
