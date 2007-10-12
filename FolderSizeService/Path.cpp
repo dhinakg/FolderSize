@@ -60,7 +60,7 @@ bool Path::IsNetwork() const
 		TCHAR szDrive[_MAX_DRIVE + 1];
 		lstrcpyn(szDrive, psz, _MAX_DRIVE + 1);
 
-		if (GetDriveType(szDrive) == DRIVE_REMOTE)
+		if (::GetDriveType(szDrive) == DRIVE_REMOTE)
 			return true;
 	}
 
@@ -95,4 +95,16 @@ Path Path::GetVolume() const
 			return Path();
 		return Path(psz, 3);
 	}
+}
+
+UINT Path::GetDriveType() const
+{
+	LPCTSTR psz = c_str();
+
+	if (PathIsNetworkPath(psz) || PathIsUNC(psz))
+		return DRIVE_REMOTE;
+
+	TCHAR szDrive[_MAX_DRIVE + 1];
+	lstrcpyn(szDrive, psz, _MAX_DRIVE + 1);
+	return ::GetDriveType(szDrive);
 }

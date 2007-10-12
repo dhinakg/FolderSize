@@ -2,11 +2,14 @@
 #include "CacheManager.h"
 #include "Cache.h"
 #include "EventLog.h"
+#include "../Settings/Settings.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 : m_hSS(hSS)
 {
 	InitializeCriticalSection(&m_cs);
+
+	m_ScanDriveTypes = LoadScanDriveTypes();
 }
 
 CacheManager::~CacheManager()
@@ -112,17 +115,36 @@ Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 
 bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 {
-	bool bRes = false;
-
-	EnterCriticalSection(&m_cs);
-
-	Cache* pCache = GetCacheForFolder(path, true);
-	if (pCache != NULL)
+	bool bScan = true;
+	switch (path.GetDriveType())
 	{
-		bRes = pCache->GetInfoForFolder(path, nSize);
+	case DRIVE_REMOVABLE:
+		bScan = m_ScanDriveTypes & SCANDRIVETYPE_REMOVABLE ? true : false;
+		break;
+	case DRIVE_FIXED:
+		bScan = m_ScanDriveTypes & SCANDRIVETYPE_LOCAL ? true : false;
+		break;
+	case DRIVE_REMOTE:
+		bScan = m_ScanDriveTypes & SCANDRIVETYPE_NETWORK ? true : false;
+		break;
+	case DRIVE_CDROM:
+		bScan = m_ScanDriveTypes & SCANDRIVETYPE_CD ? true : false;
+		break;
 	}
 
-	LeaveCriticalSection(&m_cs);
+	bool bRes = false;
+	if (bScan)
+	{
+		EnterCriticalSection(&m_cs);
+
+		Cache* pCache = GetCacheForFolder(path, true);
+		if (pCache != NULL)
+		{
+			bRes = pCache->GetInfoForFolder(path, nSize);
+		}
+
+		LeaveCriticalSection(&m_cs);
+	}
 
 	return bRes;
 }
@@ -194,7 +216,48 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 
 void CacheManager::ParamChange()
 {
-	// probably need some code here
+	// destroy caches that have been disabled
+	int oldTypes = m_ScanDriveTypes;
+	int newTypes = m_ScanDriveTypes = LoadScanDriveTypes();
+	int disabledTypes = oldTypes & ~newTypes;
+
+	EnterCriticalSection(&m_cs);
+
+	// iterate through the caches
+	POSITION pos = m_Map.GetStartPosition();
+	while (pos != NULL)
+	{
+		POSITION nextpos = pos;
+		CString strVolume;
+		Cache* pCache;
+		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
+		// check if this is one of the disabled types
+		Path path = strVolume;
+		bool bDelete = false;
+		switch (path.GetDriveType())
+		{
+		case DRIVE_REMOVABLE:
+			bDelete = disabledTypes & SCANDRIVETYPE_REMOVABLE ? true : false;
+			break;
+		case DRIVE_FIXED:
+			bDelete = disabledTypes & SCANDRIVETYPE_LOCAL ? true : false;
+			break;
+		case DRIVE_REMOTE:
+			bDelete = disabledTypes & SCANDRIVETYPE_NETWORK ? true : false;
+			break;
+		case DRIVE_CDROM:
+			bDelete = disabledTypes & SCANDRIVETYPE_CD ? true : false;
+			break;
+		}
+		if (bDelete)
+		{
+			delete pCache;
+			m_Map.RemoveAtPos(pos);
+		}
+		pos = nextpos;
+	}
+
+	LeaveCriticalSection(&m_cs);
 }
 
 void CacheManager::KillMe(Cache* pExpiredCache)

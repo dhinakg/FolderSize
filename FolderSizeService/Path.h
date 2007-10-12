@@ -16,4 +16,5 @@ public:
 	Path GetVolume() const;
 	Path GetParent() const;
 	bool IsNetwork() const;
+	UINT GetDriveType() const;
 };

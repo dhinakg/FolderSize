@@ -61,8 +61,6 @@ bool WriteString(HANDLE h, const std::wstring& str)
 	return false;
 }
 
-#define DWORD_MAX 0xFFFFFFFFUL
-
 bool WriteGetFolderSizeRequest(HANDLE h, const std::wstring& strFolder)
 {
 	if (strFolder.size() > USHRT_MAX)
@@ -105,7 +103,7 @@ bool WriteStringList(HANDLE h, const Strings& strs)
 {
 	unsigned short nCount = (unsigned short)strs.size();
 	DWORD dwBytesWritten;
-	if (!WriteFile(h, &nCount, sizeof(nCount), &dwBytesWritten, NULL))
+	if (!WriteFile(h, &nCount, sizeof(nCount), &dwBytesWritten, NULL) || dwBytesWritten != sizeof(nCount))
 		return false;
 	for (Strings::const_iterator i=strs.begin(); i!=strs.end(); i++)
 	{
@@ -115,6 +113,15 @@ bool WriteStringList(HANDLE h, const Strings& strs)
 		}
 	}
 	return true;
+}
+
+bool WriteGetUpdatedFoldersRequest(HANDLE h, const Strings& strsFolders)
+{
+	unsigned short data = PCR_GETUPDATEDFOLDERS;
+	DWORD dwBytesWritten;
+	if (!WriteFile(h, &data, sizeof(data), &dwBytesWritten, NULL) || dwBytesWritten != sizeof(data))
+		return false;
+	return WriteStringList(h, strsFolders);
 }
 
 bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size)

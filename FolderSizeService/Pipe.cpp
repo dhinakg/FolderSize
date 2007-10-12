@@ -105,7 +105,7 @@ Pipe::~Pipe()
 class NamedPipeClientImpersonator
 {
 public:
-	NamedPipeClientImpersonator(HANDLE hPipe) : m_hPipe(hPipe), m_bImpersonating(false) { Impersonate(); }
+	NamedPipeClientImpersonator(HANDLE hPipe) : m_hPipe(hPipe), m_bImpersonating(false) {}
 	~NamedPipeClientImpersonator() { Revert(); }
 	void Impersonate()
 	{
@@ -145,8 +145,8 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 					// impersonate the caller so we'll interpret his mapped drives correctly
 					NamedPipeClientImpersonator Impersonator(hPipe);
 
-					if (!path.IsNetwork())
-						Impersonator.Revert();
+					if (path.IsNetwork())
+						Impersonator.Impersonate();
 
 					FOLDERINFO2 Size;
 					bool bGotInfo = pCacheManager->GetInfoForFolder(path, Size);
@@ -169,8 +169,9 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 					{
 						Path pathBrowsed = i->c_str();
 
-						Impersonator.Impersonate();
-						if (!pathBrowsed.IsNetwork())
+						if (pathBrowsed.IsNetwork())
+							Impersonator.Impersonate();
+						else
 							Impersonator.Revert();
 
 						pCacheManager->GetUpdateFolders(pathBrowsed, strsUpdated);

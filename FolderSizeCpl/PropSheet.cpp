@@ -5,94 +5,7 @@
 #include "Resource.h"
 #include "Hyperlinks.h"
 #include "Service.h"
-
-#define COLUMN_SETTINGS_KEY      TEXT("Software\\Brio\\FolderSize")
-#define SERVICE_PARAMETERS_KEY   TEXT("SYSTEM\\CurrentControlSet\\Services\\FolderSize\\Parameters")
-
-bool LoadDWord(HKEY hKey, LPCTSTR lpValueName, DWORD& dw)
-{
-	DWORD dwType, dwData, cbData;
-	cbData = sizeof(DWORD);
-	if (RegQueryValueEx(hKey, lpValueName, NULL, &dwType, (LPBYTE)&dwData, &cbData) == ERROR_SUCCESS)
-	{
-		if (dwType == REG_DWORD)
-		{
-			dw = dwData;
-			return true;
-		}
-	}
-	return false;
-}
-
-void SaveDWord(HKEY hKey, LPCTSTR lpValueName, DWORD dw)
-{
-	RegSetValueEx(hKey, lpValueName, 0, REG_DWORD, (CONST BYTE*)&dw, sizeof(DWORD));
-}
-
-void LoadDisplayOptions(int& nDisplayFormat)
-{
-	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, COLUMN_SETTINGS_KEY, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
-	{
-		DWORD dw;
-		if (LoadDWord(hKey, TEXT("DisplayFormat"), dw))
-			nDisplayFormat = dw;
-
-		RegCloseKey(hKey);
-	}
-}
-
-void SaveDisplayOptions(int nDisplayFormat)
-{
-	HKEY hKey;
-	if (RegCreateKeyEx(HKEY_CURRENT_USER, COLUMN_SETTINGS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
-	{
-		DWORD dwData = nDisplayFormat;
-		RegSetValueEx(hKey, TEXT("DisplayFormat"), 0, REG_DWORD, (CONST BYTE*)&dwData, sizeof(DWORD));
-		RegCloseKey(hKey);
-	}
-}
-
-#define SCANDRIVETYPE_LOCAL        0x01
-#define SCANDRIVETYPE_CD           0x02
-#define SCANDRIVETYPE_REMOVABLE    0x04
-#define SCANDRIVETYPE_NETWORK      0x08
-
-int LoadScanDriveTypes()
-{
-	int DriveTypes = 0;
-
-	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
-	{
-		DWORD dw;
-		if (!LoadDWord(hKey, TEXT("ScanLocal"), dw) || dw != 0)
-			DriveTypes |= SCANDRIVETYPE_LOCAL;
-		if (!LoadDWord(hKey, TEXT("ScanCD"), dw) || dw != 0)
-			DriveTypes |= SCANDRIVETYPE_CD;
-		if (!LoadDWord(hKey, TEXT("ScanRemovable"), dw) || dw != 0)
-			DriveTypes |= SCANDRIVETYPE_REMOVABLE;
-		if (!LoadDWord(hKey, TEXT("ScanNetwork"), dw) || dw != 0)
-			DriveTypes |= SCANDRIVETYPE_NETWORK;
-
-		RegCloseKey(hKey);
-	}
-
-	return DriveTypes;
-}
-
-void SaveScanDriveTypes(int DriveTypes)
-{
-	HKEY hKey;
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
-	{
-		SaveDWord(hKey, TEXT("ScanLocal"), DriveTypes & SCANDRIVETYPE_LOCAL ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanCD"), DriveTypes & SCANDRIVETYPE_CD ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanRemovable"), DriveTypes & SCANDRIVETYPE_REMOVABLE ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanNetwork"), DriveTypes & SCANDRIVETYPE_NETWORK ? 1 : 0);
-		RegCloseKey(hKey);
-	}
-}
+#include "../Settings/Settings.h"
 
 void RefreshShell()
 {
@@ -214,6 +127,10 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 		case IDC_DISPLAY_EXPLORER:
 		case IDC_DISPLAY_COMPACT:
+		case IDC_DISPLAY_LOCAL:
+		case IDC_DISPLAY_CD:
+		case IDC_DISPLAY_REMOVABLE:
+		case IDC_DISPLAY_NETWORK:
 			PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 			break;
 		}
@@ -238,6 +155,9 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_NETWORK) == BST_CHECKED)
 					DriveTypes |= SCANDRIVETYPE_NETWORK;
 				SaveScanDriveTypes(DriveTypes);
+
+				// tell the service to check its parameters
+				ModifyService(MS_PARAMCHANGE);
 
 				RefreshShell();
 				return TRUE;

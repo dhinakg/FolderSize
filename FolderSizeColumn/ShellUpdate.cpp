@@ -275,20 +275,17 @@ void ShellUpdate::Update()
 	
 		if (hPipe != INVALID_HANDLE_VALUE)
 		{
-			if (WriteRequest(hPipe, PCR_GETUPDATEDFOLDERS))
+			// Tell the Service what Folders we are interested at
+			if (WriteGetUpdatedFoldersRequest(hPipe, strsFoldersBrowsed))
 			{
-				// Tell the Service what Folders we are interested at
-				if (WriteStringList(hPipe, strsFoldersBrowsed))
+				// What folders need updating...
+				Strings strsFoldersToUpdate;
+				if (ReadStringList(hPipe, strsFoldersToUpdate))
 				{
-					// What folders need updating...
-					Strings strsFoldersToUpdate;
-					if (ReadStringList(hPipe, strsFoldersToUpdate))
+					// Update the Shell
+					for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
 					{
-						// Update the Shell
-						for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
-						{
-							SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH|SHCNF_FLUSH, i->c_str(), NULL);
-						}
+						SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH|SHCNF_FLUSH, i->c_str(), NULL);
 					}
 				}
 			}

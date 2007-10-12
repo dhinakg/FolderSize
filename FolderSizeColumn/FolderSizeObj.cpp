@@ -27,21 +27,6 @@ STDMETHODIMP CFolderSizeObj::Initialize(LPCSHCOLUMNINIT psci)
 {
 	HRESULT hr = E_FAIL;
 /*
-	IShellFolder* pShellFolder;
-	if(SUCCEEDED(SHGetDesktopFolder(&pShellFolder)))
-	{
-		IShellBrowser* pShellBrowser;
-		if(SUCCEEDED(pShellFolder->QueryInterface(IID_IShellBrowser, (LPVOID*)&pShellBrowser)))
-		{
-			MessageBox(NULL, L"got shell browser", L"ok", MB_OK);
-			pShellBrowser->Release();
-		}
-		else
-			MessageBox(NULL, L"nope", L"oh well", MB_OK);
-		pShellFolder->Release();
-	}
-*/
-/*
 	// get the SHCOLUMNID for the standard Size column
 	IShellFolder* pShellFolder;
 	if(SUCCEEDED(SHGetDesktopFolder(&pShellFolder)))
@@ -255,27 +240,12 @@ bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
 
 	if (hPipe != INVALID_HANDLE_VALUE)
 	{
-		if (WriteRequest(hPipe, PCR_GETFOLDERSIZE))
+		if (WriteGetFolderSizeRequest(hPipe, pszFile))
 		{
-			if (WriteString(hPipe, pszFile))
+			FOLDERINFO2 Size;
+			if (ReadGetFolderSize(hPipe, nSize))
 			{
-				FOLDERINFO2 Size;
-/*
-				LARGE_INTEGER nFrequency, nCount1, nCount2;
-				QueryPerformanceFrequency(&nFrequency);
-				QueryPerformanceCounter(&nCount1);
-*/
-				if (ReadGetFolderSize(hPipe, nSize))
-				{
-/*
-					QueryPerformanceCounter(&nCount2);
-					DWORD dwMilliseconds = (DWORD)((nCount2.QuadPart-nCount1.QuadPart)*1000/nFrequency.QuadPart);
-					TCHAR szMessage[1024];
-					wsprintf(szMessage, _T("Waited for a pipe: %d\n"), dwMilliseconds);
-					OutputDebugString(szMessage);
-*/
-					bRet = true;
-				}
+				bRet = true;
 			}
 		}
 

@@ -40,4 +40,6 @@ protected:
 	typedef CAtlMap<CString, Cache*, CStringHashTraits> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;
+
+	int m_ScanDriveTypes;
 };

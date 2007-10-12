@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "FolderSizeModule.h"
+#include "../Settings/Settings.h"
 
 
 CFolderSizeModule::CFolderSizeModule()
@@ -18,7 +19,7 @@ void CFolderSizeModule::InitWatchers()
 
 	if (m_pRegDisplayFormat == NULL)
 	{
-		m_pRegDisplayFormat = new RegDwordValue(HKEY_CURRENT_USER, TEXT("Software\\Brio\\FolderSize"), TEXT("DisplayFormat"));
+		m_pRegDisplayFormat = new RegDwordValue(HKEY_CURRENT_USER, COLUMN_SETTINGS_KEY, DISPLAY_FORMAT_VALUE);
 	}
 }
 

@@ -575,6 +575,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Settings"
+			>
+			<File
+				RelativePath="..\Settings\Settings.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Settings\Settings.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
