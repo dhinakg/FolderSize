@@ -48,6 +48,11 @@ Path Path::GetParent() const
 	return Path(buffer);
 }
 
+Path Path::GetName() const
+{
+	return Path(PathFindFileName(c_str()));
+}
+
 bool Path::IsNetwork() const
 {
 	LPCTSTR psz = c_str();
@@ -107,4 +112,44 @@ UINT Path::GetDriveType() const
 	TCHAR szDrive[_MAX_DRIVE + 1];
 	lstrcpyn(szDrive, psz, _MAX_DRIVE + 1);
 	return ::GetDriveType(szDrive);
+}
+
+PathSegmentIterator Path::GetPathSegmentIterator() const
+{
+	return PathSegmentIterator(*this);
+}
+
+
+PathSegmentIterator::PathSegmentIterator(const Path& path)
+{
+	m_p = path.c_str() + path.GetVolume().size();
+}
+
+bool PathSegmentIterator::AtEnd() const
+{
+	return m_p == NULL || *m_p == _T('\0');
+}
+
+Path PathSegmentIterator::GetNextPathSegment()
+{
+	if (PathIsFileSpec(m_p))
+	{
+		Path p(m_p);
+		m_p = NULL;
+		return p;
+	}
+	const wchar_t* pEnd = PathFindNextComponent(m_p);
+	assert (pEnd != NULL);
+	if (pEnd == NULL)
+	{
+		Path p(m_p);
+		m_p = NULL;
+		return p;
+	}
+	else
+	{
+		Path p(m_p, pEnd - m_p - 1);
+		m_p = pEnd;
+		return p;
+	}
 }

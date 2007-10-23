@@ -1,5 +1,7 @@
 #pragma once
 
+class PathSegmentIterator;
+
 class Path : public std::wstring
 {
 public:
@@ -15,6 +17,24 @@ public:
 	Path GetLongAPIRepresentation() const;
 	Path GetVolume() const;
 	Path GetParent() const;
+	Path GetName() const;
 	bool IsNetwork() const;
 	UINT GetDriveType() const;
+
+	PathSegmentIterator GetPathSegmentIterator() const;
+};
+
+class PathSegmentIterator
+{
+public:
+	PathSegmentIterator(const Path& path);
+
+	// at the end yet?
+	bool AtEnd() const;
+
+	// get the current path segment
+	Path GetNextPathSegment();
+
+private:
+	const wchar_t* m_p; // pointer to the beginning of the current path segment
 };

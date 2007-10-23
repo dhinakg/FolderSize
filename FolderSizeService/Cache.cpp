@@ -125,7 +125,7 @@ bool Cache::GetNextScanFolder(Path& path)
 		CacheFolder* pFolder = m_pFolderManager->GetNextScanFolder();
 		if (pFolder != NULL)
 		{
-			path = pFolder->GetPath();
+			path = pFolder->GetFullPath();
 			bRet = true;
 		}
 		LeaveCriticalSection(&m_cs);
@@ -278,7 +278,7 @@ void Cache::DoSyncScans(CacheFolder* pFolder)
 			{
 				break;
 			}
-			m_pScanner->ScanFolder(pScanFolder->GetPath());
+			m_pScanner->ScanFolder(pScanFolder->GetFullPath());
 			QueryPerformanceCounter(&nCurrentCount);
 			nScans ++;
 		}

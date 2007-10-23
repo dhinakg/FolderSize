@@ -20,10 +20,12 @@ public:
 
 	// get info
 	const FOLDERINFO& GetTotalSize() const;
-	const Path& GetPath() const;
+	const Path& GetName() const;
+	Path GetFullPath() const;
 	STATUS GetStatus() const;
 	UINT GetDirtyChildren() const;
 	UINT GetEmptyChildren() const;
+	CacheFolder* GetChild(const Path& name) const;
 
 	// change the CacheFolder's status
 	void Dirty();
@@ -42,8 +44,6 @@ protected:
 	friend class FolderManager;
 	CacheFolder(FolderManager* pManager, CacheFolder* pParent, const Path& path);
 
-	void InternalRename(const Path& pathNew);
-
 	// helper functions
 	void SetStatus(STATUS eStatus);
 	void MakeLastChild();
@@ -56,6 +56,10 @@ protected:
 	CacheFolder* m_pParent;
 	CacheFolder* m_pChild;		 // down the structure
 	CacheFolder* m_pNextSibling; // single linked list
+
+	// folders keep a name keyed list of their children
+	typedef std::map<Path, CacheFolder*> ChildMap;
+	ChildMap m_children;
 
 	// the accuracy of nSize is determined by m_eStatus
 	FOLDERINFO m_nSize;
@@ -81,6 +85,6 @@ protected:
 	// register and unregister with this manager
 	FolderManager* m_pManager;
 
-	// full path of the CacheFolder
+	// name of this folder
 	Path m_path;
 };

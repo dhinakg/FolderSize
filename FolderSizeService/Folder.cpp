@@ -21,9 +21,6 @@ CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, const Pa
 {
 	AddToParentsChildList();
 	AddToParentsChildCounters(false);
-
-	// say hello to the world
-	m_pManager->Register(this);
 }
 
 CacheFolder::~CacheFolder()
@@ -54,10 +51,16 @@ const FOLDERINFO& CacheFolder::GetTotalSize() const
 	return m_nTotalSize;
 }
 
-const Path& CacheFolder::GetPath() const
+const Path& CacheFolder::GetName() const
 {
-	// TODO walk up the tree
 	return m_path;
+}
+
+Path CacheFolder::GetFullPath() const
+{
+	if (m_pParent == NULL)
+		return m_path;
+	return m_pParent->GetFullPath() + m_path;
 }
 
 CacheFolder::STATUS CacheFolder::GetStatus() const
@@ -73,6 +76,14 @@ UINT CacheFolder::GetDirtyChildren() const
 UINT CacheFolder::GetEmptyChildren() const
 {
 	return m_nEmptyChildren;
+}
+
+CacheFolder* CacheFolder::GetChild(const Path& name) const
+{
+	ChildMap::const_iterator i = m_children.find(name);
+	if (i == m_children.end())
+		return NULL;
+	return i->second;
 }
 
 void CacheFolder::DisplayUpdated()
@@ -172,7 +183,7 @@ void CacheFolder::GetChildrenToDisplay(Strings& strsFolders)
 	{
 		if (pChild->m_bNeedDisplayUpdate)
 		{
-			strsFolders.insert(pChild->m_path);
+			strsFolders.insert(pChild->GetFullPath());
 			pChild->m_bNeedDisplayUpdate = false;
 		}
 	}
@@ -202,24 +213,6 @@ void CacheFolder::Rename(const Path& pathNew)
 		AddToParentsChildList();
 		AddToParentsChildCounters(true);
 	}
-	
-	InternalRename(pathNew);
-}
-
-void CacheFolder::InternalRename(const Path& pathNew)
-{
-	// rename all the children
-	for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
-	{
-		Path pathChild = pathNew;
-		pathChild += pChild->GetPath().c_str() + m_path.length();
-		pChild->InternalRename(pathChild);
-	}
-
-	// update the lookup table in the manager
-	m_pManager->ChangeFolderPath(this, pathNew);
-
-	m_path = pathNew;
 }
 
 void CacheFolder::AddToParentsChildList()
@@ -228,7 +221,8 @@ void CacheFolder::AddToParentsChildList()
 	{
 		m_pNextSibling = m_pParent->m_pChild;
 		m_pParent->m_pChild = this;
-		// TODO add ourself to the parents map
+
+		m_pParent->m_children.insert(ChildMap::value_type(m_path, this));
 	}
 }
 
@@ -244,6 +238,8 @@ void CacheFolder::RemoveFromParentsChildList()
 			assert(*ppFolder != NULL);
 		}
 		*ppFolder = m_pNextSibling;
+
+		m_pParent->m_children.erase(m_path);
 	}
 }
 

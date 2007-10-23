@@ -23,6 +23,7 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include <map>
 using namespace std;
 
 #include "..\Pipe\Pipe.h"
