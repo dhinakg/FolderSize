@@ -55,27 +55,12 @@ Path Path::GetName() const
 
 bool Path::IsNetwork() const
 {
-	LPCTSTR psz = c_str();
-
-	if (PathIsNetworkPath(psz))
-		return true;
-
-	if (!PathIsUNC(psz))
-	{
-		TCHAR szDrive[_MAX_DRIVE + 1];
-		lstrcpyn(szDrive, psz, _MAX_DRIVE + 1);
-
-		if (::GetDriveType(szDrive) == DRIVE_REMOTE)
-			return true;
-	}
-
-	return false;
+	return PathIsNetworkPath(c_str()) ? true : false;
 }
 
 Path Path::GetVolume() const
 {
 	LPCTSTR psz = c_str();
-
 	if (PathIsUNC(psz))
 	{
 		// skip ahead 3 components
@@ -86,12 +71,8 @@ Path Path::GetVolume() const
 			if (pszEnd == NULL)
 				return Path();
 		}
-		// and only copy up to the third component
-		int len = (int)(pszEnd - psz) + 1;
-		wchar_t* pszVolume = (wchar_t*)_alloca(len * sizeof(wchar_t));
-		lstrcpyn(pszVolume, psz, len);
-		PathRemoveBackslash(pszVolume);
-		return Path(pszVolume);
+		size_t len = pszEnd - psz;
+		return Path(psz, len);
 	}
 	else
 	{
@@ -106,7 +87,7 @@ UINT Path::GetDriveType() const
 {
 	LPCTSTR psz = c_str();
 
-	if (PathIsNetworkPath(psz) || PathIsUNC(psz))
+	if (PathIsUNC(psz))
 		return DRIVE_REMOTE;
 
 	TCHAR szDrive[_MAX_DRIVE + 1];
@@ -116,13 +97,32 @@ UINT Path::GetDriveType() const
 
 PathSegmentIterator Path::GetPathSegmentIterator() const
 {
-	return PathSegmentIterator(*this);
+	// get a pointer to the first segment of the path after the volume
+	LPCTSTR psz = c_str();
+	if (PathIsUNC(psz))
+	{
+		// skip ahead 3 components
+		for (int i=0; i<3; i++)
+		{
+			psz = PathFindNextComponent(psz);
+			if (psz == NULL)
+				break;
+		}
+	}
+	else
+	{
+		// a drive root like C:\ has 3 chars
+		if (length() < 3)
+			psz = NULL;
+		else
+			psz += 3;
+	}
+	return PathSegmentIterator(psz);
 }
 
 
-PathSegmentIterator::PathSegmentIterator(const Path& path)
+PathSegmentIterator::PathSegmentIterator(const wchar_t* p) : m_p(p)
 {
-	m_p = path.c_str() + path.GetVolume().size();
 }
 
 bool PathSegmentIterator::AtEnd() const

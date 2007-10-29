@@ -27,7 +27,7 @@ public:
 class PathSegmentIterator
 {
 public:
-	PathSegmentIterator(const Path& path);
+	PathSegmentIterator(const wchar_t* p);
 
 	// at the end yet?
 	bool AtEnd() const;
