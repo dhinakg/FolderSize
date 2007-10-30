@@ -37,6 +37,15 @@ BEGIN
                     BS_AUTORADIOBUTTON,17,22,171,10
     CONTROL         "ŠÈ—ªŽ®(&C) (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,176,10
+    GROUPBOX        "Drive types",IDC_STATIC,7,63,198,51
+    CONTROL         "&Hard drives",IDC_DISPLAY_LOCAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,79,53,10
+    CONTROL         "&Removable storage",IDC_DISPLAY_REMOVABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,79,78,10
+    CONTROL         "CD/&DVD drives",IDC_DISPLAY_CD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,95,63,10
+    CONTROL         "&Network shares",IDC_DISPLAY_NETWORK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,95,66,10
 END
 
 IDD_SERVICE DIALOGEX 0, 0, 212, 188
