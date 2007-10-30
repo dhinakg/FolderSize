@@ -119,7 +119,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_NAME                "Folder Size"
-    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
+    IDS_INFO                "Hiermee kunt u de Verkenner Mapgrootte weergave aanpassen en de Folder Size service beheren."
     IDS_SERVICE_RUNNING     "Gestart"
     IDS_SERVICE_STOPPED     "Gestopt"
     IDS_SERVICE_UNKNOWN     "Unknown"
