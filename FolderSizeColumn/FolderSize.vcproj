@@ -620,6 +620,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FolderSize_pl.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSize_sv.rc"
 				>
 			</File>

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="FolderSizeService"
 	ProjectGUID="{E37D15FA-4575-44A1-82C8-710C33AA653D}"
+	RootNamespace="FolderSizeService"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -488,6 +489,10 @@
 			</File>
 			<File
 				RelativePath=".\FolderSizeService_nl.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\FolderSizeService_pl.rc"
 				>
 			</File>
 			<File
