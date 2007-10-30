@@ -36,10 +36,10 @@ INSTALLLEVEL	3
 InstallMode	Typical
 Manufacturer	Brio
 PIDTemplate	12345<###-%%%%%%%>@@@@@
-ProductCode	{FC8D21C8-7B29-4104-ADB0-FEE9CA1C7922}
+ProductCode	{F24FF688-7138-4CCF-A83F-71E9FB01170E}
 ProductID	none
 ProductLanguage	1033
-ProductName	Folder Size for Windows
+ProductName	Folder Size for Windows (64-bit)
 ProductVersion	2.4
 Progress1	Installing
 Progress2	installs
@@ -48,5 +48,5 @@ RemoveIcon	removico
 RepairIcon	repairic
 Setup	Setup
 ShowUserRegistrationDlg	1
-UpgradeCode	{D0CB4DEA-E7E4-4377-9060-BBE5741155A8}
+UpgradeCode	{35863F41-0CDE-4488-9D22-92123A8B7948}
 Wizard	Setup Wizard
