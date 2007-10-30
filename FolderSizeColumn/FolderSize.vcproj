@@ -588,6 +588,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\FolderSize_ca.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSize_de.rc"
 				>
 			</File>

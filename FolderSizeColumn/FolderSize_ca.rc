@@ -1,0 +1,45 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Catalan resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CAT)
+#ifdef _WIN32
+LANGUAGE LANG_CATALAN, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+   IDS_COLUMN_TITLE        "Mida de Carpeta"
+   IDS_COLUMN_DESCRIPTION  "Mostra la mida total dels fitxers dins les carpetes."
+   IDS_COLUMN_FILES_TITLE  "Fitxers"
+   IDS_COLUMN_FILES_DESCRIPTION
+                           "Mostra el nombre total de fitxers dins les carpetes."
+   IDS_COLUMN_FOLDERS_TITLE "Subcarpetes"
+   IDS_COLUMN_FOLDERS_DESCRIPTION
+                           "Mostra el nombre total de subcarpetes dins les carpetes."
+   IDS_COLUMN_SIBLINGS_TITLE "Fitxers i subcarpetes"
+   IDS_COLUMN_SIBLINGS_DESCRIPTION
+                           "Mostra el nombre total de fitxers i subcarpetes dins les carpetes."
+END
+
+#endif    // Catalan resources
+/////////////////////////////////////////////////////////////////////////////

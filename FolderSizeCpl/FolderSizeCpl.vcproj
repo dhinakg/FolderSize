@@ -552,6 +552,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\FolderSizeCpl_ca.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSizeCpl_de.rc"
 				>
 			</File>

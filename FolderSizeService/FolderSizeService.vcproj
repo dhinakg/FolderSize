@@ -463,6 +463,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FolderSizeService_ca.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSizeService_en.rc"
 				>
 			</File>
