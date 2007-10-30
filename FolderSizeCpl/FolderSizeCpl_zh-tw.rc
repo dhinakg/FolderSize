@@ -35,7 +35,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "顯示檔案夾容量是由 Brian Oraas 構想, 設計及完成.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.3",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.4",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "顯示檔案夾容量是跟據 GNU Public 版權保護下進行發行.",
                     IDC_HYPER_GPL,17,137,179,19
