@@ -1,6 +1,6 @@
 Directory	Directory_Parent	DefaultDir
 s72	S72	l255
 Directory	Directory
-FOLDERSIZEDIR	ProgramFilesFolder	FolSize|FolderSize
-ProgramFilesFolder	TARGETDIR	.
+FOLDERSIZEDIR	ProgramFiles64Folder	FolSize|FolderSize
+ProgramFiles64Folder	TARGETDIR	.
 TARGETDIR		SourceDir
