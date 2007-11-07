@@ -40,7 +40,6 @@ CacheManager::~CacheManager()
 // pszFolder is the full folder path to make the cache id from
 // pszCacheId must point to a buffer to store the cache id
 // pszVolume will return a pointer into the cache id buffer specifying the volume
-// bIsUNC returns whether or not it's a network path
 bool MakeCacheId(const Path& path, LPTSTR pszCacheId, LPTSTR& pszVolume)
 {
 	if (path.IsNetwork())

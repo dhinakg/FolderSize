@@ -71,7 +71,10 @@ Path Path::GetVolume() const
 			if (pszEnd == NULL)
 				return Path();
 		}
+		// unlike letter drives (such as C:\), remove the trailing slash for UNC drives
 		size_t len = pszEnd - psz;
+		if (psz[len - 1] == _T('\\'))
+			len--;
 		return Path(psz, len);
 	}
 	else
