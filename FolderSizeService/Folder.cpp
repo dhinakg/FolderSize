@@ -19,28 +19,26 @@ CacheFolder::CacheFolder(FolderManager* pManager, CacheFolder* pParent, const Pa
 	m_pManager(pManager),
 	m_path(path)
 {
-	AddToParentsChildList();
-	AddToParentsChildCounters(false);
+	AddToParent(true);
 }
 
 CacheFolder::~CacheFolder()
 {
+	RemoveFromParent(true);
+
 	// delete the children
 	CacheFolder* pChild = m_pChild;
 	while (pChild != NULL)
 	{
 		CacheFolder* pNextChild = pChild->m_pNextSibling;
+
+		// don't want the child node to waste time updating my stats, so detach it
+		// from me (me = the child's parent) so it thinks it's a root node
+		pChild->m_pParent = NULL;
 		delete pChild;
+
 		pChild = pNextChild;
 	}
-
-	for (CacheFolder* pParent = m_pParent; pParent != NULL; pParent = pParent->m_pParent)
-	{
-		pParent->m_nTotalSize -= m_nTotalSize;
-	}
-
-	RemoveFromParentsChildCounters(true);
-	RemoveFromParentsChildList();
 
 	// say goodbye to the world
 	m_pManager->Unregister(this);
@@ -193,43 +191,75 @@ void CacheFolder::SetStatus(STATUS eStatus)
 {
 	if (eStatus != m_eStatus)
 	{
-		RemoveFromParentsChildCounters(false);
+		RemoveFromParent(false);
 
 		m_eStatus = eStatus;
 
-		AddToParentsChildCounters(false);
+		AddToParent(false);
 	}
 }
 
 void CacheFolder::Rename(const Path& pathNew)
 {
-	if (m_path.GetParent() != pathNew.GetParent())
-	{
-		RemoveFromParentsChildCounters(true);
-		RemoveFromParentsChildList();
+	// we could be just renaming a folder, or we could be moving an entire folder tree
+	RemoveFromParent(true);
 
-		m_pParent = m_pManager->GetFolderForPath(pathNew.GetParent(), true);
+	m_path = pathNew.GetName();
+	m_pParent = m_pManager->GetFolderForPath(pathNew.GetParent(), true);
 
-		AddToParentsChildList();
-		AddToParentsChildCounters(true);
-	}
+	AddToParent(true);
 }
 
-void CacheFolder::AddToParentsChildList()
+void CacheFolder::AddToParent(bool bFullyAttach)
 {
-	if (m_pParent != NULL)
+	if (m_pParent == NULL)
+		return;
+
+	if (bFullyAttach)
 	{
 		m_pNextSibling = m_pParent->m_pChild;
 		m_pParent->m_pChild = this;
 
 		m_pParent->m_children.insert(ChildMap::value_type(m_path, this));
 	}
+
+	int nEmptyChildren = (bFullyAttach ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
+	int nDirtyChildren = (bFullyAttach ? m_nDirtyChildren : 0) + ((m_eStatus == FS_DIRTY) ? 1 : 0);
+	FOLDERINFO nTotalSize;
+	if (bFullyAttach)
+		nTotalSize = m_nTotalSize;
+
+	if (nEmptyChildren || nDirtyChildren || nTotalSize)
+	{
+		for (CacheFolder* pFolder = m_pParent; pFolder != NULL; pFolder = pFolder->m_pParent)
+		{
+			if (nEmptyChildren)
+			{
+				if (!pFolder->m_nEmptyChildren)
+					pFolder->m_bNeedDisplayUpdate = true;
+				pFolder->m_nEmptyChildren += nEmptyChildren;
+			}
+			if (nDirtyChildren)
+			{
+				if (!pFolder->m_nDirtyChildren)
+					pFolder->m_bNeedDisplayUpdate = true;
+				pFolder->m_nDirtyChildren += nDirtyChildren;
+			}
+			if (nTotalSize)
+			{
+				pFolder->m_nTotalSize += nTotalSize;
+				pFolder->m_bNeedDisplayUpdate = true;
+			}
+		}
+	}
 }
 
-void CacheFolder::RemoveFromParentsChildList()
+void CacheFolder::RemoveFromParent(bool bFullyDetach)
 {
-	// unattach from the parent node
-	if (m_pParent != NULL)
+	if (m_pParent == NULL)
+		return;
+
+	if (bFullyDetach)
 	{
 		CacheFolder** ppFolder = &m_pParent->m_pChild;
 		while (*ppFolder != this)
@@ -241,41 +271,14 @@ void CacheFolder::RemoveFromParentsChildList()
 
 		m_pParent->m_children.erase(m_path);
 	}
-}
 
-void CacheFolder::AddToParentsChildCounters(bool bIncludeSubtree)
-{
-	int nEmptyChildren = (bIncludeSubtree ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
-	int nDirtyChildren = (bIncludeSubtree ? m_nDirtyChildren : 0) + ((m_eStatus == FS_DIRTY) ? 1 : 0);
-	if (nEmptyChildren || nDirtyChildren)
-	{
-		for (CacheFolder* pFolder = m_pParent; pFolder != NULL; pFolder = pFolder->m_pParent)
-		{
-			if (nEmptyChildren)
-			{
-				if (!pFolder->m_nEmptyChildren)
-				{
-					pFolder->m_bNeedDisplayUpdate = true;
-				}
-				pFolder->m_nEmptyChildren += nEmptyChildren;
-			}
-			if (nDirtyChildren)
-			{
-				if (!pFolder->m_nDirtyChildren)
-				{
-					pFolder->m_bNeedDisplayUpdate = true;
-				}
-				pFolder->m_nDirtyChildren += nDirtyChildren;
-			}
-		}
-	}
-}
+	int nEmptyChildren = (bFullyDetach ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
+	int nDirtyChildren = (bFullyDetach ? m_nDirtyChildren : 0) + ((m_eStatus == FS_DIRTY) ? 1 : 0);
+	FOLDERINFO nTotalSize;
+	if (bFullyDetach)
+		nTotalSize = m_nTotalSize;
 
-void CacheFolder::RemoveFromParentsChildCounters(bool bIncludeSubtree)
-{
-	int nEmptyChildren = (bIncludeSubtree ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
-	int nDirtyChildren = (bIncludeSubtree ? m_nDirtyChildren : 0) + ((m_eStatus == FS_DIRTY) ? 1 : 0);
-	if (nEmptyChildren || nDirtyChildren)
+	if (nEmptyChildren || nDirtyChildren || nTotalSize)
 	{
 		for (CacheFolder* pFolder = m_pParent; pFolder != NULL; pFolder = pFolder->m_pParent)
 		{
@@ -283,17 +286,18 @@ void CacheFolder::RemoveFromParentsChildCounters(bool bIncludeSubtree)
 			{
 				pFolder->m_nEmptyChildren -= nEmptyChildren;
 				if (!pFolder->m_nEmptyChildren)
-				{
 					pFolder->m_bNeedDisplayUpdate = true;
-				}
 			}
 			if (nDirtyChildren)
 			{
 				pFolder->m_nDirtyChildren -= nDirtyChildren;
 				if (!pFolder->m_nDirtyChildren)
-				{
 					pFolder->m_bNeedDisplayUpdate = true;
-				}
+			}
+			if (nTotalSize)
+			{
+				pFolder->m_nTotalSize -= nTotalSize;
+				pFolder->m_bNeedDisplayUpdate = true;
 			}
 		}
 	}

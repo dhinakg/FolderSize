@@ -47,10 +47,8 @@ protected:
 	// helper functions
 	void SetStatus(STATUS eStatus);
 	void MakeLastChild();
-	void AddToParentsChildList();
-	void RemoveFromParentsChildList();
-	void AddToParentsChildCounters(bool bIncludeSubtree);
-	void RemoveFromParentsChildCounters(bool bIncludeSubtree);
+	void AddToParent(bool bFullyAttach);
+	void RemoveFromParent(bool bFullyDetach);
 
 	// folders organize themselves into a tree
 	CacheFolder* m_pParent;

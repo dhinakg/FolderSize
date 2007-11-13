@@ -22,6 +22,10 @@ struct FOLDERINFO {
 	bool operator!=(const FOLDERINFO& Info) const {
 		return !operator==(Info); }
 
+	operator bool() {
+		return nSize || nFiles || nFolders;
+	}
+
 	FOLDERINFO& operator+=(const FOLDERINFO& Info) {
 		nSize += Info.nSize;
 		nFiles += Info.nFiles;

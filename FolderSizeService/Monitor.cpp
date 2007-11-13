@@ -39,9 +39,6 @@ DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)
 	return 0;
 }
 
-// the path name that crashes
-//"Documents and Settings\Brio1\Local Settings\Application Data\Microsoft\Messenger\brio1337@hotmail.com\SharingMetadata\jason.hanfordsmith@thinkmbs.com\DfsrPrivate\Staging\ContentSet{74C17ACE-94CA-C14B-63A0-4441B4EAF5F0}-{00000000-0000-0000-0000-000000000000}\01\18-{74C17ACE-94CA-C14B-63A0-4441B4EAF5F0}-v1-{04978FC0-7034-4522-A17F-B03EF94D4874}-v18-Downloading.frx"
-
 void Monitor::MonitorThread()
 {
 	// this thread will just keep waiting for directory change events,
