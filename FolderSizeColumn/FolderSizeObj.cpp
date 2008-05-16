@@ -108,29 +108,18 @@ STDMETHODIMP CFolderSizeObj::GetColumnInfo(DWORD dwIndex, SHCOLUMNINFO *psci)
 	return S_FALSE;
 }
 
-ULONGLONG GetFileSize(LPCTSTR pFileName)
+bool GetFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
 {
 	// GetFileAttributesEx and CreateFile fail if the file is open by the system (for example, the swap file).
+	// GetFileAttributesEx also seems to fail for very large files on Novell Netware networks.
 	// FindFirstFile seems to be the only reliable way to get the size.
-	// e.g. the PageFile fails.
-
-	ULONGLONG llFileSize = 0;
-	WIN32_FILE_ATTRIBUTE_DATA fad;
-	if (GetFileAttributesEx(pFileName, GetFileExInfoStandard, &fad))
-	{
-		llFileSize = MakeULongLong(fad.nFileSizeHigh, fad.nFileSizeLow);
-	}
-	else
-	{
-		WIN32_FIND_DATA FindData;
-		HANDLE hFindFile = FindFirstFile(pFileName, &FindData);
-		if (hFindFile != INVALID_HANDLE_VALUE)
-		{
-			llFileSize = MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
-			FindClose(hFindFile);
-		}
-	}
-	return llFileSize;
+	WIN32_FIND_DATA FindData;
+	HANDLE hFindFile = FindFirstFile(pFileName, &FindData);
+	if (hFindFile == INVALID_HANDLE_VALUE)
+		return false;
+	nSize = MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+	FindClose(hFindFile);
+	return true;
 }
 
 void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
@@ -303,7 +292,9 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 				}
 				else
 				{
-					ULONGLONG nSize = GetFileSize(pscd->wszFile);
+					ULONGLONG nSize;
+					if (!GetFileSize(pscd->wszFile, nSize))
+						return S_FALSE;
 					FormatSizeWithOption(nSize, buffer, sizeof(buffer)/sizeof(WCHAR));
 				}
 				V_VT(pvarData) = VT_BSTR;
