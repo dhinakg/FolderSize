@@ -17,9 +17,8 @@
 #define IDS_SERVICE_CONTINUE_PENDING    109
 #define IDB_BRIO                        109
 #define IDS_SERVICE_PAUSE_PENDING       110
-#define IDC_BUTTON1                     1001
+#define IDD_CREDITS                     111
 #define IDC_SERVICE_START               1001
-#define IDC_BUTTON2                     1002
 #define IDC_SERVICE_STOP                1002
 #define IDC_DISPLAY_EXPLORER            1003
 #define IDC_DISPLAY_COMPACT             1004
@@ -38,6 +37,10 @@
 #define IDC_DISPLAY_LOCAL               1016
 #define IDC_DISPLAY_CD                  1017
 #define IDC_DISPLAY_REMOVABLE           1018
+#define IDC_DISPLAY_BYTES               1019
+#define IDC_CREDITS                     1020
+#define IDC_FOLDERSIZEICON              1021
+#define IDC_TRANSLATORS                 1022
 
 // Next default values for new objects
 // 
