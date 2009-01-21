@@ -83,6 +83,9 @@ void FolderManager::Unregister(CacheFolder* pFolder)
 // Comes in from Folder::DisplayUpdated(), coming from CacheManager
 void FolderManager::UserRequested(CacheFolder* pFolder)
 {
+	if (pFolder == NULL)
+		pFolder = m_pFolderRoot;
+
 	LARGE_INTEGER nTime;
 	QueryPerformanceCounter(&nTime);
 	bool bAddToStack = false;
