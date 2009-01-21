@@ -56,7 +56,14 @@ protected:
 	CacheFolder* m_pNextSibling; // single linked list
 
 	// folders keep a name keyed list of their children
-	typedef std::map<Path, CacheFolder*> ChildMap;
+	struct ltstr
+	{
+		bool operator()(LPCTSTR s1, LPCTSTR s2) const
+		{
+			return _tcscmp(s1, s2) < 0;
+		}
+	};
+	typedef std::map<LPCTSTR, CacheFolder*, ltstr> ChildMap;
 	ChildMap m_children;
 
 	// the accuracy of nSize is determined by m_eStatus

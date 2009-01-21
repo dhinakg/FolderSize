@@ -78,7 +78,7 @@ UINT CacheFolder::GetEmptyChildren() const
 
 CacheFolder* CacheFolder::GetChild(const Path& name) const
 {
-	ChildMap::const_iterator i = m_children.find(name);
+	ChildMap::const_iterator i = m_children.find(name.c_str());
 	if (i == m_children.end())
 		return NULL;
 	return i->second;
@@ -220,7 +220,7 @@ void CacheFolder::AddToParent(bool bFullyAttach)
 		m_pNextSibling = m_pParent->m_pChild;
 		m_pParent->m_pChild = this;
 
-		m_pParent->m_children.insert(ChildMap::value_type(m_path, this));
+		m_pParent->m_children.insert(ChildMap::value_type(m_path.c_str(), this));
 	}
 
 	int nEmptyChildren = (bFullyAttach ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
@@ -269,7 +269,7 @@ void CacheFolder::RemoveFromParent(bool bFullyDetach)
 		}
 		*ppFolder = m_pNextSibling;
 
-		m_pParent->m_children.erase(m_path);
+		m_pParent->m_children.erase(m_path.c_str());
 	}
 
 	int nEmptyChildren = (bFullyDetach ? m_nEmptyChildren : 0) + ((m_eStatus == FS_EMPTY) ? 1 : 0);
