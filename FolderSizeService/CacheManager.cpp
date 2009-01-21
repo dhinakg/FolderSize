@@ -23,13 +23,9 @@ CacheManager::~CacheManager()
 		}
 	}
 	// cleanup caches for each volume
-	POSITION pos = m_Map.GetStartPosition();
-	while (pos != NULL)
+	for (MapType::iterator i = m_Map.begin(); i != m_Map.end(); i++)
 	{
-		CString strVolume;
-		Cache* pCache;
-		m_Map.GetNextAssoc(pos, strVolume, pCache);
-		delete pCache;
+		delete i->second;
 	}
 	DeleteCriticalSection(&m_cs);
 }
@@ -75,41 +71,43 @@ Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 	if (!MakeCacheId(path, szCacheId, pszVolume))
 		return NULL;
 
-	Cache* pCache = NULL;
-	if (!m_Map.Lookup(szCacheId, pCache))
-	{
-		if (bCreate)
-		{
-			// if pszVolume is a network path, we should be impersonating the client right now
-			HANDLE hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
-									NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
-			if (hMonitor != INVALID_HANDLE_VALUE)
-			{
-				// make a new cache
-				pCache = new Cache(pszVolume, hMonitor, this);
-				m_Map.SetAt(szCacheId, pCache);
+	MapType::iterator i = m_Map.find(szCacheId);
+	if (i != m_Map.end())
+		return i->second;
 
-				// register a device notification for a local cache
-				if (!path.IsNetwork() && m_hSS != NULL)
+	if (bCreate)
+	{
+		// if pszVolume is a network path, we should be impersonating the client right now
+		HANDLE hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+								NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
+		if (hMonitor != INVALID_HANDLE_VALUE)
+		{
+			// make a new cache
+			Cache* pCache = new Cache(pszVolume, hMonitor, this);
+			m_Map.insert(std::pair<std::wstring, Cache*>(szCacheId, pCache));
+
+			// register a device notification for a local cache
+			if (!path.IsNetwork() && m_hSS != NULL)
+			{
+				DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
+				dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
+				dbh.dbch_handle = hMonitor;
+				HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+				if (hDevNotify == NULL)
 				{
-					DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
-					dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
-					dbh.dbch_handle = hMonitor;
-					HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
-					if (hDevNotify == NULL)
-					{
-						EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
-					}
-					else
-					{
-						m_RegisteredDeviceNotifications.insert(hDevNotify);
-					}
+					EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
+				}
+				else
+				{
+					m_RegisteredDeviceNotifications.insert(hDevNotify);
 				}
 			}
+
+			return pCache;
 		}
 	}
 
-	return pCache;
+	return NULL;
 }
 
 bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
@@ -165,13 +163,9 @@ void CacheManager::EnableScanners(bool bEnable)
 {
 	EnterCriticalSection(&m_cs);
 
-	POSITION pos = m_Map.GetStartPosition();
-	while (pos != NULL)
+	for (MapType::iterator i = m_Map.begin(); i != m_Map.end(); i++)
 	{
-		CString strVolume;
-		Cache* pCache;
-		m_Map.GetNextAssoc(pos, strVolume, pCache);
-		pCache->EnableScanner(bEnable);
+		i->second->EnableScanner(bEnable);
 	}
 
 	LeaveCriticalSection(&m_cs);
@@ -184,21 +178,15 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 
 	EnterCriticalSection(&m_cs);
 
-	POSITION pos = m_Map.GetStartPosition();
-	while (pos != NULL)
+	for (MapType::iterator i = m_Map.begin(); i != m_Map.end(); i++)
 	{
-		POSITION nextpos = pos;
-		CString strVolume;
-		Cache* pCache;
-		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
-		if (pCache->GetMonitoringHandle() == pdbh->dbch_handle)
+		if (i->second->GetMonitoringHandle() == pdbh->dbch_handle)
 		{
-			delete pCache;
-			m_Map.RemoveAtPos(pos);
+			delete i->second;
+			m_Map.erase(i);
 			bFound = true;
 			break;
 		}
-		pos = nextpos;
 	}
 
 	LeaveCriticalSection(&m_cs);
@@ -223,15 +211,10 @@ void CacheManager::ParamChange()
 	EnterCriticalSection(&m_cs);
 
 	// iterate through the caches
-	POSITION pos = m_Map.GetStartPosition();
-	while (pos != NULL)
+	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); )
 	{
-		POSITION nextpos = pos;
-		CString strVolume;
-		Cache* pCache;
-		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
 		// check if this is one of the disabled types
-		Path path = strVolume;
+		Path path = itr->first;
 		bool bDelete = false;
 		switch (path.GetDriveType())
 		{
@@ -250,10 +233,13 @@ void CacheManager::ParamChange()
 		}
 		if (bDelete)
 		{
-			delete pCache;
-			m_Map.RemoveAtPos(pos);
+			delete itr->second;
+			itr = m_Map.erase(itr);
 		}
-		pos = nextpos;
+		else
+		{
+			itr++;
+		}
 	}
 
 	LeaveCriticalSection(&m_cs);
@@ -263,20 +249,14 @@ void CacheManager::KillMe(Cache* pExpiredCache)
 {
 	EnterCriticalSection(&m_cs);
 
-	POSITION pos = m_Map.GetStartPosition();
-	while (pos != NULL)
+	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
 	{
-		POSITION nextpos = pos;
-		CString strVolume;
-		Cache* pCache;
-		m_Map.GetNextAssoc(nextpos, strVolume, pCache);
-		if (pCache == pExpiredCache)
+		if (itr->second == pExpiredCache)
 		{
-			delete pCache;
-			m_Map.RemoveAtPos(pos);
+			delete itr->second;
+			m_Map.erase(itr);
 			break;
 		}
-		pos = nextpos;
 	}
 
 	LeaveCriticalSection(&m_cs);

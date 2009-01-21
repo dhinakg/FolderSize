@@ -25,19 +25,7 @@ protected:
 	SERVICE_STATUS_HANDLE m_hSS;
 	set<HDEVNOTIFY> m_RegisteredDeviceNotifications;
 
-	class CStringHashTraits : public CElementTraits<CString>
-	{
-	public:
-		static ULONG Hash(const CString& str)
-		{
-			ULONG nHash = 0;
-			for (int i=0; i<str.GetLength(); i++)
-				nHash = (nHash<<5) + nHash + str[i];
-			return nHash;
-		}
-	};
-	// TODO change to stl map
-	typedef CAtlMap<CString, Cache*, CStringHashTraits> MapType;
+	typedef std::map<std::wstring, Cache*> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;
 

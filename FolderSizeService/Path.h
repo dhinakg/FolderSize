@@ -6,7 +6,7 @@ class Path : public std::wstring
 {
 public:
 	Path() {}
-	Path(const Path& _Right) : std::wstring(_Right) {}
+	Path(const std::wstring& _Right) : std::wstring(_Right) {}
 	Path(const wchar_t *_Ptr) : std::wstring(_Ptr) {}
 	Path(const wchar_t *_Ptr, size_type _Count) : std::wstring(_Ptr, _Count) {}
 

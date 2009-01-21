@@ -11,10 +11,6 @@
 #include <accctrl.h>
 #include <aclapi.h>
 
-// ATL
-#include <atlcoll.h>
-#include <atlstr.h>
-
 // CRT
 #include <tchar.h>
 #include <assert.h>
