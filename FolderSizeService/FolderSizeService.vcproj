@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pdh.lib"
+				AdditionalDependencies="pdh.lib shlwapi.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="2"
 				GenerateManifest="false"
@@ -303,7 +303,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pdh.lib"
+				AdditionalDependencies="pdh.lib shlwapi.lib"
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				LinkIncremental="1"
 				GenerateManifest="false"
