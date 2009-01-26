@@ -14,7 +14,18 @@ public:
 	virtual void KillMe(Cache* pExpiredCache) = 0;
 };
 
-class Cache : protected IScannerCallback, protected IMonitorCallback
+// the Cache is reference counted, so it can be used by multiple clients
+
+class IRefCounted
+{
+	int m_cRef;
+public:
+	IRefCounted() : m_cRef(1) {}
+	void AddRef() { ++m_cRef; }
+	void Release() { if (--m_cRef == 0) delete this; }
+};
+
+class Cache : public IRefCounted, protected IScannerCallback, protected IMonitorCallback
 {
 public:
 	Cache(const Path& pathVolume, HANDLE hMonitor, ICacheCallback* pCallback);

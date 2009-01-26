@@ -17,6 +17,7 @@ public:
 	void ParamChange();
 
 protected:
+	bool DriveTypeEnabled(int type);
 	Cache* GetCacheForFolder(const Path& pathVolume, bool bCreate);
 
 	// ICacheCallback
@@ -25,7 +26,7 @@ protected:
 	SERVICE_STATUS_HANDLE m_hSS;
 	set<HDEVNOTIFY> m_RegisteredDeviceNotifications;
 
-	typedef std::map<std::wstring, Cache*> MapType;
+	typedef std::map<Path, Cache*> MapType;
 	MapType m_Map;
 	CRITICAL_SECTION m_cs;
 
