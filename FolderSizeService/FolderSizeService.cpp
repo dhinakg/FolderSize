@@ -150,9 +150,6 @@ DWORD Service::HandlerEx(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData)
 }
 
 
-#define NUM_PIPES 5
-
-
 void WINAPI	ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 {
 	SetLastError(NO_ERROR);
@@ -163,16 +160,17 @@ void WINAPI	ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 		CacheManager theCacheManager(s.GetHandle());
 		s.SetCacheManager(&theCacheManager);
 
-		// create some pipes
-		Pipe* apPipes[NUM_PIPES];
-		for (int i=0; i<NUM_PIPES; i++)
-			apPipes[i] = new Pipe(&theCacheManager);
+		// the number of pipes listed here is the number of simultaneous clients
+		Pipe aPipes[] = {
+			Pipe(&theCacheManager),
+			Pipe(&theCacheManager),
+			Pipe(&theCacheManager),
+			Pipe(&theCacheManager),
+			Pipe(&theCacheManager)
+		};
 
 		s.SetStatus(SERVICE_RUNNING);
 		s.WaitUntilServiceStops();
-
-		for (int i=0; i<NUM_PIPES; i++)
-			delete apPipes[i];
 	}
 
 	DWORD dwError = GetLastError();
