@@ -4,8 +4,23 @@
 #include "EventLog.h"
 
 Scanner::Scanner(const Path& pathVolume, IScannerCallback* pCallback)
-: m_hThread(NULL)
+: m_hThread(NULL), m_BytesPerCluster(0), m_bCompressed(false)
 {
+	DWORD SectorsPerCluster, BytesPerSector;
+	if (GetDiskFreeSpace(pathVolume.c_str(), &SectorsPerCluster, &BytesPerSector, NULL, NULL))
+	{
+		m_BytesPerCluster = SectorsPerCluster * BytesPerSector;
+	}
+
+	DWORD FileSystemFlags;
+	if (GetVolumeInformation(pathVolume.c_str(), NULL, 0, NULL, NULL, &FileSystemFlags, NULL, 0))
+	{
+		if (FileSystemFlags & (FILE_VOLUME_IS_COMPRESSED))
+		{
+			m_bCompressed = true;
+		}
+	}
+
 	m_pPerformanceMonitor = new PerformanceMonitor(pathVolume);
 	m_pCallback = pCallback;
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -41,7 +56,7 @@ Scanner::Scanner(const Path& pathVolume, IScannerCallback* pCallback)
 
 	if (m_hThread == NULL)
 	{
-		EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+		EventLog::Instance().ReportError(_T("Scanner CreateThread"), GetLastError());
 	}
 
 }
@@ -71,39 +86,68 @@ void Scanner::ScanFolder(const Path& path)
 		// we could be legitimately denied access to this folder
 		if (GetLastError() != ERROR_ACCESS_DENIED)
 		{
-			EventLog::Instance().ReportError(_T("Scanner"), GetLastError());
+			EventLog::Instance().ReportError(_T("Scanner FindFirstFile"), GetLastError());
 		}
 		return;
 	}
-	else
-	{
-		do
-		{
-			// ignore reparse points... they are links to other directories.
-			// including them here might make some folders look smaller than 
-			// you think it is, but that's better than multiply counting files.
-			if (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
-			{
-				if (FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					if (FindData.cFileName[0] != L'.' || (FindData.cFileName[1] != L'\0' && (FindData.cFileName[1] != L'.' || FindData.cFileName[2] != L'\0')))
-					{
-						Path pathFound = path + Path(FindData.cFileName);
-						m_pCallback->FoundFolder(pathFound);
 
-						nSize.nFolders++;
+	do
+	{
+		// ignore reparse points... they are links to other directories.
+		// including them here might make some folders look smaller than 
+		// you think it is, but that's better than multiply counting files.
+		if (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+		{
+			if (FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				if (FindData.cFileName[0] != L'.' || (FindData.cFileName[1] != L'\0' && (FindData.cFileName[1] != L'.' || FindData.cFileName[2] != L'\0')))
+				{
+					Path pathFound = path + Path(FindData.cFileName);
+					m_pCallback->FoundFolder(pathFound);
+
+					nSize.nFolders++;
+				}
+			}
+			else
+			{
+				nSize.nLogicalSize += MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+
+				if (m_bCompressed ||
+					FindData.dwFileAttributes & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_SPARSE_FILE))
+				{
+					Path filePath = path + Path(FindData.cFileName);
+					DWORD dwSizeHigh;
+					DWORD dwSizeLow = GetCompressedFileSize(filePath.GetLongAPIRepresentation().c_str(), &dwSizeHigh);
+					if (dwSizeLow == INVALID_FILE_SIZE && GetLastError() != NO_ERROR)
+					{
+						EventLog::Instance().ReportError(_T("Scanner GetCompressedFileSize"), GetLastError());
+						// just use the regular size that we have i guess
+						nSize.nPhysicalSize += MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+					}
+					else
+					{
+						nSize.nPhysicalSize += MakeULongLong(dwSizeHigh, dwSizeLow);
 					}
 				}
 				else
 				{
-					nSize.nSize += MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
-
-					nSize.nFiles++;
+					// Round up to the next cluster size
+					// This is meaningless for small files that are resident to the MFT!
+					ULONGLONG nLogicalSize = MakeULongLong(FindData.nFileSizeHigh, FindData.nFileSizeLow);
+					nSize.nPhysicalSize += ((nLogicalSize + m_BytesPerCluster - 1) / m_BytesPerCluster) * m_BytesPerCluster;
 				}
+
+				nSize.nFiles++;
 			}
-		} while (FindNextFile(hFind, &FindData));
-		FindClose(hFind);
+		}
+	} while (FindNextFile(hFind, &FindData));
+
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+	{
+		EventLog::Instance().ReportError(_T("Scanner FindNextFile"), GetLastError());
 	}
+
+	FindClose(hFind);
 
 	m_pCallback->GotScanResult(path, nSize);
 }
@@ -139,8 +183,6 @@ bool Scanner::GetAnItemFromTheQueue(Path& path)
 			return false;
 		}
 	}
-
-	return true;
 }
 
 DWORD WINAPI Scanner::ThreadProc(LPVOID lpParameter)

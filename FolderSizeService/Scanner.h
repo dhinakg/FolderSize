@@ -32,4 +32,6 @@ protected:
 	HANDLE m_hThread;
 	HANDLE m_hQuitEvent;
 	HANDLE m_hScanEvent;
+	DWORD m_BytesPerCluster;
+	bool m_bCompressed;
 };

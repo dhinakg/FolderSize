@@ -10,6 +10,10 @@ CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 	InitializeCriticalSection(&m_cs);
 
 	m_ScanDriveTypes = LoadScanDriveTypes();
+
+	// if there is ever an error accessing a drive, we always
+	// want to fail the call, and not display a dialog
+	SetErrorMode(SEM_FAILCRITICALERRORS);
 }
 
 CacheManager::~CacheManager()

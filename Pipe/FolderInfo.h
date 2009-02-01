@@ -8,9 +8,11 @@ enum GETINFOFORFOLDER
 };
 
 struct FOLDERINFO {
-	ULONGLONG nSize;
+	ULONGLONG nLogicalSize;
+	ULONGLONG nPhysicalSize;
 	ULONG nFiles;
 	ULONG nFolders;
+
 
 	FOLDERINFO() {
 		ZeroMemory(this, sizeof(*this));
@@ -23,18 +25,20 @@ struct FOLDERINFO {
 		return !operator==(Info); }
 
 	operator bool() {
-		return nSize || nFiles || nFolders;
+		return nLogicalSize || nPhysicalSize || nFiles || nFolders;
 	}
 
 	FOLDERINFO& operator+=(const FOLDERINFO& Info) {
-		nSize += Info.nSize;
+		nLogicalSize += Info.nLogicalSize;
+		nPhysicalSize += Info.nPhysicalSize;
 		nFiles += Info.nFiles;
 		nFolders += Info.nFolders;
 		return *this;
 	}
 
 	FOLDERINFO& operator-=(const FOLDERINFO& Info) {
-		nSize -= Info.nSize;
+		nLogicalSize -= Info.nLogicalSize;
+		nPhysicalSize -= Info.nPhysicalSize;
 		nFiles -= Info.nFiles;
 		nFolders -= Info.nFolders;
 		return *this;
