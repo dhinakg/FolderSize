@@ -209,41 +209,6 @@ void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT 
 	}
 }
 
-bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
-{
-	bool bRet = false;
-
-	// try twice to connect to the pipe
-	HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	if (hPipe == INVALID_HANDLE_VALUE)
-	{
-		if (GetLastError() == ERROR_PIPE_BUSY)
-		{
-			SetLastError(0);
-			if (WaitNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, 1000))
-			{
-				hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-			}
-		}
-	}
-
-	if (hPipe != INVALID_HANDLE_VALUE)
-	{
-		if (WriteGetFolderSizeRequest(hPipe, pszFile))
-		{
-			FOLDERINFO2 Size;
-			if (ReadGetFolderSize(hPipe, nSize))
-			{
-				bRet = true;
-			}
-		}
-
-		CloseHandle(hPipe);
-	}
-
-	return bRet;
-}
-
 bool CFolderSizeObj::GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch)
 {
 	pszBuffer[0] = _T('\0');
@@ -259,7 +224,7 @@ bool CFolderSizeObj::GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, 
 	}
 	else
 	{
-		FormatSizeWithOption(nSize.nSize, pszBuffer, cch);
+		FormatSizeWithOption(nSize.nLogicalSize, pszBuffer, cch);
 
 		LPWSTR psz = pszBuffer + wcslen(pszBuffer);
 		switch (nSize.giff)

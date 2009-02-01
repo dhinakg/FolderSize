@@ -135,3 +135,38 @@ bool WriteGetFolderSize(HANDLE h, const FOLDERINFO2& Size)
 	DWORD dwBytesWritten;
 	return WriteFile(h, &Size, sizeof(Size), &dwBytesWritten, NULL) && dwBytesWritten == sizeof(Size);
 }
+
+bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize)
+{
+	bool bRet = false;
+
+	// try twice to connect to the pipe
+	HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		if (GetLastError() == ERROR_PIPE_BUSY)
+		{
+			SetLastError(0);
+			if (WaitNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, 1000))
+			{
+				hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+			}
+		}
+	}
+
+	if (hPipe != INVALID_HANDLE_VALUE)
+	{
+		if (WriteGetFolderSizeRequest(hPipe, pszFile))
+		{
+			FOLDERINFO2 Size;
+			if (ReadGetFolderSize(hPipe, nSize))
+			{
+				bRet = true;
+			}
+		}
+
+		CloseHandle(hPipe);
+	}
+
+	return bRet;
+}

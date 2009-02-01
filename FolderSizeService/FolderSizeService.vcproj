@@ -532,10 +532,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FolderInfo.h"
-				>
-			</File>
-			<File
 				RelativePath=".\FolderManager.cpp"
 				>
 			</File>
@@ -579,6 +575,10 @@
 		<Filter
 			Name="Pipe"
 			>
+			<File
+				RelativePath="..\Pipe\FolderInfo.h"
+				>
+			</File>
 			<File
 				RelativePath="..\Pipe\Pipe.cpp"
 				>

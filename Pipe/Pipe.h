@@ -38,3 +38,5 @@ bool ReadStringList(HANDLE h, Strings& strs);
 bool WriteStringList(HANDLE h, const Strings& strs);
 bool ReadGetFolderSize(HANDLE h, FOLDERINFO2& Size);
 bool WriteGetFolderSize(HANDLE h, const FOLDERINFO2& Size);
+
+bool GetInfoForFolder(LPCWSTR pszFile, FOLDERINFO2& nSize);
