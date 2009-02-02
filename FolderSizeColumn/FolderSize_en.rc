@@ -56,6 +56,8 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_TITLE        "Folder Size"
     IDS_COLUMN_DESCRIPTION  "Display the total size of files within folders."
+    IDS_COLUMN_PHYSICAL_TITLE        "Size On Disk"
+    IDS_COLUMN_PHYSICAL_DESCRIPTION  "Display the total amount of storage space consumed by files within folders."
     IDS_COLUMN_FILES_TITLE  "File Children"
     IDS_COLUMN_FILES_DESCRIPTION 
                             "Display the total number of files within folders."

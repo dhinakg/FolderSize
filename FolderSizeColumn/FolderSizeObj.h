@@ -1,5 +1,7 @@
 #pragma once
 
+#include "..\Pipe\Pipe.h"
+
 class ATL_NO_VTABLE CFolderSizeObj : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CFolderSizeObj, &CLSID_FolderSizeObj>,
@@ -7,7 +9,8 @@ class ATL_NO_VTABLE CFolderSizeObj :
 {
 public:
 	enum FolderSizeColumns {
-		FSC_SIZE = 0,
+		FSC_LOGICAL_SIZE = 0,
+		FSC_PHYSICAL_SIZE,
 		FSC_FILES,
 		FSC_FOLDERS,
 		FSC_SIBLINGS
@@ -34,7 +37,7 @@ public:
 	STDMETHOD (GetItemData)(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA pscd, VARIANT *pvarData);
 
 private:
-	static bool GetFolderInfoToBuffer(LPCTSTR pszFolder, LPTSTR pszBuffer, DWORD cch);
+	static bool GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERINFO2::* sizeMember, LPTSTR pszBuffer, DWORD cch);
 	static void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize);
 };
 
