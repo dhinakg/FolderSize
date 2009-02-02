@@ -139,6 +139,7 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 		case IDC_DISPLAY_EXPLORER:
 		case IDC_DISPLAY_COMPACT:
+		case IDC_DISPLAY_BYTES:
 		case IDC_DISPLAY_LOCAL:
 		case IDC_DISPLAY_CD:
 		case IDC_DISPLAY_REMOVABLE:
@@ -335,39 +336,6 @@ INT_PTR CALLBACK CreditsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-void ShowCredits(HWND hwndParent)
-{
-/*
-	LPCTSTR pszText =
-		TEXT("Translators:\n")
-		TEXT("\n")
-		TEXT("Bruce Pimenta (German)\n")
-		TEXT("Calle (Swedish)\n")
-		TEXT("Frederik Uyttersprot & Huub van Dooren (Dutch)\n")
-		TEXT("J.J.Ghisa (Italian)\n")
-		TEXT("Josep Lladonosa Capell (Catalan)\n")
-		TEXT("Keblo (Japanese)\n")
-		TEXT("Wayland Tai (Chinese)\n")
-		TEXT("Limerick Kepler (French)\n)")
-		TEXT("Miguel Maratá (Portuguese)\n")
-		TEXT("Игорь Петрович (Russian)\n")
-		TEXT("Piotr Kwiliński (Polish)\n")
-		TEXT("Victor Pereyra (Spanish)\n")
-		TEXT("\n")
-		TEXT("Graphics:\n")
-		TEXT("\n")
-		TEXT("Christian Helmrich\n")
-		TEXT("\n")
-		TEXT("Code contributors:\n")
-		TEXT("\n")
-		TEXT("Kirill Müller\n")
-		TEXT("Markus Cozowicz");
-		
-	MessageBox(hwndParent, pszText, TEXT("Credits"), MB_OK | MB_ICONINFORMATION);
-*/
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_CREDITS), hwndParent, CreditsProc);
-}
-
 INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -391,7 +359,7 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("http://foldersize.sourceforge.net"), NULL, NULL, SW_SHOWNORMAL);
 			return TRUE;
 		case IDC_CREDITS:
-			ShowCredits(hwndDlg);
+			DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_CREDITS), hwndDlg, CreditsProc);
 			return TRUE;
 		case IDC_HYPER_GPL:
 			ShellExecute(hwndDlg, TEXT("open"), TEXT("http://www.gnu.org/copyleft/gpl.html"), NULL, NULL, SW_SHOWNORMAL);
