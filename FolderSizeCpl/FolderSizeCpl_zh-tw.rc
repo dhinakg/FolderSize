@@ -37,6 +37,7 @@ BEGIN
                     IDC_STATIC,7,38,96,34
     LTEXT           "Folder Size for Windows 2.5",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
+    PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "顯示檔案夾容量是跟據 GNU Public 版權保護下進行發行.",
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "版權",IDC_STATIC,7,123,198,58

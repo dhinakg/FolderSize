@@ -67,6 +67,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size dla Windows zosta³ poczêty, zaprojektowany i zaimplentowany przez Briana Oraas.",IDC_STATIC,7,38,106,41
     LTEXT           "Folder Size dla Windows 2.5",IDC_TITLE,7,7,198,22,WS_TABSTOP
+    PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "Folder Size dla Windows mo¿e byæ rozpowszechniany na warunkach okreœlonych w licencji GNU General Public License.",IDC_HYPER_GPL,17,134,179,25
     GROUPBOX        "Licencja",IDC_STATIC,7,120,198,61
     LTEXT           "Dowiedz siê wiêcej o GNU tutaj.",IDC_HYPER_GNU,17,162,102,8,WS_TABSTOP

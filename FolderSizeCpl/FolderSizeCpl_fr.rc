@@ -62,6 +62,7 @@ BEGIN
                     IDC_STATIC,7,38,96,29
     LTEXT           "Folder Size pour Windows 2.5",IDC_TITLE,7,7,189,22,
                     WS_TABSTOP
+    PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "Folder Size pour Windows est distribué selon l'accord de la Licence Publique GNU.",
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licence",IDC_STATIC,7,123,198,58
