@@ -28,8 +28,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,0
- PRODUCTVERSION 2,4,0,0
+ FILEVERSION 1,5,0,0
+ PRODUCTVERSION 2,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -46,12 +46,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Brio"
             VALUE "FileDescription", "Folder Size column handler"
-            VALUE "FileVersion", "1, 4, 0, 0"
+            VALUE "FileVersion", "1, 5, 0, 0"
             VALUE "InternalName", "FolderSizeColumn"
-            VALUE "LegalCopyright", "Copyright © 2007"
+            VALUE "LegalCopyright", "Copyright © 2009"
             VALUE "OriginalFilename", "FolderSizeColumn.dll"
             VALUE "ProductName", "Folder Size for Windows"
-            VALUE "ProductVersion", "2, 4, 0, 0"
+            VALUE "ProductVersion", "2, 5, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

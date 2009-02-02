@@ -34,7 +34,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Dimensione Cartelle per Windows è stato concepito, progettato e implementato da Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Dimensione Cartelle per Windows 2.4",IDC_TITLE,7,7,198,
+    LTEXT           "Dimensione Cartelle per Windows 2.5",IDC_TITLE,7,7,198,
                     22,WS_TABSTOP
     LTEXT           "Dimensione Cartelle per Windows è rilasciato attraverso gli accordi della Licenza Pubblica GNU.",
                     IDC_HYPER_GPL,17,137,179,19

@@ -81,7 +81,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Проект Folder Size для Windows был задуман, спроектирован, и реализован Brian Oraas.  Русская локализация: Алькор",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size для Windows версия 2.4",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size для Windows версия 2.5",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "Folder Size для Windows распространяется по лицензии GNU General Public License.",
                     IDC_HYPER_GPL,17,137,179,19

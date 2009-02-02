@@ -81,7 +81,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size for Windows は、Brian Oraas が考案、設計、実装しました。",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.4",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.5",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "Folder Size for Windows は、GNU Public License agreement に基づいて公開されています。",
                     IDC_HYPER_GPL,17,137,179,19

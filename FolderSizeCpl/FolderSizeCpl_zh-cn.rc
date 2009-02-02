@@ -81,7 +81,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "显示档案夹容量是由 Brian Oraas 构想, 设计及完成.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size for Windows 2.4",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size for Windows 2.5",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     LTEXT           "显示档案夹容量是跟据 GNU Public 版权保护下进行发行.",
                     IDC_HYPER_GPL,17,137,179,19
