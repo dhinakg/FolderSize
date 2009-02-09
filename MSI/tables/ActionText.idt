@@ -18,8 +18,8 @@ GenerateScript	Generating script operations for action:	[1]
 InstallAdminPackage	Copying network install files	File: [1], Directory: [9], Size: [6]
 InstallFiles	Copying new files	File: [1],  Directory: [9],  Size: [6]
 InstallODBC	Installing ODBC components	
-InstallServices	Installing new services	Service: [2]
 InstallSFPCatalogFile	Installing system catalog	File: [1],  Dependencies: [2]
+InstallServices	Installing new services	Service: [2]
 InstallValidate	Validating install	
 LaunchConditions	Evaluating launch conditions	
 MigrateFeatureStates	Migrating feature states from related applications	Application: [1]
@@ -31,6 +31,7 @@ ProcessComponents	Updating component registration
 PublishComponents	Publishing Qualified Components	Component ID: [1], Qualifier: [2]
 PublishFeatures	Publishing Product Features	Feature: [1]
 PublishProduct	Publishing product information	
+RMCCPSearch	Searching for qualifying products	
 RegisterClassInfo	Registering Class servers	Class Id: [1]
 RegisterComPlus	Registering COM+ Applications and Components	AppId: [1]{{, AppType: [2], Users: [3], RSN: [4]}}
 RegisterExtensionInfo	Registering extension servers	Extension: [1]
@@ -49,7 +50,6 @@ RemoveIniValues	Removing INI files entries	File: [1],  Section: [2],  Key: [3], 
 RemoveODBC	Removing ODBC components	
 RemoveRegistryValues	Removing system registry values	Key: [1], Name: [2]
 RemoveShortcuts	Removing shortcuts	Shortcut: [1]
-RMCCPSearch	Searching for qualifying products	
 Rollback	Rolling back action:	[1]
 RollbackCleanup	Removing backup files	File: [1]
 SelfRegModules	Registering modules	File: [1], Folder: [2]

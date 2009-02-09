@@ -33,7 +33,7 @@ CustomizeDlg	LocationLabel	Text	25	200	50	10	3		Location:
 CustomizeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 CustomizeDlg	Reset	PushButton	42	243	56	17	3		[ButtonText_Reset]	DiskCost	
 CustomizeDlg	Text	Text	25	55	320	20	3		Click on the icons in the tree below to change the way features will be installed.		
-CustomizeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Custom Setup		
+CustomizeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Customize		
 CustomizeDlg	Tree	SelectionTree	25	85	175	95	7	_BrowseProperty	Tree of selections	Browse	
 DiskCostDlg	BannerLine	Line	0	44	374	0	1				
 DiskCostDlg	BottomLine	Line	0	234	374	0	1				
@@ -135,22 +135,6 @@ ResumeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back
 ResumeDlg	Description	Text	135	70	220	30	196611		The [Wizard] will complete the installation of [ProductName] on your computer.  Click Install to continue or Cancel to exit the [Wizard].		
 ResumeDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 ResumeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}Resuming the [ProductName] [Wizard]		
-SetupTypeDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-SetupTypeDlg	BannerLine	Line	0	44	374	0	1				
-SetupTypeDlg	BottomLine	Line	0	234	374	0	1				
-SetupTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	TypicalLabel	
-SetupTypeDlg	CompleteButton	PushButton	50	171	38	38	5767171		[CompleteSetupIcon]	Back	Complete Installation|
-SetupTypeDlg	CompleteLabel	Text	105	171	100	10	3		[DlgTitleFont]C&omplete	CompleteButton	
-SetupTypeDlg	CompleteText	Text	105	184	230	20	3		All program features will be installed.  (Requires most disk space)		
-SetupTypeDlg	CustomButton	PushButton	50	118	38	38	5767171		[CustomSetupIcon]	CompleteLabel	Custom Installation|
-SetupTypeDlg	CustomLabel	Text	105	118	100	10	3		[DlgTitleFont]C&ustom	CustomButton	
-SetupTypeDlg	CustomText	Text	105	131	230	30	3		Allows users to choose which program features will be installed and where they will be installed. Recommended for advanced users.		
-SetupTypeDlg	Description	Text	25	23	280	15	196611		Choose the setup type that best suits your needs.		
-SetupTypeDlg	Next	PushButton	236	243	56	17	1		[ButtonText_Next]	Cancel	
-SetupTypeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Choose Setup Type		
-SetupTypeDlg	TypicalButton	PushButton	50	65	38	38	5767171		[InstallerIcon]	CustomLabel	Typical Installation|
-SetupTypeDlg	TypicalLabel	Text	105	65	100	10	3		[DlgTitleFont]&Typical	TypicalButton	
-SetupTypeDlg	TypicalText	Text	105	78	230	20	3		Installs the most common program features. Recommended for most users.		
 UserExit	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
 UserExit	BottomLine	Line	0	234	374	0	1				
 UserExit	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	Back	
@@ -162,7 +146,7 @@ VerifyReadyDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Install
 VerifyReadyDlg	BannerLine	Line	0	44	374	0	1				
 VerifyReadyDlg	BottomLine	Line	0	234	374	0	1				
 VerifyReadyDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
-VerifyReadyDlg	Description	Text	25	23	280	15	196611		The [Wizard] is ready to begin the [InstallMode] installation.		
+VerifyReadyDlg	Description	Text	25	23	280	15	196611		The [Wizard] is ready to begin the installation.		
 VerifyReadyDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 VerifyReadyDlg	Text	Text	25	70	320	20	3		Click Install to begin the installation.  If you want to review or change any of your installation settings, click Back.  Click Cancel to exit the wizard.		
 VerifyReadyDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Ready to Install		
