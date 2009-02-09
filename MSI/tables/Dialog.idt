@@ -16,7 +16,6 @@ OutOfRbDiskDlg	50	50	370	270	3	[ProductName] [Setup]	No	No	No
 PrepareDlg	50	50	370	270	1	[ProductName] [Setup]	Cancel	Cancel	Cancel
 ProgressDlg	50	50	370	270	1	[ProductName] [Setup]	Cancel	Cancel	Cancel
 ResumeDlg	50	50	370	270	3	[ProductName] [Setup]	Install	Install	Cancel
-SetupTypeDlg	50	50	370	270	3	[ProductName] [Setup]	TypicalLabel	TypicalButton	Cancel
 UserExit	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
 VerifyReadyDlg	50	50	370	270	35	[ProductName] [Setup]	Install	Install	Cancel
 VerifyRemoveDlg	50	50	370	270	35	[ProductName] [Setup]	Back	Back	Cancel
