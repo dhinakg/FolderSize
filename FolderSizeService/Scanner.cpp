@@ -83,12 +83,22 @@ void Scanner::ScanFolder(const Path& path)
 	HANDLE hFind = FindFirstFile(pathFind.GetLongAPIRepresentation().c_str(), &FindData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		// we could be legitimately denied access to this folder
-		if (GetLastError() != ERROR_ACCESS_DENIED)
+		DWORD dwError = GetLastError();
+		// most folders have the . and .. directories, but scanning the root
+		// of an empty drive will give this error
+		if (dwError == ERROR_FILE_NOT_FOUND)
 		{
-			EventLog::Instance().ReportError(_T("Scanner FindFirstFile"), GetLastError());
+			m_pCallback->GotScanResult(path, nSize);
+			return;
 		}
-		return;
+		// we could be legitimately denied access to this folder
+		if (dwError != ERROR_ACCESS_DENIED)
+		{
+			// this is an unexpected error!
+			// don't call GotScanResult, so we will never be asked to scan this folder again
+			EventLog::Instance().ReportError(_T("Scanner FindFirstFile"), GetLastError());
+			return;
+		}
 	}
 
 	do
