@@ -10,7 +10,7 @@ BrowseDlg	Up	DirectoryListUp	0	1
 CancelDlg	No	EndDialog	Return	1	
 CancelDlg	Yes	EndDialog	Exit	1	
 CustomizeDlg	Back	NewDialog	MaintenanceTypeDlg	InstallMode = "Change"	
-CustomizeDlg	Back	NewDialog	SetupTypeDlg	InstallMode = "Custom"	
+CustomizeDlg	Back	NewDialog	WelcomeDlg	InstallMode = "Custom"	
 CustomizeDlg	Browse	SelectionBrowse	BrowseDlg	1	
 CustomizeDlg	Cancel	SpawnDialog	CancelDlg	1	
 CustomizeDlg	DiskCost	SpawnDialog	DiskCostDlg	1	2
@@ -31,18 +31,18 @@ FilesInUse	Ignore	EndDialog	Ignore	1
 FilesInUse	Retry	EndDialog	Retry	1	
 MaintenanceTypeDlg	Back	NewDialog	MaintenanceWelcomeDlg	1	
 MaintenanceTypeDlg	Cancel	SpawnDialog	CancelDlg	1	
+MaintenanceTypeDlg	ChangeButton	NewDialog	CustomizeDlg	1	4
 MaintenanceTypeDlg	ChangeButton	[InstallMode]	Change	1	1
 MaintenanceTypeDlg	ChangeButton	[Progress1]	Changing	1	2
 MaintenanceTypeDlg	ChangeButton	[Progress2]	changes	1	3
-MaintenanceTypeDlg	ChangeButton	NewDialog	CustomizeDlg	1	4
+MaintenanceTypeDlg	RemoveButton	NewDialog	VerifyRemoveDlg	1	4
 MaintenanceTypeDlg	RemoveButton	[InstallMode]	Remove	1	1
 MaintenanceTypeDlg	RemoveButton	[Progress1]	Removing	1	2
 MaintenanceTypeDlg	RemoveButton	[Progress2]	removes	1	3
-MaintenanceTypeDlg	RemoveButton	NewDialog	VerifyRemoveDlg	1	4
+MaintenanceTypeDlg	RepairButton	NewDialog	VerifyRepairDlg	1	4
 MaintenanceTypeDlg	RepairButton	[InstallMode]	Repair	1	1
 MaintenanceTypeDlg	RepairButton	[Progress1]	Repairing	1	2
 MaintenanceTypeDlg	RepairButton	[Progress2]	repaires	1	3
-MaintenanceTypeDlg	RepairButton	NewDialog	VerifyRepairDlg	1	4
 MaintenanceWelcomeDlg	Cancel	SpawnDialog	CancelDlg	1	
 MaintenanceWelcomeDlg	Next	NewDialog	MaintenanceTypeDlg	1	2
 MaintenanceWelcomeDlg	Next	SpawnWaitDialog	WaitForCostingDlg	CostingComplete = 1	1
@@ -59,20 +59,10 @@ ResumeDlg	Install	EndDialog	Return	OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0
 ResumeDlg	Install	SpawnDialog	OutOfDiskDlg	(OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST="F")	6
 ResumeDlg	Install	SpawnDialog	OutOfRbDiskDlg	OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST="P" OR NOT PROMPTROLLBACKCOST)	3
 ResumeDlg	Install	SpawnWaitDialog	WaitForCostingDlg	CostingComplete = 1	1
-SetupTypeDlg	Back	NewDialog	WelcomeDlg	1	
-SetupTypeDlg	Cancel	SpawnDialog	CancelDlg	1	
-SetupTypeDlg	CompleteButton	[InstallMode]	Complete	1	1
-SetupTypeDlg	CompleteButton	NewDialog	VerifyReadyDlg	1	3
-SetupTypeDlg	CompleteButton	SetInstallLevel	1000	1	2
-SetupTypeDlg	CustomButton	[InstallMode]	Custom	1	1
-SetupTypeDlg	CustomButton	NewDialog	CustomizeDlg	1	2
-SetupTypeDlg	TypicalButton	[InstallMode]	Typical	1	1
-SetupTypeDlg	TypicalButton	NewDialog	VerifyReadyDlg	1	3
-SetupTypeDlg	TypicalButton	SetInstallLevel	3	1	2
 UserExit	Finish	EndDialog	Exit	1	
 VerifyReadyDlg	Back	NewDialog	CustomizeDlg	InstallMode = "Custom" OR InstallMode = "Change"	
+VerifyReadyDlg	Back	NewDialog	CustomizeDlg	InstallMode = "Typical" OR InstallMode = "Complete"	
 VerifyReadyDlg	Back	NewDialog	MaintenanceTypeDlg	InstallMode = "Repair"	
-VerifyReadyDlg	Back	NewDialog	SetupTypeDlg	InstallMode = "Typical" OR InstallMode = "Complete"	
 VerifyReadyDlg	Cancel	SpawnDialog	CancelDlg	1	
 VerifyReadyDlg	Install	EnableRollback	False	OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST="D"	4
 VerifyReadyDlg	Install	EndDialog	Return	OutOfDiskSpace <> 1	1
@@ -98,4 +88,4 @@ VerifyRepairDlg	Repair	SpawnDialog	OutOfDiskDlg	(OutOfDiskSpace = 1 AND OutOfNoR
 VerifyRepairDlg	Repair	SpawnDialog	OutOfRbDiskDlg	OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST="P" OR NOT PROMPTROLLBACKCOST)	4
 WaitForCostingDlg	Return	EndDialog	Exit	1	
 WelcomeDlg	Cancel	SpawnDialog	CancelDlg	1	
-WelcomeDlg	Next	NewDialog	SetupTypeDlg	1	
+WelcomeDlg	Next	NewDialog	CustomizeDlg	1	
