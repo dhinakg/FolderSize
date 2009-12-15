@@ -3,13 +3,13 @@ s72	s50	s20	i2	i2	i2	i2	I4	S50	L0	S50	L50
 Control	Dialog_	Control
 BrowseDlg	BannerLine	Line	0	44	374	0	1				
 BrowseDlg	BottomLine	Line	0	234	374	0	1				
-BrowseDlg	Cancel	PushButton	240	243	56	17	3		[ButtonText_Cancel]	ComboLabel	
+BrowseDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	ComboLabel	
 BrowseDlg	ComboLabel	Text	25	58	44	10	3		&Look in:	DirectoryCombo	
 BrowseDlg	Description	Text	25	23	280	15	196611		Browse to the destination folder		
 BrowseDlg	DirectoryCombo	DirectoryCombo	70	55	220	80	393227	_BrowseProperty		Up	
 BrowseDlg	DirectoryList	DirectoryList	25	83	320	110	15	_BrowseProperty		PathLabel	
 BrowseDlg	NewFolder	PushButton	325	55	19	19	3670019		New	DirectoryList	Create A New Folder|
-BrowseDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]	Cancel	
+BrowseDlg	OK	PushButton	240	243	56	17	3		[ButtonText_OK]	Cancel	
 BrowseDlg	PathEdit	PathEdit	84	202	261	18	11	_BrowseProperty		OK	
 BrowseDlg	PathLabel	Text	25	205	59	10	3		&Folder name:	PathEdit	
 BrowseDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Change current destination folder		
