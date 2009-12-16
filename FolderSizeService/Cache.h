@@ -39,7 +39,7 @@ public:
 
 	// IScannerCallback
 	virtual void FoundFolder(const Path& path);
-	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize);
+	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize, LONGLONG nTime);
 	virtual bool GetNextScanFolder(Path& path);
 
 	// IMonitorCallback

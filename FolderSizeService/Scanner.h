@@ -9,7 +9,7 @@ class IScannerCallback
 {
 public:
 	virtual void FoundFolder(const Path& path) = 0;
-	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize) = 0;
+	virtual void GotScanResult(const Path& path, const FOLDERINFO& nSize, LONGLONG nTime) = 0;
 	virtual bool GetNextScanFolder(Path& path) = 0;
 };
 

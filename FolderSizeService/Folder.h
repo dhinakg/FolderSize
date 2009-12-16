@@ -29,7 +29,7 @@ public:
 
 	// change the CacheFolder's status
 	void Dirty();
-	void Clean(const FOLDERINFO& nSize);
+	void Clean(const FOLDERINFO& nSize, LONGLONG nTime);
 
 	void Rename(const Path& pathNew);
 

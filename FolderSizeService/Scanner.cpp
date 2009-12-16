@@ -79,6 +79,9 @@ void Scanner::ScanFolder(const Path& path)
 	FOLDERINFO nSize;
 	Path pathFind = path + Path(_T("*"));
 
+	LARGE_INTEGER nTime;
+	QueryPerformanceCounter(&nTime);
+
 	WIN32_FIND_DATA FindData;
 	HANDLE hFind = FindFirstFile(pathFind.GetLongAPIRepresentation().c_str(), &FindData);
 	if (hFind == INVALID_HANDLE_VALUE)
@@ -88,7 +91,7 @@ void Scanner::ScanFolder(const Path& path)
 		// of an empty drive will give this error
 		if (dwError == ERROR_FILE_NOT_FOUND)
 		{
-			m_pCallback->GotScanResult(path, nSize);
+			m_pCallback->GotScanResult(path, nSize, nTime.QuadPart);
 			return;
 		}
 		// we could be legitimately denied access to this folder
@@ -159,7 +162,7 @@ void Scanner::ScanFolder(const Path& path)
 
 	FindClose(hFind);
 
-	m_pCallback->GotScanResult(path, nSize);
+	m_pCallback->GotScanResult(path, nSize, nTime.QuadPart);
 }
 
 void Scanner::Wakeup()

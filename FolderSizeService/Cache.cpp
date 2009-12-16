@@ -103,14 +103,14 @@ void Cache::FoundFolder(const Path& path)
 	LeaveCriticalSection(&m_cs);
 }
 
-void Cache::GotScanResult(const Path& path, const FOLDERINFO& nSize)
+void Cache::GotScanResult(const Path& path, const FOLDERINFO& nSize, LONGLONG nTime)
 {
 	WarningEnterCriticalSection(&m_cs,  _T("GotScanResult"));
 	// clean the scanned folder
 	CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, false);
 	if (pFolder != NULL)
 	{
-		pFolder->Clean(nSize);
+		pFolder->Clean(nSize, nTime);
 	}
 	LeaveCriticalSection(&m_cs);
 }

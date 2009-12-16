@@ -147,7 +147,7 @@ void CacheFolder::Dirty()
 	m_bIsScanValid = false;
 }
 
-void CacheFolder::Clean(const FOLDERINFO& nSize)
+void CacheFolder::Clean(const FOLDERINFO& nSize, LONGLONG nTime)
 {
 	if (m_eStatus != FS_CLEAN)
 	{
@@ -163,10 +163,7 @@ void CacheFolder::Clean(const FOLDERINFO& nSize)
 			}
 		}
 
-		// to eliminate disk thrashing, record the time so we won't scan if the request is older than this time
-		LARGE_INTEGER nTime;
-		QueryPerformanceCounter(&nTime);
-		m_nLastCleanTime = nTime.QuadPart;
+		m_nLastCleanTime = nTime;
 
 		// the scan is done
 		m_bScanning = false;
