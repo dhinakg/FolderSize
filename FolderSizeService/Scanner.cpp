@@ -98,10 +98,10 @@ void Scanner::ScanFolder(const Path& path)
 		if (dwError != ERROR_ACCESS_DENIED)
 		{
 			// this is an unexpected error!
-			// don't call GotScanResult, so we will never be asked to scan this folder again
 			EventLog::Instance().ReportError(_T("Scanner FindFirstFile"), GetLastError());
-			return;
 		}
+		// don't call GotScanResult, so we will never be asked to scan this folder again
+		return;
 	}
 
 	do
