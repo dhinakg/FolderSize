@@ -10,7 +10,7 @@ class ATL_NO_VTABLE CFolderSizeObj :
 public:
 	enum FolderSizeColumns {
 		FSC_LOGICAL_SIZE = 0,
-		FSC_PHYSICAL_SIZE,
+		//FSC_PHYSICAL_SIZE,
 		FSC_FILES,
 		FSC_FOLDERS,
 		FSC_SIBLINGS

@@ -69,7 +69,7 @@ STDMETHODIMP CFolderSizeObj::GetColumnInfo(DWORD dwIndex, SHCOLUMNINFO *psci)
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
 		return S_OK;
-
+/*
 	case FSC_PHYSICAL_SIZE:
 		psci->scid.fmtid = CLSID_FolderSizeObj;
 		psci->scid.pid = dwIndex;
@@ -80,7 +80,7 @@ STDMETHODIMP CFolderSizeObj::GetColumnInfo(DWORD dwIndex, SHCOLUMNINFO *psci)
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_PHYSICAL_TITLE, psci->wszTitle, MAX_COLUMN_NAME_LEN);
 		LoadString(_AtlBaseModule.GetResourceInstance(), IDS_COLUMN_PHYSICAL_DESCRIPTION, psci->wszDescription, MAX_COLUMN_DESC_LEN);
 		return S_OK;
-
+*/
 	case FSC_FILES:
 		psci->scid.fmtid = CLSID_FolderSizeObj;
 		psci->scid.pid = dwIndex;
@@ -339,7 +339,7 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 				V_BSTR(pvarData) = SysAllocString(buffer);
 				return S_OK;
 			}
-
+/*
 		case FSC_PHYSICAL_SIZE:
 			{
 				WCHAR buffer[50];
@@ -359,7 +359,7 @@ STDMETHODIMP CFolderSizeObj::GetItemData(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA ps
 				V_BSTR(pvarData) = SysAllocString(buffer);
 				return S_OK;
 			}
-
+*/
 		case FSC_FILES:
 		case FSC_FOLDERS:
 		case FSC_SIBLINGS:
