@@ -142,11 +142,8 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 				Path path;
 				if (ReadString(hPipe, path))
 				{
-					// impersonate the caller so we'll interpret his mapped drives correctly
+					// impersonate the caller so each user gets his own view of the file system
 					NamedPipeClientImpersonator Impersonator(hPipe);
-
-					if (!path.IsNetwork())
-						Impersonator.Revert();
 
 					FOLDERINFO2 Size;
 					bool bGotInfo = pCacheManager->GetInfoForFolder(path, Size);
@@ -164,16 +161,11 @@ void HandlePipeClient(HANDLE hPipe, CacheManager* pCacheManager)
 				Strings strsBrowsed, strsUpdated;
 				if (ReadStringList(hPipe, strsBrowsed))
 				{
+					// impersonate the caller so each user gets his own view of the file system
 					NamedPipeClientImpersonator Impersonator(hPipe);
 					for (Strings::iterator i = strsBrowsed.begin(); i != strsBrowsed.end(); i++)
 					{
 						Path pathBrowsed = i->c_str();
-
-						// have to be impersonating the caller to interpret mapped drives correctly
-						Impersonator.Impersonate();
-						if (!pathBrowsed.IsNetwork())
-							Impersonator.Revert();
-
 						pCacheManager->GetUpdateFolders(pathBrowsed, strsUpdated);
 					}
 					Impersonator.Revert();

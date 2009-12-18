@@ -37,29 +37,21 @@ CacheManager::~CacheManager()
 // max cache id is a username and network share, each of which is probably less than MAX_PATH
 #define MAX_CACHEID (MAX_PATH*2)
 
-// pszFolder is the full folder path to make the cache id from
+// path is the full folder path to make the cache id from
 // pszCacheId must point to a buffer to store the cache id
 // pszVolume will return a pointer into the cache id buffer specifying the volume
 bool MakeCacheId(const Path& path, LPTSTR pszCacheId, LPTSTR& pszVolume)
 {
-	if (path.IsNetwork())
-	{
-		// for a network path, the CacheId will be the username followed by the computer and share name
-		DWORD dwChars = MAX_PATH;
-		if (!GetUserName(pszCacheId, &dwChars))
-			return false;
+	// the CacheId will be the username followed by either a volume, or a computer and share name
+	DWORD dwChars = MAX_PATH;
+	if (!GetUserName(pszCacheId, &dwChars))
+		return false;
 
-		// insert a path separator after the username
-		pszCacheId[dwChars - 1] = _T('\\');
+	// insert a path separator after the username
+	pszCacheId[dwChars - 1] = _T('\\');
 
-		// and the volume will be after the separator
-		pszVolume = pszCacheId + dwChars;
-	}
-	else
-	{
-		// for a local path, the CacheId is just the root of the path
-		pszVolume = pszCacheId;
-	}
+	// and the volume will be after the separator
+	pszVolume = pszCacheId + dwChars;
 
 	lstrcpy(pszVolume, path.GetVolume().c_str());
 
@@ -86,7 +78,7 @@ bool CacheManager::DriveTypeEnabled(int type)
 // Return an AddRef'ed Cache
 Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 {
-	// make a cache id which will be the volume of the folder, optionally preceded by a username
+	// make a cache id which will be the volume of the folder, preceded by a username
 	TCHAR szCacheId[MAX_CACHEID];
 	LPTSTR pszVolume;
 	if (!MakeCacheId(path, szCacheId, pszVolume))
@@ -102,7 +94,7 @@ Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 	if (!bCreate)
 		return NULL;
 
-	// if pszVolume is a network path, we should be impersonating the client right now
+	// we should be impersonating the client right now
 	HANDLE hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
 							NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED, NULL);
 	if (hMonitor == INVALID_HANDLE_VALUE)
