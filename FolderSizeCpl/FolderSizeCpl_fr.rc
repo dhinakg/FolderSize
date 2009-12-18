@@ -80,7 +80,7 @@ CAPTION "Affichage"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Format",IDC_STATIC,7,7,198,48
-    CONTROL         "Style &Explorateur Windows(%s)",IDC_DISPLAY_EXPLORER,
+    CONTROL         "Style &Explorateur Windows (%s)",IDC_DISPLAY_EXPLORER,
                     "Button",BS_AUTORADIOBUTTON,17,22,180,10
     CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,180,10
