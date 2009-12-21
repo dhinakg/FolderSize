@@ -60,7 +60,7 @@ BEGIN
     PUSHBUTTON      "開始(&S)",IDC_SERVICE_START,7,25,50,14
     PUSHBUTTON      "停止(&T)",IDC_SERVICE_STOP,7,55,50,14
     LTEXT           "このサービスの動作状態を変更するには、\n管理者権限が必要です。",
-                    IDC_STATIC,64,152,141,29
+                    IDC_STATIC,64,161,141,29
     ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
     PUSHBUTTON      "一時停止(&P)",IDC_SERVICE_PAUSE,7,87,50,14
     PUSHBUTTON      "再開(&R)",IDC_SERVICE_RESUME,7,120,50,14
