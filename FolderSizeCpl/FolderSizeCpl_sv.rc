@@ -57,12 +57,12 @@ BEGIN
     PUSHBUTTON      "S&toppa",IDC_SERVICE_STOP,7,67,50,14
     LTEXT           "Du måste vara inloggad som Administrator för att kunna hantera tjänsten.",IDC_STATIC,64,161,141,20
     ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
-    PUSHBUTTON      "&Pausa",IDC_SERVICE_PAUSE,7,94,50,14
-    PUSHBUTTON      "&Fortsätt",IDC_SERVICE_RESUME,7,120,50,14
-    LTEXT           "När tjänsten är startad finns ett Folder Size-cache i minnet som övervakar dina mappar.",IDC_STATIC,64,36,141,27
-    LTEXT           "När tjänsten är stoppad finns inte informationen om mappars storlek tillgänglig i Utforskaren.",IDC_STATIC,64,67,141,21
-    LTEXT           "Pausa övervakningen för att frigöra bandbredd till disk.",IDC_STATIC,64,94,141,23
-    LTEXT           "Fortsätt för att hålla cachet uppdaterat.",IDC_STATIC,64,119,141,24
+    PUSHBUTTON      "&Pausa",IDC_SERVICE_PAUSE,7,97,50,14
+    PUSHBUTTON      "&Fortsätt",IDC_SERVICE_RESUME,7,123,50,14
+    LTEXT           "När tjänsten är startad finns ett Folder Size-cache i minnet som övervakar dina mappar.",IDC_STATIC,64,37,141,27
+    LTEXT           "När tjänsten är stoppad finns inte informationen om mappars storlek tillgänglig i Utforskaren.",IDC_STATIC,64,67,141,27
+    LTEXT           "Pausa övervakningen för att frigöra bandbredd till disk.",IDC_STATIC,64,97,141,23
+    LTEXT           "Fortsätt för att hålla cachet uppdaterat.",IDC_STATIC,64,123,141,24
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 212, 188
