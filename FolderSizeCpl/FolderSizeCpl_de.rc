@@ -53,20 +53,21 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "Darstellung"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Format",IDC_STATIC,7,7,198,48
-    CONTROL         "&Explorer-Stil (%s)",IDC_DISPLAY_EXPLORER,"Button",
+    GROUPBOX        "Format",IDC_STATIC,7,7,198,61
+    CONTROL         "&Explorer (%s)",IDC_DISPLAY_EXPLORER,"Button",
                     BS_AUTORADIOBUTTON,17,22,171,10
     CONTROL         "&Kompakt (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,176,10
-    GROUPBOX        "Datenträgertypen",IDC_STATIC,7,63,198,51
+    CONTROL         "&Bytes (%s)",IDC_DISPLAY_BYTES,"Button",BS_AUTORADIOBUTTON,17,50,175,10
+    GROUPBOX        "Datenträgertypen",IDC_STATIC,7,74,198,51
     CONTROL         "&Festplatten",IDC_DISPLAY_LOCAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,79,78,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,90,78,10
     CONTROL         "&Wechseldatenträger",IDC_DISPLAY_REMOVABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,109,79,78,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,90,78,10
     CONTROL         "&Optische Laufwerke",IDC_DISPLAY_CD,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,17,95,78,10
+                    WS_TABSTOP,17,106,78,10
     CONTROL         "&Netzwerkfreigaben",IDC_DISPLAY_NETWORK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,109,95,78,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,106,78,10
 END
 
 IDD_SERVICE DIALOGEX 0, 0, 212, 188
