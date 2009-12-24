@@ -62,6 +62,15 @@ LONG APIENTRY CPlApplet(HWND hwndCPl, UINT uMsg, LPARAM lParam1, LPARAM lParam2)
 	case CPL_DBLCLK:
 		if (lParam1 == 0)
 		{
+			// before doing any GUI, declare to Windows 6+ that we are DPI aware
+			HMODULE hUser32 = LoadLibrary(TEXT("user32.dll"));
+			typedef BOOL (*SetProcessDPIAwareFunc)();
+			SetProcessDPIAwareFunc setDPIAware =
+				(SetProcessDPIAwareFunc)GetProcAddress(hUser32, "SetProcessDPIAware");
+			if (setDPIAware)
+				setDPIAware();
+			FreeLibrary(hUser32);
+
 			DoPropertySheet(hwndCPl);
 			return 0;
 		}
