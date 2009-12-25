@@ -96,6 +96,12 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 	case WM_INITDIALOG:
 		{
+			// the property sheet automatically sets its large icon (and it doesn't seem to be changeable),
+			// but it doesn't set its small icon, so we'll do it here
+			HICON hSmallIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON,
+					GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+			SendMessage(GetParent(hwndDlg), WM_SETICON, ICON_SMALL, (LPARAM)hSmallIcon);
+
 			// localize the messages
 			const LONGLONG llSampleSize = 2634192972;
 			TCHAR szFormatMsg[256], szSize[256], szDisplayMsg[256];
