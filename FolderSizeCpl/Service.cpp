@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "Service.h"
+#include "Resource.h"
 #include "..\FolderSizeService\FolderSizeSvc.h"
 
 
@@ -20,9 +21,21 @@ MODIFY_SERVICE_PARAMS msp[MS_MAX] =
 	{ SERVICE_PAUSE_CONTINUE, SERVICE_CONTROL_PARAMCHANGE, 0,                     0               }
 };
 
-bool ModifyService(MODIFY_SERVICE ms)
+void DisplayError(HWND hwnd, DWORD dwError)
 {
-	bool bModified = false;
+	LPTSTR pszMessage;
+	if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, (LPTSTR)&pszMessage, 0, NULL))
+	{
+		TCHAR szTitle[256];
+		LoadString(g_hInstance, IDS_NAME, szTitle, 256);
+		MessageBox(hwnd, pszMessage, szTitle, MB_OK|MB_ICONSTOP);
+		LocalFree(pszMessage);
+	}
+}
+
+void ModifyService(HWND hwndDlg, MODIFY_SERVICE ms)
+{
+	DWORD dwError = 0;
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
 	if (hSCM != NULL)
 	{
@@ -45,54 +58,62 @@ bool ModifyService(MODIFY_SERVICE ms)
 			{
 				bRet = ControlService(hService, msp[ms].dwControl, &ss);
 			}
-			if (bRet && bWait)
+			if (bRet)
 			{
-				HCURSOR hPrevCursor;
-				bool bChangedCursor = false;
-
-				while (true)
+				if (bWait)
 				{
-					if (ss.dwCurrentState == msp[ms].dwState)
+					HCURSOR hPrevCursor;
+					bool bChangedCursor = false;
+
+					while (true)
 					{
-						bModified = true;
-						break;
-					}
-					else if (ss.dwCurrentState != msp[ms].dwPending)
-					{
-						// We didn't end up in the state we thought we were going to be in.
-						// Hopefully the server gave us a handy error code.
-						SetLastError(ss.dwWin32ExitCode);
-						break;
-					}
-					else
-					{
-						// sleep sucks... show the wait cursor so the user knows we're waiting
-						if (!bChangedCursor)
+						if (ss.dwCurrentState == msp[ms].dwState)
 						{
-							bChangedCursor = true;
-							hPrevCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+							break;
 						}
-						// wait time algorithm from MSDN "Starting a Service"
-						DWORD dwWaitTime = ss.dwWaitHint / 10;
-						if( dwWaitTime < 500 )
-							dwWaitTime = 500;
-						else if ( dwWaitTime > 10000 )
-							dwWaitTime = 10000;
+						else if (ss.dwCurrentState != msp[ms].dwPending)
+						{
+							// We didn't end up in the state we thought we were going to be in.
+							// Hopefully the server gave us a handy error code.
+							dwError = ss.dwWin32ExitCode;
+							break;
+						}
+						else
+						{
+							// sleep sucks... show the wait cursor so the user knows we're waiting
+							if (!bChangedCursor)
+							{
+								bChangedCursor = true;
+								hPrevCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+							}
+							// wait time algorithm from MSDN "Starting a Service"
+							DWORD dwWaitTime = ss.dwWaitHint / 10;
+							if( dwWaitTime < 500 )
+								dwWaitTime = 500;
+							else if ( dwWaitTime > 10000 )
+								dwWaitTime = 10000;
 
-						Sleep(dwWaitTime);
-						QueryServiceStatus(hService, &ss);
+							Sleep(dwWaitTime);
+							QueryServiceStatus(hService, &ss);
+						}
 					}
+
+					if (bChangedCursor)
+						SetCursor(hPrevCursor);
+
 				}
-
-				if (bChangedCursor)
-					SetCursor(hPrevCursor);
-
+			}
+			else
+			{
+				dwError = GetLastError();
 			}
 			CloseServiceHandle(hService);
 		}
 		CloseServiceHandle(hSCM);
 	}
-	return bModified;
+
+	if (dwError)
+		DisplayError(hwndDlg, dwError);
 }
 
 DWORD GetServiceStatus()

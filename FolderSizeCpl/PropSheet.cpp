@@ -180,7 +180,7 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SaveScanDriveTypes(DriveTypes);
 
 				// tell the service to check its parameters
-				ModifyService(MS_PARAMCHANGE);
+				ModifyService(hwndDlg, MS_PARAMCHANGE);
 
 				RefreshShell();
 				return TRUE;
@@ -225,19 +225,6 @@ void UpdateServiceStatus(HWND hwndDlg)
 	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_RESUME), g_ServerStateLookup[dwStatus].bEnableContinue);
 }
 
-void DisplayError(HWND hwnd, HRESULT hr)
-{
-	LPTSTR pszMessage;
-	if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0, (LPTSTR)&pszMessage, 0, NULL))
-	{
-		TCHAR szTitle[256];
-		LoadString(g_hInstance, IDS_NAME, szTitle, 256);
-		MessageBox(hwnd, pszMessage, szTitle, MB_OK|MB_ICONSTOP);
-		LocalFree(pszMessage);
-	}
-}
-
-
 
 void SetBiggerFont(HWND hwndCtrl)
 {
@@ -274,36 +261,52 @@ INT_PTR CALLBACK ServiceProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			// set the info icon
 			HICON hIcon = LoadIcon(NULL, IDI_INFORMATION);
 			SendMessage(GetDlgItem(hwndDlg, IDC_SERVICE_INFOICON), STM_SETICON, (WPARAM)hIcon, 0);
-
-			UpdateServiceStatus(hwndDlg);
 			return TRUE;
 		}
+
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case IDC_SERVICE_START:
-			if (!ModifyService(MS_START))
-				DisplayError(hwndDlg, GetLastError());
+			ModifyService(hwndDlg, MS_START);
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_STOP:
-			if (!ModifyService(MS_STOP))
-				DisplayError(hwndDlg, GetLastError());
+			ModifyService(hwndDlg, MS_STOP);
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_PAUSE:
-			if (!ModifyService(MS_PAUSE))
-				DisplayError(hwndDlg, GetLastError());
+			ModifyService(hwndDlg, MS_PAUSE);
 			UpdateServiceStatus(hwndDlg);
 			break;
 		case IDC_SERVICE_RESUME:
-			if (!ModifyService(MS_CONTINUE))
-				DisplayError(hwndDlg, GetLastError());
+			ModifyService(hwndDlg, MS_CONTINUE);
 			UpdateServiceStatus(hwndDlg);
 			break;
 		}
 		break;
+
+	case WM_NOTIFY:
+		{
+			LPNMHDR pnmhdr = (LPNMHDR)lParam;
+			switch (pnmhdr->code)
+			{
+			case PSN_SETACTIVE:
+				UpdateServiceStatus(hwndDlg);
+				SetTimer(hwndDlg, 1, 1500, NULL);
+				break;
+			case PSN_KILLACTIVE:
+				KillTimer(hwndDlg, 1);
+				break;
+			}
+			break;
+		}
+
+	case WM_TIMER:
+		if (wParam == 1)
+			UpdateServiceStatus(hwndDlg);
 	}
+
 	return FALSE;
 }
 

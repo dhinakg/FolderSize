@@ -10,6 +10,6 @@ enum MODIFY_SERVICE
 	MS_MAX
 };
 
-bool ModifyService(MODIFY_SERVICE ms);
+void ModifyService(HWND hwnd, MODIFY_SERVICE ms);
 
 DWORD GetServiceStatus();
