@@ -109,7 +109,15 @@ void ModifyService(HWND hwndDlg, MODIFY_SERVICE ms)
 			}
 			CloseServiceHandle(hService);
 		}
+		else
+		{
+			dwError = GetLastError();
+		}
 		CloseServiceHandle(hSCM);
+	}
+	else
+	{
+		dwError = GetLastError();
 	}
 
 	if (dwError)
