@@ -90,6 +90,18 @@ void RefreshShell()
 	CoUninitialize();
 }
 
+void DisplayError(HWND hwnd, DWORD dwError)
+{
+	LPTSTR pszMessage;
+	if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, (LPTSTR)&pszMessage, 0, NULL))
+	{
+		TCHAR szTitle[256];
+		LoadString(g_hInstance, IDS_NAME, szTitle, 256);
+		MessageBox(hwnd, pszMessage, szTitle, MB_OK|MB_ICONSTOP);
+		LocalFree(pszMessage);
+	}
+}
+
 INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -177,10 +189,20 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 					DriveTypes |= SCANDRIVETYPE_REMOVABLE;
 				if (IsDlgButtonChecked(hwndDlg, IDC_DISPLAY_NETWORK) == BST_CHECKED)
 					DriveTypes |= SCANDRIVETYPE_NETWORK;
-				SaveScanDriveTypes(DriveTypes);
 
-				// tell the service to check its parameters
-				ModifyService(hwndDlg, MS_PARAMCHANGE);
+				// Saving drive types requires writing to an administrator's registry location and controlling a service.
+				// So only do this if the setting has actually changed.
+				if (LoadScanDriveTypes() != DriveTypes)
+				{
+					DWORD dwError = SaveScanDriveTypes(DriveTypes);
+					if (!dwError)
+						dwError = ModifyService(MS_PARAMCHANGE);
+					if (dwError)
+					{
+						DisplayError(hwndDlg, dwError);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_INVALID);
+					}
+				}
 
 				RefreshShell();
 				return TRUE;
@@ -223,6 +245,14 @@ void UpdateServiceStatus(HWND hwndDlg)
 	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_STOP), g_ServerStateLookup[dwStatus].bEnableStop);
 	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_PAUSE), g_ServerStateLookup[dwStatus].bEnablePause);
 	EnableWindow(GetDlgItem(hwndDlg, IDC_SERVICE_RESUME), g_ServerStateLookup[dwStatus].bEnableContinue);
+}
+
+void ModifyServiceAndShowResult(HWND hwndDlg, MODIFY_SERVICE ms)
+{
+	DWORD dwError = ModifyService(MS_START);
+	if (dwError)
+		DisplayError(hwndDlg, dwError);
+	UpdateServiceStatus(hwndDlg);
 }
 
 
@@ -268,20 +298,16 @@ INT_PTR CALLBACK ServiceProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		switch (LOWORD(wParam))
 		{
 		case IDC_SERVICE_START:
-			ModifyService(hwndDlg, MS_START);
-			UpdateServiceStatus(hwndDlg);
+			ModifyServiceAndShowResult(hwndDlg, MS_START);
 			break;
 		case IDC_SERVICE_STOP:
-			ModifyService(hwndDlg, MS_STOP);
-			UpdateServiceStatus(hwndDlg);
+			ModifyServiceAndShowResult(hwndDlg, MS_STOP);
 			break;
 		case IDC_SERVICE_PAUSE:
-			ModifyService(hwndDlg, MS_PAUSE);
-			UpdateServiceStatus(hwndDlg);
+			ModifyServiceAndShowResult(hwndDlg, MS_PAUSE);
 			break;
 		case IDC_SERVICE_RESUME:
-			ModifyService(hwndDlg, MS_CONTINUE);
-			UpdateServiceStatus(hwndDlg);
+			ModifyServiceAndShowResult(hwndDlg, MS_CONTINUE);
 			break;
 		}
 		break;

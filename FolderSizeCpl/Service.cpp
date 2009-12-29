@@ -21,19 +21,7 @@ MODIFY_SERVICE_PARAMS msp[MS_MAX] =
 	{ SERVICE_PAUSE_CONTINUE, SERVICE_CONTROL_PARAMCHANGE, 0,                     0               }
 };
 
-void DisplayError(HWND hwnd, DWORD dwError)
-{
-	LPTSTR pszMessage;
-	if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, (LPTSTR)&pszMessage, 0, NULL))
-	{
-		TCHAR szTitle[256];
-		LoadString(g_hInstance, IDS_NAME, szTitle, 256);
-		MessageBox(hwnd, pszMessage, szTitle, MB_OK|MB_ICONSTOP);
-		LocalFree(pszMessage);
-	}
-}
-
-void ModifyService(HWND hwndDlg, MODIFY_SERVICE ms)
+DWORD ModifyService(MODIFY_SERVICE ms)
 {
 	DWORD dwError = 0;
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
@@ -124,8 +112,7 @@ void ModifyService(HWND hwndDlg, MODIFY_SERVICE ms)
 		dwError = GetLastError();
 	}
 
-	if (dwError)
-		DisplayError(hwndDlg, dwError);
+	return dwError;
 }
 
 DWORD GetServiceStatus()
