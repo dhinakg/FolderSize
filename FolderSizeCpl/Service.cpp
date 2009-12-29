@@ -94,7 +94,11 @@ void ModifyService(HWND hwndDlg, MODIFY_SERVICE ms)
 								dwWaitTime = 10000;
 
 							Sleep(dwWaitTime);
-							QueryServiceStatus(hService, &ss);
+							if (!QueryServiceStatus(hService, &ss))
+							{
+								dwError = GetLastError();
+								break;
+							}
 						}
 					}
 
