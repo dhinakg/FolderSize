@@ -12,4 +12,4 @@
 void LoadDisplayOptions(int& nDisplayFormat);
 void SaveDisplayOptions(int nDisplayFormat);
 int LoadScanDriveTypes();
-void SaveScanDriveTypes(int DriveTypes);
+LONG SaveScanDriveTypes(int DriveTypes);

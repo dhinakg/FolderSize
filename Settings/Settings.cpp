@@ -70,15 +70,18 @@ int LoadScanDriveTypes()
 	return DriveTypes;
 }
 
-void SaveScanDriveTypes(int DriveTypes)
+LONG SaveScanDriveTypes(int DriveTypes)
 {
 	HKEY hKey;
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL) == ERROR_SUCCESS)
-	{
-		SaveDWord(hKey, TEXT("ScanLocal"), DriveTypes & SCANDRIVETYPE_LOCAL ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanCD"), DriveTypes & SCANDRIVETYPE_CD ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanRemovable"), DriveTypes & SCANDRIVETYPE_REMOVABLE ? 1 : 0);
-		SaveDWord(hKey, TEXT("ScanNetwork"), DriveTypes & SCANDRIVETYPE_NETWORK ? 1 : 0);
-		RegCloseKey(hKey);
-	}
+	LONG error = RegCreateKeyEx(HKEY_LOCAL_MACHINE, SERVICE_PARAMETERS_KEY, 0, NULL, 0, KEY_SET_VALUE, NULL, &hKey, NULL);
+	if (error != ERROR_SUCCESS)
+		return error;
+
+	SaveDWord(hKey, TEXT("ScanLocal"), DriveTypes & SCANDRIVETYPE_LOCAL ? 1 : 0);
+	SaveDWord(hKey, TEXT("ScanCD"), DriveTypes & SCANDRIVETYPE_CD ? 1 : 0);
+	SaveDWord(hKey, TEXT("ScanRemovable"), DriveTypes & SCANDRIVETYPE_REMOVABLE ? 1 : 0);
+	SaveDWord(hKey, TEXT("ScanNetwork"), DriveTypes & SCANDRIVETYPE_NETWORK ? 1 : 0);
+	RegCloseKey(hKey);
+
+	return ERROR_SUCCESS;
 }
