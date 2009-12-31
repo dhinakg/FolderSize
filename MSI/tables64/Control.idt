@@ -147,7 +147,7 @@ VerifyReadyDlg	BannerLine	Line	0	44	374	0	1
 VerifyReadyDlg	BottomLine	Line	0	234	374	0	1				
 VerifyReadyDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
 VerifyReadyDlg	Description	Text	25	23	280	15	196611		The [Wizard] is ready to begin the installation.		
-VerifyReadyDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
+VerifyReadyDlg	Install	PushButton	236	243	56	17	8388611		[ButtonText_Install]	Cancel	
 VerifyReadyDlg	Text	Text	25	70	320	20	3		Click Install to begin the installation.  If you want to review or change any of your installation settings, click Back.  Click Cancel to exit the wizard.		
 VerifyReadyDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Ready to Install		
 VerifyRemoveDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Remove	
