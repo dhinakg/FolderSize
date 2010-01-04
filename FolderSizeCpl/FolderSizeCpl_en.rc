@@ -71,7 +71,7 @@ BEGIN
     PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "Folder Size for Windows may be distributed under the terms of the GNU General Public License.",IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "License",IDC_STATIC,7,123,198,58
-    LTEXT           "Find out more about GNU here.",IDC_HYPER_GNU,17,162,101,8,WS_TABSTOP
+    LTEXT           "Find out more about GNU here.",IDC_HYPER_GNU,17,162,179,8,WS_TABSTOP
 END
 
 IDD_CREDITS DIALOGEX 0, 0, 323, 155
