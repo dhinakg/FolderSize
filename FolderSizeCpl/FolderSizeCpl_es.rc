@@ -35,7 +35,7 @@ BEGIN
     GROUPBOX        "Formato",IDC_STATIC,7,7,198,61
     CONTROL         "&Explorer (%s)",IDC_DISPLAY_EXPLORER,"Button",
                     BS_AUTORADIOBUTTON,17,22,171,10
-    CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",
+    CONTROL         "C&ompact (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,176,10
     CONTROL         "&Bytes (%s)",IDC_DISPLAY_BYTES,"Button",BS_AUTORADIOBUTTON,17,50,175,10
     GROUPBOX        "Drive types",IDC_STATIC,7,74,198,51
