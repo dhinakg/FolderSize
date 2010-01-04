@@ -62,16 +62,16 @@ BEGIN
     LTEXT           "你需要拥有系统管理权限才可以更改设定.",IDC_STATIC,64,
                     161,141,20
     ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
-    PUSHBUTTON      "暂停",IDC_SERVICE_PAUSE,7,82,50,14
-    PUSHBUTTON      "继续",IDC_SERVICE_RESUME,7,107,50,14
+    PUSHBUTTON      "暂停",IDC_SERVICE_PAUSE,7,85,50,14
+    PUSHBUTTON      "继续",IDC_SERVICE_RESUME,7,110,50,14
     LTEXT           "当功能起动后, 档案夹容量将会随时更新并记录所有档案夹容量资料.",
-                    IDC_STATIC,64,24,141,27
+                    IDC_STATIC,64,25,141,27
     LTEXT           "当功能停止后, 档案夹容量将会停止监察并且不会更新所有档案夹容量资料.",
-                    IDC_STATIC,64,55,141,21
+                    IDC_STATIC,64,55,141,27
     LTEXT           "暂停功能可停止更新及记录, 可于有需要时加快硬碟运作速度.",
-                    IDC_STATIC,64,82,141,23
+                    IDC_STATIC,64,85,141,24
     LTEXT           "继续功能可继续随时更新并记录所有档案夹容量资料.",
-                    IDC_STATIC,64,106,141,24
+                    IDC_STATIC,64,110,141,24
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 212, 188
@@ -89,7 +89,7 @@ BEGIN
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "版权",IDC_STATIC,7,123,198,58
     LTEXT           "点一下这里了解更多有关 GNU 的资讯.",IDC_HYPER_GNU,17,
-                    162,101,8,WS_TABSTOP
+                    162,179,8,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
