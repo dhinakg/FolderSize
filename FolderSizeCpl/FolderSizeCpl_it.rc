@@ -41,7 +41,7 @@ BEGIN
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licenza",IDC_STATIC,7,123,198,58
     LTEXT           "Ulteriori informazioni sullo GNU.",IDC_HYPER_GNU,17,162,
-                    100,8,WS_TABSTOP
+                    179,8,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
@@ -76,7 +76,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "Servizio"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Stato del servizio:",IDC_STATIC,7,7,58,8
+    LTEXT           "Stato del servizio:",IDC_STATIC,7,7,64,8
     LTEXT           "Static",IDC_SERVICE_STATUS,72,7,133,8
     PUSHBUTTON      "Attiva",IDC_SERVICE_START,7,25,50,14
     PUSHBUTTON      "Disattiva",IDC_SERVICE_STOP,7,55,50,14
