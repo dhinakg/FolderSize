@@ -42,7 +42,7 @@ BEGIN
                     IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "版權",IDC_STATIC,7,123,198,58
     LTEXT           "點一下這裡了解更多有關 GNU 的資訊.",IDC_HYPER_GNU,17,
-                    162,101,8,WS_TABSTOP
+                    162,179,8,WS_TABSTOP
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE | WS_TABSTOP,133,38,72,79,
                     WS_EX_CLIENTEDGE
@@ -84,16 +84,16 @@ BEGIN
     LTEXT           "You must have Administrator privileges to modify the service.",
                     IDC_STATIC,64,161,141,20
     ICON            "",IDC_SERVICE_INFOICON,37,161,21,20
-    PUSHBUTTON      "暫停",IDC_SERVICE_PAUSE,7,82,50,14
-    PUSHBUTTON      "繼續",IDC_SERVICE_RESUME,7,107,50,14
+    PUSHBUTTON      "暫停",IDC_SERVICE_PAUSE,7,85,50,14
+    PUSHBUTTON      "繼續",IDC_SERVICE_RESUME,7,110,50,14
     LTEXT           "當功能起動後, 檔案夾容量將會隨時更新並記錄所有檔案夾容量資料.",
-                    IDC_STATIC,64,24,141,27
+                    IDC_STATIC,64,25,141,27
     LTEXT           "當功能停止後, 檔案夾容量將會停止監察並且不會更新所有檔案夾容量資料.",
-                    IDC_STATIC,64,55,141,21
+                    IDC_STATIC,64,55,141,27
     LTEXT           "暫停功能可停止更新及記錄, 可於有需要時加快硬碟運作速度.",
-                    IDC_STATIC,64,82,141,23
+                    IDC_STATIC,64,85,141,24
     LTEXT           "繼續功能可繼續隨時更新並記錄所有檔案夾容量資料.",
-                    IDC_STATIC,64,106,141,24
+                    IDC_STATIC,64,110,141,24
 END
 
 
