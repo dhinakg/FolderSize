@@ -54,7 +54,7 @@ CAPTION "Visualizzazione"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Format",IDC_STATIC,7,7,198,61
-    CONTROL         "Esplora Risorse (%s)",IDC_DISPLAY_EXPLORER,"Button",
+    CONTROL         "&Esplora Risorse (%s)",IDC_DISPLAY_EXPLORER,"Button",
                     BS_AUTORADIOBUTTON,17,22,171,10
     CONTROL         "&Compatto (%s)",IDC_DISPLAY_COMPACT,"Button",
                     BS_AUTORADIOBUTTON,17,36,176,10
