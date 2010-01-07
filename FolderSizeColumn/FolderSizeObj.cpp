@@ -274,7 +274,7 @@ void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT 
 		StrFormatByteSize64(nSize, pszBuff, uiBufSize);
 		break;
 	case 2:
-		wsprintf(pszBuff, _T("%I64d"), nSize);
+		_i64tot(nSize, pszBuff, 10);
 		break;
 	case 0:
 	default:

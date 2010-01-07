@@ -1,6 +1,7 @@
 ﻿#include "StdAfx.h"
 #include <shlobj.h>   // for IShellWindows
 #include <olectl.h>
+#include <tchar.h>
 #include "PropSheet.h"
 #include "Resource.h"
 #include "Hyperlinks.h"
@@ -126,7 +127,7 @@ INT_PTR CALLBACK DisplayProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			wsprintf(szDisplayMsg, szFormatMsg, szSize);
 			SetDlgItemText(hwndDlg, IDC_DISPLAY_COMPACT, szDisplayMsg);
 			GetDlgItemText(hwndDlg, IDC_DISPLAY_BYTES, szFormatMsg, 256);
-			wsprintf(szSize, TEXT("%I64d"), llSampleSize);
+			_i64tot(llSampleSize, szSize, 10);
 			wsprintf(szDisplayMsg, szFormatMsg, szSize);
 			SetDlgItemText(hwndDlg, IDC_DISPLAY_BYTES, szDisplayMsg);
 
