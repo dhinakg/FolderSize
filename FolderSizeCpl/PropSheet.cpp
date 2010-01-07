@@ -250,7 +250,7 @@ void UpdateServiceStatus(HWND hwndDlg)
 
 void ModifyServiceAndShowResult(HWND hwndDlg, MODIFY_SERVICE ms)
 {
-	DWORD dwError = ModifyService(MS_START);
+	DWORD dwError = ModifyService(ms);
 	if (dwError)
 		DisplayError(hwndDlg, dwError);
 	UpdateServiceStatus(hwndDlg);
