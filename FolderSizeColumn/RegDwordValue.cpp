@@ -53,7 +53,7 @@ RegDwordValue::~RegDwordValue()
 
 	// Close the subkey waited for.
 	if (m_hSubKey)
-		::CloseHandle(m_hSubKey);
+		::RegCloseKey(m_hSubKey);
 
 	// Finally, delete the critical section.
 	::DeleteCriticalSection(&m_Cs);
@@ -140,7 +140,7 @@ void RegDwordValue::WaitCallback()
 	m_bValid = false;
 	if (m_hSubKey != NULL)
 	{
-		CloseHandle(m_hSubKey);
+		RegCloseKey(m_hSubKey);
 		m_hSubKey = NULL;
 	}
 	::LeaveCriticalSection(&m_Cs);
