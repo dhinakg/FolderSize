@@ -1,6 +1,6 @@
 File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
 s72	s72	l255	i4	S72	S20	I2	i2
 File	File
-FolderSize.cpl	ControlPanel	FolSize.cpl|FolderSize.cpl	135168			512	2
-FolderSizeColumn.dll	ColumnHandler	Column.dll|FolderSizeColumn.dll	102400			512	1
-FolderSizeSvc.exe	Service	FSSvc.exe|FolderSizeSvc.exe	131072			512	3
+FolderSize.cpl	ControlPanel	FolSize.cpl|FolderSize.cpl	121856			512	2
+FolderSizeColumn.dll	ColumnHandler	Column.dll|FolderSizeColumn.dll	90112			512	1
+FolderSizeSvc.exe	Service	FSSvc.exe|FolderSizeSvc.exe	115712			512	3
