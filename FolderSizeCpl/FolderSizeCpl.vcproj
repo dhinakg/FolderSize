@@ -72,6 +72,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FolderSizeCpl.pdb"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				ImportLibrary="$(OutDir)/FolderSizeCpl.lib"
 				TargetMachine="1"
 			/>
@@ -156,6 +157,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FolderSizeCpl.pdb"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				ImportLibrary="$(OutDir)/FolderSizeCpl.lib"
 				TargetMachine="17"
 			/>
@@ -238,6 +240,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				EntryPointSymbol="DllMain"
 				ImportLibrary="$(OutDir)/FolderSizeCpl.lib"
 				TargetMachine="1"
@@ -323,6 +326,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				EntryPointSymbol="DllMain"
 				ImportLibrary="$(OutDir)/FolderSizeCpl.lib"
 				TargetMachine="17"

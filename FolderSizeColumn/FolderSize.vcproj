@@ -79,6 +79,7 @@
 				ModuleDefinitionFile=".\FolderSize.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -168,6 +169,7 @@
 				ModuleDefinitionFile=".\FolderSize.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -254,6 +256,7 @@
 				ModuleDefinitionFile="FolderSize.def"
 				GenerateMapFile="true"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -341,6 +344,7 @@
 				ModuleDefinitionFile="FolderSize.def"
 				GenerateMapFile="true"
 				SubSystem="2"
+				OptimizeForWindows98="1"
 				TargetMachine="17"
 			/>
 			<Tool
