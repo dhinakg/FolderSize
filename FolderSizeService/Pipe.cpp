@@ -209,7 +209,8 @@ DWORD Pipe::PipeThread()
 	OVERLAPPED o;
 	ZeroMemory(&o, sizeof(o));
 
-	while (true)
+	bool bExit = false;
+	while (!bExit)
 	{
 		if (ConnectNamedPipe(hPipe, &o))
 		{
@@ -217,26 +218,19 @@ DWORD Pipe::PipeThread()
 		}
 		else
 		{
-			DWORD dwLastError = GetLastError();
-			if (dwLastError == ERROR_PIPE_CONNECTED)
+			DWORD dwError = GetLastError();
+			switch (dwError)
 			{
+			case ERROR_IO_PENDING:
+				if (WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE) == WAIT_OBJECT_0)
+					bExit = true;
+				// fall through to handle the connected pipe
+			case ERROR_PIPE_CONNECTED:
 				HandlePipeClient(hPipe, m_pCacheManager);
-			}
-			else if (dwLastError == ERROR_IO_PENDING)
-			{
-				DWORD dwWait = WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
-				if (dwWait == WAIT_OBJECT_0 + 1)
-				{
-					HandlePipeClient(hPipe, m_pCacheManager);
-				}
-				else
-				{
-					break;
-				}
-			}
-			else
-			{
 				break;
+			default:
+				EventLog::Instance().ReportError(_T("Pipe error: "), dwError);
+				bExit = true;
 			}
 		}
 	}
