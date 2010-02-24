@@ -14,7 +14,7 @@ public:
 	};
 
 	virtual void PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew) = 0;
-	virtual void DirectoryError(DWORD dwError) = 0;
+	virtual void DirectoryError() = 0;
 };
 
 class Monitor
@@ -31,6 +31,7 @@ protected:
 	void MonitorThread();
 
 	HANDLE m_hMonitorThread;
+	DWORD m_dwMonitorThreadId;
 	HANDLE m_hQuitEvent;
 	HANDLE m_hDirectory;
 	OVERLAPPED m_Overlapped;

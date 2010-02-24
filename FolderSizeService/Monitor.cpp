@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "Monitor.h"
-
+#include "EventLog.h"
 
 Monitor::Monitor(const Path& pathVolume, HANDLE hFile, IMonitorCallback* pCallback)
 : m_hDirectory(hFile), m_pCallback(pCallback), m_hMonitorThread(NULL), m_pathVolume(pathVolume)
@@ -10,15 +10,26 @@ Monitor::Monitor(const Path& pathVolume, HANDLE hFile, IMonitorCallback* pCallba
 	m_Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	DWORD dwThreadId;
-	m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &dwThreadId);
+	m_hMonitorThread = CreateThread(NULL, 0, MonitorThread, this, 0, &m_dwMonitorThreadId);
 }
 
 Monitor::~Monitor()
 {
 	SetEvent(m_hQuitEvent);
-	// remove this or there will be a deadlock in the KillMe callback
-	//WaitForSingleObject(m_hMonitorThread, INFINITE);
+
+	// Don't deadlock the monitor thread!
+	// The monitor is always destroyed when the cache is destroyed,
+	// and this can happen from different threads.
+	// From an external thread such as a pipe thread, or a service thread,
+	// or from our own internal thread, when an error is detected.
+	// When the monitor is deleted from an external thread, we need to ensure
+	// the thread has shut down before returning and deleting the instance.
+	// When this is the 
+	// In the case where our own thread deletes itself, we don't have to wait,
+	// because we know we will not use any more member fields.
+	if (GetCurrentThreadId() != m_dwMonitorThreadId)
+		WaitForSingleObject(m_hMonitorThread, INFINITE);
+
 	CloseHandle(m_hMonitorThread);
 	CloseHandle(m_Overlapped.hEvent);
 	CloseHandle(m_hQuitEvent);
@@ -53,7 +64,13 @@ void Monitor::MonitorThread()
 			FILE_NOTIFY_CHANGE_FILE_NAME|FILE_NOTIFY_CHANGE_DIR_NAME|FILE_NOTIFY_CHANGE_SIZE,
 			&dwBytesReturned, &m_Overlapped, NULL))
 		{
-			m_pCallback->DirectoryError(GetLastError());
+			// log an unexpected error
+			DWORD dwError = GetLastError();
+			if (dwError != ERROR_NETNAME_DELETED)
+			{
+				EventLog::Instance().ReportError(_T("ReadDirectoryChangesW"), dwError);
+			}
+			m_pCallback->DirectoryError();
 			return;
 		}
 
@@ -64,9 +81,23 @@ void Monitor::MonitorThread()
 			return;
 		}
 
-		if (!GetOverlappedResult(m_hDirectory, &m_Overlapped, &dwBytesReturned, TRUE))
+		if (!GetOverlappedResult(m_hDirectory, &m_Overlapped, &dwBytesReturned, FALSE))
 		{
-			m_pCallback->DirectoryError(GetLastError());
+			// log an unexpected error
+			DWORD dwError = GetLastError();
+			if (dwError != ERROR_NETNAME_DELETED)
+			{
+				EventLog::Instance().ReportError(_T("GetOverlappedResult"), dwError);
+			}
+			m_pCallback->DirectoryError();
+			return;
+		}
+
+		if (dwBytesReturned == 0)
+		{
+			// Some notifications have been lost, so we have to kill the cache and start again.
+			EventLog::Instance().ReportError(_T("ReadDirectoryChangesW internal buffer overflowed"), 0);
+			m_pCallback->DirectoryError();
 			return;
 		}
 

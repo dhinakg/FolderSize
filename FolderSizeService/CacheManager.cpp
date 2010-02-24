@@ -26,10 +26,28 @@ CacheManager::~CacheManager()
 		}
 	}
 
-	// this should only get called when all the clients have shut down,
-	// so no one else should be holding a reference to the caches
-	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
-		delete itr->second;
+	// The caches are still alive, with their monitor threads (that call back with KillMe),
+	// and scanners. Shut them down, using the critical section properly.
+	Cache* pCache;
+	do
+	{
+		pCache = NULL;
+
+		EnterCriticalSection(&m_cs);
+		if (!m_Map.empty())
+		{
+			pCache = m_Map.begin()->second;
+			m_Map.erase(m_Map.begin());
+		}
+		LeaveCriticalSection(&m_cs);
+
+		if (pCache)
+		{
+			pCache->Release();
+		}
+	} while (pCache);
+
+	// now all the cache threads are dead
 
 	DeleteCriticalSection(&m_cs);
 }
@@ -76,7 +94,7 @@ bool CacheManager::DriveTypeEnabled(int type)
 }
 
 // Return an AddRef'ed Cache
-Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
+Cache* CacheManager::GetCacheForFolder(const Path& path)
 {
 	// make a cache id which will be the volume of the folder, preceded by a username
 	TCHAR szCacheId[MAX_CACHEID];
@@ -90,9 +108,6 @@ Cache* CacheManager::GetCacheForFolder(const Path& path, bool bCreate)
 		itr->second->AddRef();
 		return itr->second;
 	}
-
-	if (!bCreate)
-		return NULL;
 
 	// we should be impersonating the client right now
 	HANDLE hMonitor = CreateFile(pszVolume, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
@@ -136,7 +151,7 @@ bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 
 	EnterCriticalSection(&m_cs);
 	if (DriveTypeEnabled(path.GetDriveType()))
-		pCache = GetCacheForFolder(path, true);
+		pCache = GetCacheForFolder(path);
 	LeaveCriticalSection(&m_cs);
 
 	if (pCache == NULL)
@@ -149,9 +164,18 @@ bool CacheManager::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 
 void CacheManager::GetUpdateFolders(const Path& path, Strings& strsFoldersToUpdate)
 {
+	// check that this drive type is enabled before locking the critical section,
+	// and then check it again just to make sure it hasn't changed
+	if (!DriveTypeEnabled(path.GetDriveType()))
+		return;
+
+	Cache* pCache = NULL;
+
 	EnterCriticalSection(&m_cs);
-	Cache* pCache = GetCacheForFolder(path, false);
+	if (DriveTypeEnabled(path.GetDriveType()))
+		pCache = GetCacheForFolder(path);
 	LeaveCriticalSection(&m_cs);
+
 	if (pCache != NULL)
 	{
 		pCache->GetUpdateFoldersForFolder(path, strsFoldersToUpdate);

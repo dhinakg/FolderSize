@@ -197,7 +197,7 @@ void Cache::GetUpdateFoldersForFolder(const Path& path, Strings& strsFoldersToUp
 	WarningEnterCriticalSection(&m_cs, _T("GetUpdateFoldersForFolder"));
 	if (m_pFolderManager != NULL)
 	{
-		CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, false);
+		CacheFolder* pFolder = m_pFolderManager->GetFolderForPath(path, true);
 		if (pFolder != NULL)
 		{
 			pFolder->GetChildrenToDisplay(strsFoldersToUpdate);
@@ -291,14 +291,8 @@ void Cache::DoSyncScans(CacheFolder* pFolder)
 	}
 }
 
-void Cache::DirectoryError(DWORD dwError)
+void Cache::DirectoryError()
 {
-	// log an unexpected error
-	if (dwError != ERROR_NETNAME_DELETED)
-	{
-		EventLog::Instance().ReportError(_T("Cache"), dwError);
-	}
-
 	// the monitor can't read the disk anymore, the cache is hopelessly outdated...
 	m_pCallback->KillMe(this);
 }

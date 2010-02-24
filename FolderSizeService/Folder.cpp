@@ -174,12 +174,20 @@ void CacheFolder::Clean(const FOLDERINFO& nSize, LONGLONG nTime)
 
 void CacheFolder::GetChildrenToDisplay(Strings& strsFolders)
 {
-	for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
+	if (m_bNeedDisplayUpdate && m_eStatus == FS_EMPTY)
 	{
-		if (pChild->m_bNeedDisplayUpdate)
+		strsFolders.insert(GetFullPath());
+		m_bNeedDisplayUpdate = false;
+	}
+	else
+	{
+		for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
 		{
-			strsFolders.insert(pChild->GetFullPath());
-			pChild->m_bNeedDisplayUpdate = false;
+			if (pChild->m_bNeedDisplayUpdate)
+			{
+				strsFolders.insert(pChild->GetFullPath());
+				pChild->m_bNeedDisplayUpdate = false;
+			}
 		}
 	}
 }

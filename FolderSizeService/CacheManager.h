@@ -18,7 +18,7 @@ public:
 
 protected:
 	bool DriveTypeEnabled(int type);
-	Cache* GetCacheForFolder(const Path& pathVolume, bool bCreate);
+	Cache* GetCacheForFolder(const Path& pathVolume);
 
 	// ICacheCallback
 	virtual void KillMe(Cache* pExpiredCache);
