@@ -33,10 +33,10 @@ CacheFolder* FolderManager::GetFolderForPath(const Path& path, bool bCreate)
 				return NULL;
 
 			// don't want to have a folder object if we can't read it,
-			// and we don't want NTFS junctions
+			// or confirm that it is a folder, or it's an NTFS junction
 			Path NewFullPath = pCurrentFolder->GetFullPath() + pathName;
 			DWORD dwAttributes = GetFileAttributes(NewFullPath.GetLongAPIRepresentation().c_str());
-			if (dwAttributes == INVALID_FILE_ATTRIBUTES || dwAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+			if (dwAttributes == INVALID_FILE_ATTRIBUTES || !(dwAttributes & FILE_ATTRIBUTE_DIRECTORY) || dwAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
 				return NULL;
 
 			pNextFolder = new CacheFolder(this, pCurrentFolder, pathName);
