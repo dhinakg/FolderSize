@@ -141,9 +141,9 @@ Path PathSegmentIterator::GetNextPathSegment()
 		m_p = NULL;
 		return p;
 	}
+	// if a folder name contains a ':', PathFindNextComponent returns an empty string
 	const wchar_t* pEnd = PathFindNextComponent(m_p);
-	assert (pEnd != NULL);
-	if (pEnd == NULL)
+	if (pEnd == NULL || *pEnd == _T('\0'))
 	{
 		Path p(m_p);
 		m_p = NULL;
