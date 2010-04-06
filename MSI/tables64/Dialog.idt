@@ -9,7 +9,7 @@ ErrorDlg	50	10	270	105	65539	Installer Information	ErrorText
 ExitDialog	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
 FatalError	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
 FilesInUse	50	50	370	270	19	[ProductName] [Setup]	Retry	Retry	Retry
-MaintenanceTypeDlg	50	50	370	270	3	[ProductName] [Setup]	ChangeLabel	ChangeButton	Cancel
+MaintenanceTypeDlg	50	50	370	270	3	[ProductName] [Setup]	RepairLabel	RepairButton	Cancel
 MaintenanceWelcomeDlg	50	50	370	270	3	[ProductName] [Setup]	Next	Next	Cancel
 OutOfDiskDlg	50	50	370	270	3	[ProductName] [Setup]	OK	OK	OK
 OutOfRbDiskDlg	50	50	370	270	3	[ProductName] [Setup]	No	No	No

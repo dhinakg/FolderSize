@@ -76,10 +76,7 @@ FilesInUse	Title	Text	15	6	200	15	196611		[DlgTitleFont]Files in Use
 MaintenanceTypeDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
 MaintenanceTypeDlg	BannerLine	Line	0	44	374	0	1				
 MaintenanceTypeDlg	BottomLine	Line	0	234	374	0	1				
-MaintenanceTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	ChangeLabel	
-MaintenanceTypeDlg	ChangeButton	PushButton	50	65	38	38	5767171		[CustomSetupIcon]	RepairLabel	Modify Installation|
-MaintenanceTypeDlg	ChangeLabel	Text	105	65	100	10	3		[DlgTitleFont]&Modify	ChangeButton	
-MaintenanceTypeDlg	ChangeText	Text	105	78	230	20	3		Allows users to change the way features are installed.		
+MaintenanceTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	RepairLabel	
 MaintenanceTypeDlg	Description	Text	25	23	280	20	196611		Select the operation you wish to perform.		
 MaintenanceTypeDlg	Next	PushButton	236	243	56	17	1		[ButtonText_Next]	Cancel	
 MaintenanceTypeDlg	RemoveButton	PushButton	50	163	38	38	5767171		[RemoveIcon]	Back	Remove Installation|
@@ -88,7 +85,7 @@ MaintenanceTypeDlg	RemoveText	Text	105	176	230	20	3		Removes [ProductName] from 
 MaintenanceTypeDlg	RepairButton	PushButton	50	114	38	38	5767171		[RepairIcon]	RemoveLabel	Repair Installation|
 MaintenanceTypeDlg	RepairLabel	Text	105	114	100	10	3		[DlgTitleFont]Re&pair	RepairButton	
 MaintenanceTypeDlg	RepairText	Text	105	127	230	30	3		Repairs errors in the most recent installation state - fixes missing or corrupt files, shortcuts and registry entries.		
-MaintenanceTypeDlg	Title	Text	15	6	240	15	196611		[DlgTitleFont]Modify, Repair or Remove installation		
+MaintenanceTypeDlg	Title	Text	15	6	240	15	196611		[DlgTitleFont]Repair or Remove installation		
 MaintenanceWelcomeDlg	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Next	
 MaintenanceWelcomeDlg	BottomLine	Line	0	234	374	0	1				
 MaintenanceWelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
