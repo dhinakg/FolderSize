@@ -22,7 +22,7 @@ EventLog& EventLog::Instance()
 bool EventLog::ReportError(LPCTSTR pszComponent, DWORD dwError)
 {
 	TCHAR szMessage[1024];
-	wsprintf(szMessage, TEXT("%s reports error %#08X"), pszComponent, dwError);
+	wsprintf(szMessage, TEXT("%s reports error %d"), pszComponent, dwError);
 	LPTSTR pszError = NULL;
 	if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
 	              NULL, dwError, 0, (LPTSTR)&pszError, 0, NULL) > 0)
