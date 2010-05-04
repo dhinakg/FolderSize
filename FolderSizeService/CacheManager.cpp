@@ -122,13 +122,30 @@ Cache* CacheManager::GetCacheForFolder(const Path& path)
 	// register a device notification for a local cache
 	if (!path.IsNetwork() && m_hSS != NULL)
 	{
-		DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
-		dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
-		dbh.dbch_handle = hMonitor;
-		HDEVNOTIFY hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+		// For RegisterDeviceNotify to succeed and not return ERROR_SERVICE_SPECIFIC_ERROR_CODE,
+		// we need to revert our impersonation.
+		HDEVNOTIFY hDevNotify = NULL;
+		HANDLE hToken;
+		if (OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE, FALSE, &hToken))
+		{
+			if (RevertToSelf())
+			{
+				DEV_BROADCAST_HANDLE dbh = {sizeof(dbh)};
+				dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
+				dbh.dbch_handle = hMonitor;
+				hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+
+				// restore the impersonation
+				SetThreadToken(NULL, hToken);
+			}
+			CloseHandle(hToken);
+		}
+
 		if (hDevNotify == NULL)
 		{
-			EventLog::Instance().ReportError(TEXT("RegisterDeviceNotification"), GetLastError());
+			TCHAR szMsg[1024];
+			wsprintf(szMsg, _T("RegisterDeviceNotification on %s"), pszVolume);
+			EventLog::Instance().ReportError(szMsg, GetLastError());
 		}
 		else
 		{
