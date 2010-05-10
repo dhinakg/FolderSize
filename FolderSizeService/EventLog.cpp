@@ -34,3 +34,8 @@ bool EventLog::ReportError(LPCTSTR pszComponent, DWORD dwError)
 	LPCTSTR pszMessage = szMessage;
 	return ReportEvent(m_hEventLog, EVENTLOG_ERROR_TYPE, 0, 0, NULL, 1, 0, &pszMessage, NULL) != 0;
 }
+
+bool EventLog::ReportWarning(LPCTSTR pszMsg)
+{
+	return ReportEvent(m_hEventLog, EVENTLOG_WARNING_TYPE, 0, 0, NULL, 1, 0, &pszMsg, NULL) != 0;
+}

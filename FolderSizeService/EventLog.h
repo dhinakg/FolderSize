@@ -6,6 +6,7 @@ public:
 	static EventLog& Instance();
 
 	bool ReportError(LPCTSTR pszComponent, DWORD dwError);
+	bool ReportWarning(LPCTSTR pszMsg);
 
 private:
 	EventLog();
