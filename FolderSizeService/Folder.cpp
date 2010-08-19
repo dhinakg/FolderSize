@@ -124,15 +124,19 @@ CacheFolder* CacheFolder::GetNextScanFolder(const LONGLONG* pnRequestTime)
 		return this;
 	}
 
-	for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
+	if (m_nDirtyChildren || m_nEmptyChildren)
 	{
-		CacheFolder* pScanFolder = pChild->GetNextScanFolder(pnRequestTime);
-		if (pScanFolder != NULL)
+		for (CacheFolder* pChild = m_pChild; pChild != NULL; pChild = pChild->m_pNextSibling)
 		{
-			pChild->MakeLastChild();
-			return pScanFolder;
+			CacheFolder* pScanFolder = pChild->GetNextScanFolder(pnRequestTime);
+			if (pScanFolder != NULL)
+			{
+				pChild->MakeLastChild();
+				return pScanFolder;
+			}
 		}
 	}
+
 	return NULL;
 }
 
