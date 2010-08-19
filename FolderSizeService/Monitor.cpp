@@ -96,7 +96,9 @@ void Monitor::MonitorThread()
 		if (dwBytesReturned == 0)
 		{
 			// Some notifications have been lost, so we have to kill the cache and start again.
+#ifdef _DEBUG
 			EventLog::Instance().ReportWarning(_T("ReadDirectoryChanges internal buffer overflowed"));
+#endif
 			m_pCallback->DirectoryError();
 			return;
 		}
