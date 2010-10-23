@@ -188,7 +188,7 @@ bool GetPhysicalFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
 	return true;
 }
 
-void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
+static void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize)
 {
 	// Assume folders won't get larger than 10^(2^4 - 4) = 10^16 bytes = 1 TB
 	// Adjust if necessary
@@ -282,7 +282,7 @@ void CFolderSizeObj::FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT 
 	}
 }
 
-bool CFolderSizeObj::GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERINFO2::* sizeMember, LPTSTR pszBuffer, DWORD cch)
+static bool GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERINFO2::* sizeMember, LPTSTR pszBuffer, DWORD cch)
 {
 	pszBuffer[0] = _T('\0');
 	FOLDERINFO2 nSize;
@@ -299,17 +299,12 @@ bool CFolderSizeObj::GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERIN
 	{
 		FormatSizeWithOption(nSize.*sizeMember, pszBuffer, cch);
 
-		LPWSTR psz = pszBuffer + wcslen(pszBuffer);
-		switch (nSize.giff)
+		size_t len = wcslen(pszBuffer);
+		if (len < cch - 1 && (nSize.giff == GIFF_DIRTY || nSize.giff == GIFF_SCANNING))
 		{
-		case GIFF_DIRTY:
-			*(psz++) = L'~';
-			break;
-		case GIFF_SCANNING:
-			*(psz++) = L'+';
-			break;
+			pszBuffer[len] = nSize.giff == GIFF_DIRTY ? L'~' : L'+';
+			pszBuffer[len + 1] = L'\0';
 		}
-		*psz = 0;
 	}
 	return true;
 }

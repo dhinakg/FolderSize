@@ -35,10 +35,6 @@ public:
 	STDMETHOD (Initialize)(LPCSHCOLUMNINIT psci);
 	STDMETHOD (GetColumnInfo)(DWORD dwIndex, SHCOLUMNINFO *psci);
 	STDMETHOD (GetItemData)(LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA pscd, VARIANT *pvarData);
-
-private:
-	static bool GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERINFO2::* sizeMember, LPTSTR pszBuffer, DWORD cch);
-	static void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize);
 };
 
 OBJECT_ENTRY_AUTO(CLSID_FolderSizeObj, CFolderSizeObj)
