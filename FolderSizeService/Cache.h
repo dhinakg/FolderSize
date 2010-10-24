@@ -48,8 +48,6 @@ public:
 	virtual void DirectoryError();
 
 private:
-	void Create();
-	void Clear();
 	void DoSyncScans(CacheFolder* pFolder);
 
 	// the cache data and the lock for it

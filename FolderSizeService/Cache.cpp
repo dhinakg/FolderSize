@@ -35,8 +35,7 @@ Cache::Cache(const Path& pathVolume, HANDLE hMonitor, ICacheCallback* pCallback)
 
 	m_pFolderManager = new FolderManager(m_pathVolume);
 	m_pScanner = new Scanner(m_pathVolume, this);
-	if (hMonitor != INVALID_HANDLE_VALUE)
-		m_pMonitor = new Monitor(m_pathVolume, hMonitor, this);
+	m_pMonitor = new Monitor(m_pathVolume, hMonitor, this);
 }
 
 Cache::~Cache()
