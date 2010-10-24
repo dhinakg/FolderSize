@@ -290,7 +290,9 @@ static bool GetFolderInfoToBuffer(LPCTSTR pszFolder, ULONGLONG FOLDERINFO2::* si
 	if (!GetInfoForFolder(pszFolder, nSize))
 	{
 #ifdef _DEBUG
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), 0, pszBuffer, cch, NULL);
+		// FORMAT_MESSAGE_MAX_WIDTH_MASK converts newline chars in the message to spaces, which is better for single-line output
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS|FORMAT_MESSAGE_MAX_WIDTH_MASK,
+			NULL, GetLastError(), 0, pszBuffer, cch, NULL);
 #else
 		return false;
 #endif
