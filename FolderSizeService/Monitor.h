@@ -15,6 +15,7 @@ public:
 
 	virtual void PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew) = 0;
 	virtual void DirectoryError() = 0;
+	virtual void MonitorNotSupported() = 0;
 };
 
 class Monitor

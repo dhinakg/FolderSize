@@ -28,7 +28,7 @@ static void WarningEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection, LP
 }
 
 Cache::Cache(const Path& pathVolume, HANDLE hMonitor, ICacheCallback* pCallback) :
-	m_pathVolume(pathVolume), m_bScannerEnabled(true), m_pFolderManager(NULL), m_pScanner(NULL), m_pMonitor(NULL), m_pCallback(pCallback)
+	m_pathVolume(pathVolume), m_pFolderManager(NULL), m_pMonitor(NULL), m_pScanner(NULL), m_bScannerEnabled(true), m_bAlwaysDirty(false), m_pCallback(pCallback)
 {
 	InitializeCriticalSection(&m_cs);
 	QueryPerformanceFrequency(&g_nPerformanceFrequency);
@@ -65,7 +65,7 @@ bool Cache::GetInfoForFolder(const Path& path, FOLDERINFO2& nSize)
 		// let the folder know that it's being displayed
 		pFolder->DisplayUpdated();
 
-		if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren())
+		if (pFolder->GetStatus() == CacheFolder::FS_DIRTY || pFolder->GetDirtyChildren() || m_bAlwaysDirty)
 		{
 			nSize.giff = GIFF_DIRTY;
 		}
@@ -287,4 +287,11 @@ void Cache::DirectoryError()
 {
 	// the monitor can't read the disk anymore, the cache is hopelessly outdated...
 	m_pCallback->KillMe(this);
+}
+
+void Cache::MonitorNotSupported()
+{
+	m_bAlwaysDirty = true;
+	delete m_pMonitor;
+	m_pMonitor = NULL;
 }

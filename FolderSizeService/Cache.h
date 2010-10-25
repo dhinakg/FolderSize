@@ -45,6 +45,7 @@ public:
 	// IMonitorCallback
 	virtual void PathChanged(FILE_EVENT fe, const Path& path, const Path& pathNew);
 	virtual void DirectoryError();
+	virtual void MonitorNotSupported();
 
 private:
 	void DoSyncScans(CacheFolder* pFolder);
@@ -58,6 +59,7 @@ private:
 	Monitor* m_pMonitor;
 	Scanner* m_pScanner;
 	bool m_bScannerEnabled;
+	bool m_bAlwaysDirty;
 
 	// suicidal tendencies
 	ICacheCallback* m_pCallback;

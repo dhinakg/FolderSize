@@ -58,13 +58,22 @@ void Monitor::MonitorThread()
 			FILE_NOTIFY_CHANGE_FILE_NAME|FILE_NOTIFY_CHANGE_DIR_NAME|FILE_NOTIFY_CHANGE_SIZE,
 			&dwBytesReturned, &m_Overlapped, NULL))
 		{
-			// log an unexpected error
 			DWORD dwError = GetLastError();
-			if (dwError != ERROR_NETNAME_DELETED)
+			if (dwError == ERROR_INVALID_FUNCTION)
 			{
-				EventLog::Instance().ReportError(_T("ReadDirectoryChangesW"), dwError);
+				// The device simply doesn't support monitoring.
+				// Let the cache know that it should enter always-dirty mode, and the monitor is done.
+				m_pCallback->MonitorNotSupported();
 			}
-			m_pCallback->DirectoryError();
+			else
+			{
+				// log an unexpected error
+				if (dwError != ERROR_NETNAME_DELETED)
+				{
+					EventLog::Instance().ReportError(_T("ReadDirectoryChangesW"), dwError);
+				}
+				m_pCallback->DirectoryError();
+			}
 			return;
 		}
 
