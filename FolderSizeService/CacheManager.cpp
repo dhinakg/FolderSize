@@ -212,29 +212,33 @@ void CacheManager::EnableScanners(bool bEnable)
 
 void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 {
-	bool bFound = false;
+	Cache* pCache = NULL;
+
+	EnterCriticalSection(&m_cs);
+
 	m_RegisteredDeviceNotifications.erase(pdbh->dbch_hdevnotify);
 	if (!UnregisterDeviceNotification(pdbh->dbch_hdevnotify))
 	{
 		EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
 	}
 
-	EnterCriticalSection(&m_cs);
-
 	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
 	{
 		if (itr->second->GetMonitoringHandle() == pdbh->dbch_handle)
 		{
-			itr->second->Release();
+			pCache = itr->second;
 			m_Map.erase(itr);
-			bFound = true;
 			break;
 		}
 	}
 
 	LeaveCriticalSection(&m_cs);
 
-	if (!bFound)
+	if (pCache)
+	{
+		pCache->Release();
+	}
+	else
 	{
 		EventLog::Instance().ReportError(TEXT("CacheManager::RemoveDevice"), GetLastError());
 	}
@@ -243,29 +247,39 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 void CacheManager::ParamChange()
 {
 	// first reload our drive type configuration
-	EnterCriticalSection(&m_cs);
-
 	m_ScanDriveTypes = LoadScanDriveTypes();
 
-	// delete any cache that is a disabled drive type
-	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); )
+	while (true)
 	{
-		if (!DriveTypeEnabled(itr->first.GetDriveType()))
-		{
-			itr->second->Release();
-			itr = m_Map.erase(itr);
-		}
-		else
-		{
-			itr++;
-		}
-	}
+		// Remove caches from the map that are now disabled.
+		// Don't Release a cache while holding the critical section.
+		Cache* pCacheToDisable = NULL;
 
-	LeaveCriticalSection(&m_cs);
+		EnterCriticalSection(&m_cs);
+		for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
+		{
+			if (!DriveTypeEnabled(itr->first.GetDriveType()))
+			{
+				pCacheToDisable = itr->second;
+				m_Map.erase(itr);
+				break;
+			}
+		}
+		LeaveCriticalSection(&m_cs);
+
+		if (pCacheToDisable == NULL)
+			break;
+
+		pCacheToDisable->Release();
+	}
 }
 
 void CacheManager::KillMe(Cache* pExpiredCache)
 {
+	// The cache might not be found in the map if it was just removed for some other reason,
+	// such as service parameters changing
+	bool bFound = false;
+
 	EnterCriticalSection(&m_cs);
 
 	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
@@ -273,11 +287,15 @@ void CacheManager::KillMe(Cache* pExpiredCache)
 		if (itr->second == pExpiredCache)
 		{
 			m_Map.erase(itr);
+			bFound = true;
 			break;
 		}
 	}
 
 	LeaveCriticalSection(&m_cs);
 
-	pExpiredCache->Release();
+	if (bFound)
+	{
+		pExpiredCache->Release();
+	}
 }
