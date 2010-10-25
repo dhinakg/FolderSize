@@ -23,8 +23,6 @@ public:
 	Monitor(const Path& pathVolume, HANDLE hFile, IMonitorCallback* pCallback);
 	~Monitor();
 
-	HANDLE GetFileHandle();
-
 protected:
 
 	static DWORD WINAPI MonitorThread(LPVOID lpParameter);

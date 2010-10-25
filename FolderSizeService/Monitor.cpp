@@ -24,7 +24,6 @@ Monitor::~Monitor()
 	// or from our own internal thread, when an error is detected.
 	// When the monitor is deleted from an external thread, we need to ensure
 	// the thread has shut down before returning and deleting the instance.
-	// When this is the 
 	// In the case where our own thread deletes itself, we don't have to wait,
 	// because we know we will not use any more member fields.
 	if (GetCurrentThreadId() != m_dwMonitorThreadId)
@@ -36,11 +35,6 @@ Monitor::~Monitor()
 
 	// the Monitor owns the directory handle it's passed, so close it here
 	CloseHandle(m_hDirectory);
-}
-
-HANDLE Monitor::GetFileHandle()
-{
-	return m_hDirectory;
 }
 
 DWORD WINAPI Monitor::MonitorThread(LPVOID lpParameter)

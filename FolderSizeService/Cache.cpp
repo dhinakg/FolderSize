@@ -205,13 +205,6 @@ void Cache::GetUpdateFoldersForFolder(const Path& path, Strings& strsFoldersToUp
 	LeaveCriticalSection(&m_cs);
 }
 
-HANDLE Cache::GetMonitoringHandle()
-{
-	if (m_pMonitor == NULL)
-		return INVALID_HANDLE_VALUE;
-	return m_pMonitor->GetFileHandle();
-}
-
 void Cache::EnableScanner(bool bEnable)
 {
 	m_bScannerEnabled = bEnable;

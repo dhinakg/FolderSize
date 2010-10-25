@@ -24,11 +24,9 @@ protected:
 	virtual void KillMe(Cache* pExpiredCache);
 
 	SERVICE_STATUS_HANDLE m_hSS;
-	set<HDEVNOTIFY> m_RegisteredDeviceNotifications;
-
-	typedef std::map<Path, Cache*> MapType;
-	MapType m_Map;
-	CRITICAL_SECTION m_cs;
-
 	int m_ScanDriveTypes;
+
+	CRITICAL_SECTION m_cs;
+	typedef std::map<Path, std::pair<Cache*, HDEVNOTIFY> > MapType;
+	MapType m_Map;
 };

@@ -5,11 +5,9 @@
 #include "../Settings/Settings.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
-: m_hSS(hSS)
+: m_hSS(hSS), m_ScanDriveTypes(LoadScanDriveTypes())
 {
 	InitializeCriticalSection(&m_cs);
-
-	m_ScanDriveTypes = LoadScanDriveTypes();
 
 	// if there is ever an error accessing a drive, we always
 	// want to fail the call, and not display a dialog
@@ -18,14 +16,6 @@ CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 
 CacheManager::~CacheManager()
 {
-	for (set<HDEVNOTIFY>::iterator itr = m_RegisteredDeviceNotifications.begin(); itr != m_RegisteredDeviceNotifications.end(); itr++)
-	{
-		if (!UnregisterDeviceNotification(*itr))
-		{
-			EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
-		}
-	}
-
 	// The caches are still alive, with their monitor threads (that call back with KillMe),
 	// and scanners. Shut them down, using the critical section properly.
 	Cache* pCache;
@@ -36,7 +26,11 @@ CacheManager::~CacheManager()
 		EnterCriticalSection(&m_cs);
 		if (!m_Map.empty())
 		{
-			pCache = m_Map.begin()->second;
+			pCache = m_Map.begin()->second.first;
+			if (m_Map.begin()->second.second && !UnregisterDeviceNotification(m_Map.begin()->second.second))
+			{
+				EventLog::Instance().ReportError(TEXT("~CacheManager::UnregisterDeviceNotification"), GetLastError());
+			}
 			m_Map.erase(m_Map.begin());
 		}
 		LeaveCriticalSection(&m_cs);
@@ -105,8 +99,8 @@ Cache* CacheManager::GetCacheForFolder(const Path& path)
 	MapType::iterator itr = m_Map.find(szCacheId);
 	if (itr != m_Map.end())
 	{
-		itr->second->AddRef();
-		return itr->second;
+		itr->second.first->AddRef();
+		return itr->second.first;
 	}
 
 	// we should be impersonating the client right now
@@ -117,14 +111,13 @@ Cache* CacheManager::GetCacheForFolder(const Path& path)
 
 	// make a new cache
 	Cache* pCache = new Cache(pszVolume, hMonitor, this);
-	m_Map[szCacheId] = pCache;
 
 	// register a device notification for a local cache
+	HDEVNOTIFY hDevNotify = NULL;
 	if (!path.IsNetwork() && m_hSS != NULL)
 	{
 		// For RegisterDeviceNotify to succeed and not return ERROR_SERVICE_SPECIFIC_ERROR_CODE,
 		// we need to revert our impersonation.
-		HDEVNOTIFY hDevNotify = NULL;
 		HANDLE hToken;
 		if (OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE, FALSE, &hToken))
 		{
@@ -134,24 +127,22 @@ Cache* CacheManager::GetCacheForFolder(const Path& path)
 				dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
 				dbh.dbch_handle = hMonitor;
 				hDevNotify = RegisterDeviceNotification(m_hSS, &dbh, DEVICE_NOTIFY_SERVICE_HANDLE);
+				if (hDevNotify == NULL)
+				{
+					TCHAR szMsg[1024];
+					wsprintf(szMsg, _T("RegisterDeviceNotification on %s"), pszVolume);
+					EventLog::Instance().ReportError(szMsg, GetLastError());
+				}
 
 				// restore the impersonation
 				SetThreadToken(NULL, hToken);
 			}
 			CloseHandle(hToken);
 		}
-
-		if (hDevNotify == NULL)
-		{
-			TCHAR szMsg[1024];
-			wsprintf(szMsg, _T("RegisterDeviceNotification on %s"), pszVolume);
-			EventLog::Instance().ReportError(szMsg, GetLastError());
-		}
-		else
-		{
-			m_RegisteredDeviceNotifications.insert(hDevNotify);
-		}
 	}
+
+	// register the new cache and all its info in the map
+	m_Map[szCacheId] = std::pair<Cache*, HDEVNOTIFY>(pCache, hDevNotify);
 
 	pCache->AddRef();
 	return pCache;
@@ -205,7 +196,7 @@ void CacheManager::EnableScanners(bool bEnable)
 	EnterCriticalSection(&m_cs);
 
 	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
-		itr->second->EnableScanner(bEnable);
+		itr->second.first->EnableScanner(bEnable);
 
 	LeaveCriticalSection(&m_cs);
 }
@@ -216,17 +207,17 @@ void CacheManager::DeviceRemoveEvent(PDEV_BROADCAST_HANDLE pdbh)
 
 	EnterCriticalSection(&m_cs);
 
-	m_RegisteredDeviceNotifications.erase(pdbh->dbch_hdevnotify);
-	if (!UnregisterDeviceNotification(pdbh->dbch_hdevnotify))
-	{
-		EventLog::Instance().ReportError(TEXT("UnregisterDeviceNotification"), GetLastError());
-	}
-
+	// it may not be found if it was already removed from the map, after the event
+	// occurred, but before we got into this critical section
 	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
 	{
-		if (itr->second->GetMonitoringHandle() == pdbh->dbch_handle)
+		if (itr->second.second == pdbh->dbch_hdevnotify)
 		{
-			pCache = itr->second;
+			pCache = itr->second.first;
+			if (!UnregisterDeviceNotification(pdbh->dbch_hdevnotify))
+			{
+				EventLog::Instance().ReportError(TEXT("DeviceRemoveEvent::UnregisterDeviceNotification"), GetLastError());
+			}
 			m_Map.erase(itr);
 			break;
 		}
@@ -249,29 +240,35 @@ void CacheManager::ParamChange()
 	// first reload our drive type configuration
 	m_ScanDriveTypes = LoadScanDriveTypes();
 
-	while (true)
+	Cache* pCacheToDisable;
+	do
 	{
 		// Remove caches from the map that are now disabled.
 		// Don't Release a cache while holding the critical section.
-		Cache* pCacheToDisable = NULL;
+		pCacheToDisable = NULL;
 
 		EnterCriticalSection(&m_cs);
 		for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
 		{
 			if (!DriveTypeEnabled(itr->first.GetDriveType()))
 			{
-				pCacheToDisable = itr->second;
+				pCacheToDisable = itr->second.first;
+				if (itr->second.second && !UnregisterDeviceNotification(itr->second.second))
+				{
+					EventLog::Instance().ReportError(_T("ParamChange::UnregisterDeviceNotification"), GetLastError());
+				}
 				m_Map.erase(itr);
 				break;
 			}
 		}
 		LeaveCriticalSection(&m_cs);
 
-		if (pCacheToDisable == NULL)
-			break;
+		if (pCacheToDisable)
+		{
+			pCacheToDisable->Release();
+		}
 
-		pCacheToDisable->Release();
-	}
+	} while (pCacheToDisable);
 }
 
 void CacheManager::KillMe(Cache* pExpiredCache)
@@ -284,8 +281,12 @@ void CacheManager::KillMe(Cache* pExpiredCache)
 
 	for (MapType::iterator itr = m_Map.begin(); itr != m_Map.end(); itr++)
 	{
-		if (itr->second == pExpiredCache)
+		if (itr->second.first == pExpiredCache)
 		{
+			if (itr->second.second && !UnregisterDeviceNotification(itr->second.second))
+			{
+				EventLog::Instance().ReportError(_T("KillMe::UnregisterDeviceNotification"), GetLastError());
+			}
 			m_Map.erase(itr);
 			bFound = true;
 			break;
