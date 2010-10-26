@@ -227,7 +227,7 @@
 				OutputFile="$(OutDir)/FolderSizeSvc.exe"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)$(TargetName).pdb"
+				ProgramDatabaseFile="$(IntDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
