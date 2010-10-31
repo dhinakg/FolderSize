@@ -106,58 +106,10 @@ bool GetLogicalFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
 	return true;
 }
 
-std::wstring GetFolderFromWebBrowser(IWebBrowser2* pWebBrowser)
-{
-	std::wstring strFolder;
-	IServiceProvider* psp;
-	if (SUCCEEDED(pWebBrowser->QueryInterface(IID_IServiceProvider, (void**)&psp)))
-	{
-		IShellBrowser* psb;
-		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
-		{
-			IShellView* psv;
-			if (SUCCEEDED(psb->QueryActiveShellView(&psv)))
-			{
-				IFolderView* pfv;
-				if (SUCCEEDED(psv->QueryInterface(IID_IFolderView, (void**)&pfv)))
-				{
-					IShellFolder2* psf2;
-					if (SUCCEEDED(pfv->GetFolder(IID_IShellFolder2, (void**)&psf2)))
-					{
-						IPersistFolder2* ppf2;
-						if (SUCCEEDED(psf2->QueryInterface(IID_IPersistFolder2, (void**)&ppf2)))
-						{
-							LPITEMIDLIST pidl;
-							if (SUCCEEDED(ppf2->GetCurFolder(&pidl)))
-							{
-								TCHAR szPath[MAX_PATH];
-								if (SHGetPathFromIDList(pidl, szPath))
-								{
-									strFolder = szPath;
-								}
-								CoTaskMemFree(pidl);
-							}
-							ppf2->Release();
-						}
-						psf2->Release();
-					}
-					pfv->Release();
-				}
-				psv->Release();
-			}
-			psb->Release();
-		}
-		psp->Release();
-	}
-	return strFolder;
-}
 
-
-
-#define ID_LIST  3
 
 class FSWindow :
-	public CWindowImpl<FSWindow>,
+	public CWindowImpl<FSWindow, CWindow, CWinTraits<WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX, WS_EX_TOOLWINDOW> >,
 	public IDispEventSimpleImpl<1, FSWindow, &DIID_DWebBrowserEvents2>
 {
 public:
@@ -166,11 +118,13 @@ public:
 BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
 	MESSAGE_HANDLER(WM_SIZE, OnSize)
+	MESSAGE_HANDLER(WM_TIMER, OnTimer)
 	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	virtual void OnFinalMessage(HWND hwnd);
 
@@ -186,6 +140,7 @@ END_SINK_MAP()
 
 private:
 	void SetListToFolder();
+	void InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags);
 
 	HWND m_lv;
 	CComPtr<IWebBrowser2> m_pWebBrowser;
@@ -195,9 +150,9 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 {
 	RECT rc;
 	GetClientRect(&rc);
-	m_lv = CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT,
+	m_lv = CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHAREIMAGELISTS,
 		0, 0, rc.right-rc.left, rc.bottom-rc.top,
-		m_hWnd, (HMENU)ID_LIST, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
+		m_hWnd, 0, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
 	if (!m_lv)
 		return -1;
 	LVCOLUMN column = {0};
@@ -209,6 +164,12 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 	column.pszText = _T("Size");
 	ListView_InsertColumn(m_lv, 1, &column);
 
+	SHFILEINFO shfi;
+	HIMAGELIST himl = (HIMAGELIST)SHGetFileInfo(_T(""), FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+	if (himl == NULL)
+		return -1;
+	ListView_SetImageList(m_lv, himl, LVSIL_SMALL);
+
 	SetListToFolder();
 	if (FAILED(DispEventAdvise(m_pWebBrowser)))
 		return -1;
@@ -218,6 +179,12 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	::MoveWindow(m_lv, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+	return 0;
+}
+
+LRESULT FSWindow::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	//SetListToFolder();
 	return 0;
 }
 
@@ -236,71 +203,117 @@ void FSWindow::OnFinalMessage(HWND hwnd)
 
 void FSWindow::SetListToFolder()
 {
-	std::wstring strFolder = GetFolderFromWebBrowser(m_pWebBrowser);
-	// what items to display?
-	// if i had a pointer to a shell window, i could enumerate its items.
-
 	ListView_DeleteAllItems(m_lv);
 
-	int i = 0;
-
-	TCHAR szPath[MAX_PATH];
-	lstrcpy(szPath, strFolder.c_str());
-	PathAppend(szPath, _T("*"));
-	WIN32_FIND_DATA FindData;
-	HANDLE hFind = FindFirstFile(szPath, &FindData);
-	if (hFind != INVALID_HANDLE_VALUE)
+	IServiceProvider* psp;
+	if (SUCCEEDED(m_pWebBrowser->QueryInterface(IID_IServiceProvider, (void**)&psp)))
 	{
-		do
+		IShellBrowser* psb;
+		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
 		{
-			TCHAR buffer[50];
-			// for each name, add it to the list!
-			if (FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			IShellView* psv;
+			if (SUCCEEDED(psb->QueryActiveShellView(&psv)))
 			{
-				if (FindData.cFileName[0] != L'.' || (FindData.cFileName[1] != L'\0' && (FindData.cFileName[1] != L'.' || FindData.cFileName[2] != L'\0')))
+				IFolderView* pfv;
+				if (SUCCEEDED(psv->QueryInterface(IID_IFolderView, (void**)&pfv)))
 				{
-					// look it up from the service
-					lstrcpy(szPath, strFolder.c_str());
-					PathAppend(szPath, FindData.cFileName);
-					GetFolderInfoToBuffer(szPath, &FOLDERINFO2::nLogicalSize, buffer, sizeof(buffer)/sizeof(TCHAR));
-
-					// insert into list
-					LVITEM item = {0};
-					item.mask = LVIF_TEXT;
-					item.iItem = i++;
-					item.iSubItem = 0;
-					item.pszText = FindData.cFileName;
-					ListView_InsertItem(m_lv, &item);
-					item.iSubItem = 1;
-					item.pszText = buffer;
-					ListView_SetItem(m_lv, &item);
+					IShellFolder2* psf2;
+					if (SUCCEEDED(pfv->GetFolder(IID_IShellFolder2, (void**)&psf2)))
+					{
+						InsertEnumItems(psf2, SHCONTF_FOLDERS);
+						InsertEnumItems(psf2, SHCONTF_NONFOLDERS);
+						psf2->Release();
+					}
+					pfv->Release();
 				}
+				psv->Release();
 			}
-			else
-			{
-				lstrcpy(szPath, strFolder.c_str());
-				PathAppend(szPath, FindData.cFileName);
-				ULONGLONG nSize;
-				GetLogicalFileSize(szPath, nSize);
-				FormatSizeWithOption(nSize, buffer, sizeof(buffer)/sizeof(TCHAR));
-			}
-
-		} while (FindNextFile(hFind, &FindData));
-		FindClose(hFind);
+			psb->Release();
+		}
+		psp->Release();
 	}
 
-	ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
-	ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
+	SetTimer(1, 2000, NULL);
+}
 
-	// size the window to the list width
-	int listWidth = ListView_GetColumnWidth(m_lv, 0) + ListView_GetColumnWidth(m_lv, 1);
-	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
-	RECT rc;
-	::GetWindowRect(m_lv, &rc);
-	rc.right = rc.left + LOWORD(approx);
-	rc.bottom = rc.top + HIWORD(approx);
-	AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
-	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
+{
+	IEnumIDList* pEnum;
+	if (SUCCEEDED(psf2->EnumObjects(m_hWnd, grfFlags, &pEnum)))
+	{
+		LPITEMIDLIST pItemID;
+		while (pEnum->Next(1, &pItemID, NULL) == S_OK)
+		{
+			STRRET strret;
+			if (SUCCEEDED(psf2->GetDisplayNameOf(pItemID, SHGDN_FORPARSING, &strret)))
+			{
+				LPTSTR pPath;
+				if (SUCCEEDED(StrRetToStr(&strret, pItemID, &pPath)))
+				{
+					SHFILEINFO shfi;
+					shfi.dwAttributes = SFGAO_FILESYSTEM | SFGAO_FOLDER;
+					if (SHGetFileInfo(pPath, 0, &shfi, sizeof(shfi),
+						SHGFI_ATTRIBUTES | SHGFI_ATTR_SPECIFIED | SHGFI_DISPLAYNAME | SHGFI_SYSICONINDEX | SHGFI_SMALLICON)
+						&& shfi.dwAttributes & SFGAO_FILESYSTEM)
+					{
+						TCHAR buffer[50];
+						if (shfi.dwAttributes & SFGAO_FOLDER)
+						{
+							GetFolderInfoToBuffer(pPath, &FOLDERINFO2::nLogicalSize, buffer, sizeof(buffer)/sizeof(TCHAR));
+						}
+						else
+						{
+							ULONGLONG nSize;
+							GetLogicalFileSize(pPath, nSize);
+							FormatSizeWithOption(nSize, buffer, sizeof(buffer)/sizeof(TCHAR));
+						}
+
+						// insert into list
+						LVITEM item = {0};
+						item.mask = LVIF_TEXT | LVIF_IMAGE;
+						item.iItem = INT_MAX;
+						item.iSubItem = 0;
+						item.pszText = shfi.szDisplayName;
+						item.iImage = shfi.iIcon;
+						item.iItem = ListView_InsertItem(m_lv, &item);
+						item.mask = LVIF_TEXT;
+						item.iSubItem = 1;
+						item.pszText = buffer;
+						ListView_SetItem(m_lv, &item);
+
+						ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
+						ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
+
+						// size the window to the list width
+						int listWidth = ListView_GetColumnWidth(m_lv, 0) + ListView_GetColumnWidth(m_lv, 1);
+						DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
+						RECT rc;
+						::GetWindowRect(m_lv, &rc);
+						rc.right = rc.left + LOWORD(approx);
+						rc.bottom = rc.top + HIWORD(approx);
+						AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
+
+						HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+						MONITORINFO mi = { sizeof(mi) };
+						GetMonitorInfo(hMonitor, &mi);
+						if (rc.bottom > mi.rcWork.bottom)
+						{
+							rc.bottom = mi.rcWork.bottom;
+							rc.right += GetSystemMetrics(SM_CXVSCROLL);
+						}
+						if (rc.right > mi.rcWork.right)
+						{
+							rc.right = mi.rcWork.right;
+						}
+						MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+					}
+					CoTaskMemFree(pPath);
+				}
+			}
+			CoTaskMemFree(pItemID);
+		}
+		pEnum->Release();
+	}
 }
 
 _ATL_FUNC_INFO FSWindow::NavigateCompleteInfo = { CC_STDCALL, VT_EMPTY, 2, {VT_DISPATCH, VT_BYREF | VT_VARIANT} };
@@ -337,7 +350,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetWindowRect(hwndExplorer, &rc);
 				rc.left = rc.right;
 				FSWindow* pWnd = new FSWindow(pWebBrowsers[i]);
-				if (pWnd->Create(hwndExplorer, rc, _T("Folder Size"), WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX, WS_EX_TOOLWINDOW))
+				if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
 				{
 					g_nWindows ++;
 					pWnd->ShowWindow(nCmdShow);
