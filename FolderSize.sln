@@ -4,9 +4,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FolderSizeColumn", "FolderS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ControlPanel", "FolderSizeCpl\FolderSizeCpl.vcproj", "{13FBCA98-5F6F-4B46-A010-FEEE79C9A46A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FolderSizeService", "FolderSizeService\FolderSizeService.vcproj", "{E37D15FA-4575-44A1-82C8-710C33AA653D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Service", "FolderSizeService\FolderSizeService.vcproj", "{E37D15FA-4575-44A1-82C8-710C33AA653D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CLClient", "CLClient\CLClient.vcproj", "{0AF5A487-A333-41AC-AD1E-E93426A9FD4B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Window", "Window\Window.vcproj", "{59782B42-5D90-4F3B-ACAD-10B4E9206006}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +48,12 @@ Global
 		{0AF5A487-A333-41AC-AD1E-E93426A9FD4B}.Release|Win32.ActiveCfg = Release|Win32
 		{0AF5A487-A333-41AC-AD1E-E93426A9FD4B}.Release|Win32.Build.0 = Release|Win32
 		{0AF5A487-A333-41AC-AD1E-E93426A9FD4B}.Release|x64.ActiveCfg = Release|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Debug|Win32.ActiveCfg = Debug|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Debug|Win32.Build.0 = Debug|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Debug|x64.ActiveCfg = Debug|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Release|Win32.ActiveCfg = Release|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Release|Win32.Build.0 = Release|Win32
+		{59782B42-5D90-4F3B-ACAD-10B4E9206006}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
