@@ -25,15 +25,12 @@ static bool GetShellWindows(IWebBrowser2**& pWebBrowsers, long& nCount)
 				// Item can return S_OK even if there is no IDispatch
 				if (SUCCEEDED(psw->Item(varItem, &pDispatch)) && pDispatch)
 				{
-					if(pDispatch) // avoid segfault
+					IWebBrowser2* pWebBrowser;
+					if (SUCCEEDED(pDispatch->QueryInterface(IID_IWebBrowser2, (void**)&pWebBrowser)))
 					{
-						IWebBrowser2* pWebBrowser;
-						if (SUCCEEDED(pDispatch->QueryInterface(IID_IWebBrowser2, (void**)&pWebBrowser)))
-						{
-							pWebBrowsers[nCount++] = pWebBrowser;
-						}
-						pDispatch->Release();
+						pWebBrowsers[nCount++] = pWebBrowser;
 					}
+					pDispatch->Release();
 				}
 			}
 
@@ -155,13 +152,95 @@ std::wstring GetFolderFromWebBrowser(IWebBrowser2* pWebBrowser)
 	return strFolder;
 }
 
-void SetListToFolder(HWND lv, IWebBrowser2* pWebBrowser)
+
+
+#define ID_LIST  3
+
+class FSWindow :
+	public CWindowImpl<FSWindow>,
+	public IDispEventSimpleImpl<1, FSWindow, &DIID_DWebBrowserEvents2>
 {
-	std::wstring strFolder = GetFolderFromWebBrowser(pWebBrowser);
+public:
+	FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser) {}
+
+BEGIN_MSG_MAP(FSWindow)
+	MESSAGE_HANDLER(WM_CREATE, OnCreate)
+	MESSAGE_HANDLER(WM_SIZE, OnSize)
+	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+END_MSG_MAP()
+
+	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	virtual void OnFinalMessage(HWND hwnd);
+
+static _ATL_FUNC_INFO NavigateCompleteInfo;
+static _ATL_FUNC_INFO QuitInfo;
+BEGIN_SINK_MAP(FSWindow)
+	SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2, OnNavigateComplete, &NavigateCompleteInfo)
+	SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_ONQUIT, OnQuit, &QuitInfo)
+END_SINK_MAP()
+
+	void __stdcall OnNavigateComplete(IDispatch *pDisp, VARIANT *URL);
+	void __stdcall OnQuit();
+
+private:
+	void SetListToFolder();
+
+	HWND m_lv;
+	CComPtr<IWebBrowser2> m_pWebBrowser;
+};
+
+LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	RECT rc;
+	GetClientRect(&rc);
+	m_lv = CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT,
+		0, 0, rc.right-rc.left, rc.bottom-rc.top,
+		m_hWnd, (HMENU)ID_LIST, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
+	if (!m_lv)
+		return -1;
+	LVCOLUMN column = {0};
+	column.mask = LVCF_FMT | LVCF_TEXT;
+	column.fmt = LVCFMT_LEFT;
+	column.pszText = _T("Name");
+	ListView_InsertColumn(m_lv, 0, &column);
+	column.fmt = LVCFMT_RIGHT;
+	column.pszText = _T("Size");
+	ListView_InsertColumn(m_lv, 1, &column);
+
+	SetListToFolder();
+	if (FAILED(DispEventAdvise(m_pWebBrowser)))
+		return -1;
+	return 0;
+}
+
+LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	::MoveWindow(m_lv, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+	return 0;
+}
+
+LRESULT FSWindow::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	DispEventUnadvise(m_pWebBrowser);
+	if (--g_nWindows == 0)
+		PostQuitMessage(0);
+	return 0;
+}
+
+void FSWindow::OnFinalMessage(HWND hwnd)
+{
+	delete this;
+}
+
+void FSWindow::SetListToFolder()
+{
+	std::wstring strFolder = GetFolderFromWebBrowser(m_pWebBrowser);
 	// what items to display?
 	// if i had a pointer to a shell window, i could enumerate its items.
 
-	ListView_DeleteAllItems(lv);
+	ListView_DeleteAllItems(m_lv);
 
 	int i = 0;
 
@@ -191,10 +270,10 @@ void SetListToFolder(HWND lv, IWebBrowser2* pWebBrowser)
 					item.iItem = i++;
 					item.iSubItem = 0;
 					item.pszText = FindData.cFileName;
-					ListView_InsertItem(lv, &item);
+					ListView_InsertItem(m_lv, &item);
 					item.iSubItem = 1;
 					item.pszText = buffer;
-					ListView_SetItem(lv, &item);
+					ListView_SetItem(m_lv, &item);
 				}
 			}
 			else
@@ -210,114 +289,31 @@ void SetListToFolder(HWND lv, IWebBrowser2* pWebBrowser)
 		FindClose(hFind);
 	}
 
-	ListView_SetColumnWidth(lv, 0, LVSCW_AUTOSIZE);
-	ListView_SetColumnWidth(lv, 1, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
 
 	// size the window to the list width
-	int listWidth = ListView_GetColumnWidth(lv, 0) + ListView_GetColumnWidth(lv, 1);
-	DWORD approx = ListView_ApproximateViewRect(lv, -1, -1, -1);
-	HWND hwnd = GetParent(lv);
+	int listWidth = ListView_GetColumnWidth(m_lv, 0) + ListView_GetColumnWidth(m_lv, 1);
+	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
 	RECT rc;
-	GetWindowRect(lv, &rc);
+	::GetWindowRect(m_lv, &rc);
 	rc.right = rc.left + LOWORD(approx);
 	rc.bottom = rc.top + HIWORD(approx);
-	AdjustWindowRectEx(&rc, GetWindowLongPtr(hwnd, GWL_STYLE), FALSE, GetWindowLongPtr(hwnd, GWL_EXSTYLE));
-	MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+	AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
+	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
 }
 
+_ATL_FUNC_INFO FSWindow::NavigateCompleteInfo = { CC_STDCALL, VT_EMPTY, 2, {VT_DISPATCH, VT_BYREF | VT_VARIANT} };
+_ATL_FUNC_INFO FSWindow::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
 
-#define ID_LIST  3
-
-class WindowData :
-	public IDispEventSimpleImpl<1, WindowData, &DIID_DWebBrowserEvents2>
+void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 {
-public:
-	static _ATL_FUNC_INFO NavigateCompleteInfo;
-	static _ATL_FUNC_INFO QuitInfo;
-
-BEGIN_SINK_MAP(WindowData)
-	SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2, OnNavigateComplete, &NavigateCompleteInfo)
-	SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2, DISPID_ONQUIT, OnQuit, &QuitInfo)
-END_SINK_MAP()
-
-	WindowData(HWND lv, IWebBrowser2* pWebBrowser) : m_lv(lv), m_pWebBrowser(pWebBrowser)
-	{
-	}
-	HRESULT Advise()
-	{
-		return DispEventAdvise(m_pWebBrowser);
-	}
-	virtual ~WindowData()
-	{
-		DispEventUnadvise(m_pWebBrowser);
-	}
-
-	void __stdcall OnNavigateComplete(IDispatch *pDisp, VARIANT *URL);
-	void __stdcall OnQuit();
-
-	HWND m_lv;
-	CComPtr<IWebBrowser2> m_pWebBrowser;
-	DWORD m_dwCookie;
-};
-
-_ATL_FUNC_INFO WindowData::NavigateCompleteInfo = { CC_STDCALL, VT_EMPTY, 2, {VT_DISPATCH, VT_BYREF | VT_VARIANT} };
-_ATL_FUNC_INFO WindowData::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
-
-void WindowData::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
-{
-	SetListToFolder(m_lv, m_pWebBrowser);
+	SetListToFolder();
 }
 
-void WindowData::OnQuit()
+void FSWindow::OnQuit()
 {
-	PostMessage(GetParent(m_lv), WM_CLOSE, 0, 0);
-}
-
-LRESULT WINAPI WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CREATE:
-		{
-			RECT rc;
-			GetClientRect(hwnd, &rc);
-			HWND lv = CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT,
-				0, 0, rc.right-rc.left, rc.bottom-rc.top,
-				hwnd, (HMENU)ID_LIST, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-			if (!lv)
-				return -1;
-			LVCOLUMN column = {0};
-			column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT;
-			column.fmt = LVCFMT_LEFT;
-			column.cx = 300;
-			column.pszText = _T("Name");
-			ListView_InsertColumn(lv, 0, &column);
-			column.fmt = LVCFMT_RIGHT;
-			column.cx = 200;
-			column.pszText = _T("Size");
-			ListView_InsertColumn(lv, 1, &column);
-
-			IWebBrowser2* pWebBrowser = (IWebBrowser2*)((CREATESTRUCT*)lParam)->lpCreateParams;
-			SetListToFolder(lv, pWebBrowser);
-
-			WindowData* pWindowData = new WindowData(lv, pWebBrowser);
-			HRESULT hr = pWindowData->Advise();
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pWindowData);
-
-			return 0;
-		}
-	case WM_SIZE:
-		MoveWindow(GetDlgItem(hwnd, ID_LIST), 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
-		return 0;
-	case WM_DESTROY:
-		{
-			WindowData* pWindowData = (WindowData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			delete pWindowData;
-			PostQuitMessage(0);
-			return 0;
-		}
-	}
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	PostMessage(WM_CLOSE, 0, 0);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -332,12 +328,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		InitCommonControls();
 
-		WNDCLASS wndClass = { sizeof(wndClass) };
-		wndClass.lpfnWndProc = WindowProc;
-		wndClass.hInstance = hInstance;
-		wndClass.lpszClassName = _T("Size");
-		ATOM atmWindowClass = RegisterClass(&wndClass);
-
 		for (long i=0; i<nCount; i++)
 		{
 			HWND hwndExplorer;
@@ -345,13 +335,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			{
 				RECT rc;
 				GetWindowRect(hwndExplorer, &rc);
-				HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, MAKEINTATOM(atmWindowClass),
-						_T("Folder Size"), WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
-						rc.right, rc.top, 0, 0, hwndExplorer, NULL, hInstance, pWebBrowsers[i]);
-				if (hwnd)
+				rc.left = rc.right;
+				FSWindow* pWnd = new FSWindow(pWebBrowsers[i]);
+				if (pWnd->Create(hwndExplorer, rc, _T("Folder Size"), WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX, WS_EX_TOOLWINDOW))
 				{
 					g_nWindows ++;
-					ShowWindow(hwnd, nCmdShow);
+					pWnd->ShowWindow(nCmdShow);
 				}
 			}
 			pWebBrowsers[i]->Release();

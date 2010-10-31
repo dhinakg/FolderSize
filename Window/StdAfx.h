@@ -2,6 +2,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <atlwin.h>
 
 #include <commctrl.h>
 #include <shlwapi.h>
