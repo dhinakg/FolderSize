@@ -145,6 +145,7 @@ private:
 
 	HWND m_lv;
 	CComPtr<IWebBrowser2> m_pWebBrowser;
+	TCHAR m_szFolder[MAX_PATH * 4];
 };
 
 LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -251,6 +252,7 @@ void FSWindow::OnFinalMessage(HWND hwnd)
 
 void FSWindow::SetListToFolder()
 {
+	m_szFolder[0] = '\0';
 	ListView_DeleteAllItems(m_lv);
 	AdjustSizeForList();
 
@@ -269,6 +271,16 @@ void FSWindow::SetListToFolder()
 					IShellFolder2* psf2;
 					if (SUCCEEDED(pfv->GetFolder(IID_IShellFolder2, (void**)&psf2)))
 					{
+						IPersistFolder2* ppf2;
+						if (SUCCEEDED(psf2->QueryInterface(IID_IPersistFolder2, (void**)&ppf2)))
+						{
+							LPITEMIDLIST pFolderID;
+							if (SUCCEEDED(ppf2->GetCurFolder(&pFolderID)))
+							{
+								SHGetPathFromIDList(pFolderID, m_szFolder);
+							}
+						}
+
 						InsertEnumItems(psf2, SHCONTF_FOLDERS);
 						InsertEnumItems(psf2, SHCONTF_NONFOLDERS);
 						psf2->Release();
@@ -282,7 +294,14 @@ void FSWindow::SetListToFolder()
 		psp->Release();
 	}
 
-	SetTimer(1, 2000, NULL);
+	if (m_szFolder[0])
+	{
+		SetTimer(1, 2000, NULL);
+	}
+	else
+	{
+		KillTimer(1);
+	}
 }
 
 void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
