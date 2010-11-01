@@ -141,6 +141,7 @@ END_SINK_MAP()
 private:
 	void SetListToFolder();
 	void InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags);
+	void AdjustSizeForList();
 
 	HWND m_lv;
 	CComPtr<IWebBrowser2> m_pWebBrowser;
@@ -204,6 +205,7 @@ void FSWindow::OnFinalMessage(HWND hwnd)
 void FSWindow::SetListToFolder()
 {
 	ListView_DeleteAllItems(m_lv);
+	AdjustSizeForList();
 
 	IServiceProvider* psp;
 	if (SUCCEEDED(m_pWebBrowser->QueryInterface(IID_IServiceProvider, (void**)&psp)))
@@ -281,31 +283,7 @@ void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
 						item.pszText = buffer;
 						ListView_SetItem(m_lv, &item);
 
-						ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
-						ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
-
-						// size the window to the list width
-						int listWidth = ListView_GetColumnWidth(m_lv, 0) + ListView_GetColumnWidth(m_lv, 1);
-						DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
-						RECT rc;
-						::GetWindowRect(m_lv, &rc);
-						rc.right = rc.left + LOWORD(approx);
-						rc.bottom = rc.top + HIWORD(approx);
-						AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
-
-						HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
-						MONITORINFO mi = { sizeof(mi) };
-						GetMonitorInfo(hMonitor, &mi);
-						if (rc.bottom > mi.rcWork.bottom)
-						{
-							rc.bottom = mi.rcWork.bottom;
-							rc.right += GetSystemMetrics(SM_CXVSCROLL);
-						}
-						if (rc.right > mi.rcWork.right)
-						{
-							rc.right = mi.rcWork.right;
-						}
-						MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+						AdjustSizeForList();
 					}
 					CoTaskMemFree(pPath);
 				}
@@ -315,6 +293,34 @@ void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
 		pEnum->Release();
 	}
 }
+
+void FSWindow::AdjustSizeForList()
+{
+	ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
+
+	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
+	RECT rc;
+	::GetWindowRect(m_lv, &rc);
+	rc.right = rc.left + LOWORD(approx);
+	rc.bottom = rc.top + HIWORD(approx);
+	AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
+
+	HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	GetMonitorInfo(hMonitor, &mi);
+	if (rc.bottom > mi.rcWork.bottom)
+	{
+		rc.bottom = mi.rcWork.bottom;
+		rc.right += GetSystemMetrics(SM_CXVSCROLL);
+	}
+	if (rc.right > mi.rcWork.right)
+	{
+		rc.right = mi.rcWork.right;
+	}
+	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+}
+
 
 _ATL_FUNC_INFO FSWindow::NavigateCompleteInfo = { CC_STDCALL, VT_EMPTY, 2, {VT_DISPATCH, VT_BYREF | VT_VARIANT} };
 _ATL_FUNC_INFO FSWindow::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
