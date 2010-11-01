@@ -92,7 +92,7 @@ __inline ULONGLONG MakeULongLong(DWORD dwHigh, DWORD dwLow)
 	return ((ULONGLONG)dwHigh << 32) | dwLow;
 }
 
-bool GetLogicalFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
+static bool GetLogicalFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
 {
 	// GetFileAttributesEx and CreateFile fail if the file is open by the system (for example, the swap file).
 	// GetFileAttributesEx also seems to fail for very large files on Novell Netware networks.
@@ -185,7 +185,54 @@ LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 
 LRESULT FSWindow::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	//SetListToFolder();
+	// connect to the server and get the folders to update
+	// try twice to connect to the pipe
+	HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		if (GetLastError() == ERROR_PIPE_BUSY)
+		{
+			if (WaitNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, 1000))
+			{
+				hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+			}
+		}
+	}
+
+	if (hPipe != INVALID_HANDLE_VALUE)
+	{
+		Strings strsFoldersBrowsed;
+		strsFoldersBrowsed.insert(m_szFolder);
+		if (WriteGetUpdatedFoldersRequest(hPipe, strsFoldersBrowsed))
+		{
+			Strings strsFoldersToUpdate;
+			if (ReadStringList(hPipe, strsFoldersToUpdate))
+			{
+				for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
+				{
+					// huh... this should really return the data.... but to avoid changing the server, let's connect again and get that info
+					TCHAR buffer[50];
+					GetFolderInfoToBuffer(i->c_str(), &FOLDERINFO2::nLogicalSize, buffer, sizeof(buffer)/sizeof(TCHAR));
+
+					// this won't work if the file system name is different from the shell display name!
+					LVFINDINFO fi;
+					fi.flags = LVFI_STRING;
+					fi.psz = PathFindFileName(i->c_str());
+					int iItem = ListView_FindItem(m_lv, -1, &fi);
+					if (iItem >= 0)
+					{
+						LVITEM item;
+						item.mask = LVIF_TEXT;
+						item.iItem = iItem;
+						item.iSubItem = 1;
+						ListView_SetItem(m_lv, &item);
+					}
+				}
+			}
+		}
+		CloseHandle(hPipe);
+	}
 	return 0;
 }
 
