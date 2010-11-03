@@ -140,7 +140,7 @@ END_SINK_MAP()
 
 private:
 	void SetListToFolder();
-	void InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags);
+	void InsertEnumItems(IFolderView* pfv, IShellFolder2* psf2);
 	void AdjustSizeForList();
 
 	HWND m_lv;
@@ -157,6 +157,9 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 		m_hWnd, 0, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
 	if (!m_lv)
 		return -1;
+
+	ListView_SetExtendedListViewStyle(m_lv, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
+
 	LVCOLUMN column = {0};
 	column.mask = LVCF_FMT | LVCF_TEXT;
 	column.fmt = LVCFMT_LEFT;
@@ -175,6 +178,9 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 	SetListToFolder();
 	if (FAILED(DispEventAdvise(m_pWebBrowser)))
 		return -1;
+
+	HRESULT hr = SetWindowTheme(m_lv, L"Explorer", NULL);
+
 	return 0;
 }
 
@@ -186,53 +192,62 @@ LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 
 LRESULT FSWindow::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	// connect to the server and get the folders to update
-	// try twice to connect to the pipe
-	HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if (hPipe == INVALID_HANDLE_VALUE)
+	if (wParam == 1)
 	{
-		if (GetLastError() == ERROR_PIPE_BUSY)
-		{
-			if (WaitNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, 1000))
-			{
-				hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-			}
-		}
-	}
+		// connect to the server and get the folders to update
+		// try twice to connect to the pipe
+		HANDLE hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
-	if (hPipe != INVALID_HANDLE_VALUE)
-	{
-		Strings strsFoldersBrowsed;
-		strsFoldersBrowsed.insert(m_szFolder);
-		if (WriteGetUpdatedFoldersRequest(hPipe, strsFoldersBrowsed))
+		if (hPipe == INVALID_HANDLE_VALUE)
 		{
-			Strings strsFoldersToUpdate;
-			if (ReadStringList(hPipe, strsFoldersToUpdate))
+			if (GetLastError() == ERROR_PIPE_BUSY)
 			{
-				for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
+				if (WaitNamedPipe(TEXT("\\\\.\\pipe\\") PIPE_NAME, 1000))
 				{
-					// huh... this should really return the data.... but to avoid changing the server, let's connect again and get that info
-					TCHAR buffer[50];
-					GetFolderInfoToBuffer(i->c_str(), &FOLDERINFO2::nLogicalSize, buffer, sizeof(buffer)/sizeof(TCHAR));
-
-					// this won't work if the file system name is different from the shell display name!
-					LVFINDINFO fi;
-					fi.flags = LVFI_STRING;
-					fi.psz = PathFindFileName(i->c_str());
-					int iItem = ListView_FindItem(m_lv, -1, &fi);
-					if (iItem >= 0)
-					{
-						LVITEM item;
-						item.mask = LVIF_TEXT;
-						item.iItem = iItem;
-						item.iSubItem = 1;
-						ListView_SetItem(m_lv, &item);
-					}
+					hPipe = CreateFile(TEXT("\\\\.\\pipe\\") PIPE_NAME, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 				}
 			}
 		}
-		CloseHandle(hPipe);
+
+		if (hPipe != INVALID_HANDLE_VALUE)
+		{
+			Strings strsFoldersBrowsed;
+			strsFoldersBrowsed.insert(m_szFolder);
+			if (WriteGetUpdatedFoldersRequest(hPipe, strsFoldersBrowsed))
+			{
+				Strings strsFoldersToUpdate;
+				if (ReadStringList(hPipe, strsFoldersToUpdate))
+				{
+					for (Strings::const_iterator i = strsFoldersToUpdate.begin(); i != strsFoldersToUpdate.end(); i++)
+					{
+						// huh... this should really return the data.... but to avoid changing the server, let's connect again and get that info
+						TCHAR buffer[50];
+						GetFolderInfoToBuffer(i->c_str(), &FOLDERINFO2::nLogicalSize, buffer, sizeof(buffer)/sizeof(TCHAR));
+
+						// this won't work if the file system name is different from the shell display name!
+						LVFINDINFO fi;
+						fi.flags = LVFI_STRING;
+						fi.psz = PathFindFileName(i->c_str());
+						int iItem = ListView_FindItem(m_lv, -1, &fi);
+						if (iItem >= 0)
+						{
+							LVITEM item;
+							item.mask = LVIF_TEXT;
+							item.iItem = iItem;
+							item.iSubItem = 1;
+							item.pszText = buffer;
+							ListView_SetItem(m_lv, &item);
+						}
+					}
+				}
+			}
+			CloseHandle(hPipe);
+		}
+	}
+	else if (wParam == 2)
+	{
+		KillTimer(2);
+		SetListToFolder();
 	}
 	return 0;
 }
@@ -281,8 +296,8 @@ void FSWindow::SetListToFolder()
 							}
 						}
 
-						InsertEnumItems(psf2, SHCONTF_FOLDERS);
-						InsertEnumItems(psf2, SHCONTF_NONFOLDERS);
+						InsertEnumItems(pfv, psf2);
+
 						psf2->Release();
 					}
 					pfv->Release();
@@ -304,10 +319,10 @@ void FSWindow::SetListToFolder()
 	}
 }
 
-void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
+void FSWindow::InsertEnumItems(IFolderView* pvf, IShellFolder2* psf2)
 {
 	IEnumIDList* pEnum;
-	if (SUCCEEDED(psf2->EnumObjects(m_hWnd, grfFlags, &pEnum)))
+	if (SUCCEEDED(pvf->Items(SVGIO_FLAG_VIEWORDER, IID_IEnumIDList, (void**)&pEnum)))
 	{
 		LPITEMIDLIST pItemID;
 		while (pEnum->Next(1, &pItemID, NULL) == S_OK)
@@ -362,6 +377,9 @@ void FSWindow::InsertEnumItems(IShellFolder2* psf2, SHCONTF grfFlags)
 
 void FSWindow::AdjustSizeForList()
 {
+	DWORD dwExLvStyle = ListView_GetExtendedListViewStyle(m_lv);
+	ListView_SetExtendedListViewStyle(m_lv, dwExLvStyle & ~LVS_EX_AUTOSIZECOLUMNS);
+
 	ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
 	ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
 
@@ -385,6 +403,8 @@ void FSWindow::AdjustSizeForList()
 		rc.right = mi.rcWork.right;
 	}
 	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+
+	ListView_SetExtendedListViewStyle(m_lv, dwExLvStyle);
 }
 
 
@@ -393,7 +413,7 @@ _ATL_FUNC_INFO FSWindow::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
 
 void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 {
-	SetListToFolder();
+	SetTimer(2, 250);
 }
 
 void FSWindow::OnQuit()

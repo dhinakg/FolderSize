@@ -11,6 +11,7 @@
 #include <shlobj.h>
 #include <exdisp.h>
 #include <exdispid.h>
+#include <uxtheme.h>
 
 #include <tchar.h>
 #include <assert.h>
