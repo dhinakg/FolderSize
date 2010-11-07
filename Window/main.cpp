@@ -261,6 +261,7 @@ DWORD FolderViewScanner::ThreadProc()
 											else
 											{
 												GetLogicalFileSize(pPath, fi.nLogicalSize);
+												fi.giff = GIFF_CLEAN;
 											}
 
 											ListItem* pItem = new ListItem(PathFindFileName(pPath), fi, index++, shfi.iIcon, shfi.szDisplayName);
@@ -413,7 +414,8 @@ class FSWindow :
 	public IDispEventSimpleImpl<1, FSWindow, &DIID_DWebBrowserEvents2>
 {
 public:
-	FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser) {}
+	FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser), m_pScanner(NULL) {}
+	~FSWindow() { if (m_pScanner) m_pScanner->Quit(); }
 
 BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
