@@ -17,5 +17,8 @@
 #include <assert.h>
 
 #include <vector>
+#include <map>
+
+using namespace std;
 
 #include "..\Pipe\Pipe.h"

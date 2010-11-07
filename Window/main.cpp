@@ -291,7 +291,10 @@ DWORD FolderViewScanner::ThreadProc()
 	}
 
 	if (!szFolder[0])
+	{
+		WaitForSingleObject(m_hQuitEvent, INFINITE);
 		return 0;
+	}
 
 	// loop on a refresh timer
 
@@ -450,6 +453,7 @@ private:
 	CComPtr<IWebBrowser2> m_pWebBrowser;
 	TCHAR m_szFolder[MAX_PATH * 4];
 	FolderViewScanner* m_pScanner;
+	std::map<std::wstring, ListItem*> m_nameMap;
 };
 
 LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -513,11 +517,12 @@ LRESULT FSWindow::OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 	for (size_t i=0; i<items.size(); i++)
 	{
 		LVITEM item = {0};
-		item.mask = LVIF_TEXT | LVIF_IMAGE;
+		item.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
 		item.iItem = INT_MAX;
 		item.iSubItem = 0;
 		item.pszText = (LPTSTR)items[i]->GetName();
 		item.iImage = items[i]->GetIcon();
+		item.lParam = (LPARAM)items[i];
 		item.iItem = ListView_InsertItem(m_lv, &item);
 		item.mask = LVIF_TEXT;
 		item.iSubItem = 1;
@@ -526,7 +531,7 @@ LRESULT FSWindow::OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 		item.pszText = buffer;
 		ListView_SetItem(m_lv, &item);
 
-		delete items[i];
+		m_nameMap.insert(pair<wstring, ListItem*>(items[i]->GetFileName(), items[i]));
 	}
 
 	AdjustSizeForList();
@@ -538,20 +543,25 @@ LRESULT FSWindow::OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	std::vector<RefreshItem*> items = m_pScanner->GetRefreshItems();
 	for (size_t i=0; i<items.size(); i++)
 	{
-		LVFINDINFO lvfi;
-		lvfi.flags = LVFI_STRING;
-		lvfi.psz = items[i]->GetFileName();
-		int find = ListView_FindItem(m_lv, -1, &lvfi);
-		if (find >= 0)
+		map<wstring, ListItem*>::iterator mapFind = m_nameMap.find(items[i]->GetFileName());
+		if (mapFind != m_nameMap.end())
 		{
-			LVITEM lvi;
-			lvi.mask = LVIF_TEXT;
-			lvi.iItem = find;
-			lvi.iSubItem = 1;
-			TCHAR buffer[50];
-			FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
-			lvi.pszText = buffer;
-			ListView_SetItem(m_lv, &lvi);
+			mapFind->second->UpdateSize(items[i]->GetSize());
+			LVFINDINFO lvfi;
+			lvfi.flags = LVFI_PARAM;
+			lvfi.lParam = (LPARAM)mapFind->second;
+			int iFind = ListView_FindItem(m_lv, -1, &lvfi);
+			if (iFind >= 0)
+			{
+				LVITEM lvi;
+				lvi.mask = LVIF_TEXT;
+				lvi.iItem = iFind;
+				lvi.iSubItem = 1;
+				TCHAR buffer[50];
+				FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
+				lvi.pszText = buffer;
+				ListView_SetItem(m_lv, &lvi);
+			}
 		}
 		delete items[i];
 	}
@@ -611,7 +621,11 @@ _ATL_FUNC_INFO FSWindow::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
 void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 {
 	m_pScanner->Quit();
-	
+
+	for (map<wstring, ListItem*>::iterator itr=m_nameMap.begin(); itr!=m_nameMap.end(); itr++)
+		delete itr->second;
+	m_nameMap.clear();
+
 	ListView_DeleteAllItems(m_lv);
 	AdjustSizeForList();
 
