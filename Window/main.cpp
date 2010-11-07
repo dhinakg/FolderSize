@@ -516,56 +516,62 @@ static void FormatFolderInfoBuffer(FOLDERINFO2& fi, LPTSTR buffer, size_t cch)
 LRESULT FSWindow::OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	std::vector<ListItem*> items = m_pScanner->GetNewItems();
-	for (size_t i=0; i<items.size(); i++)
+	if (!items.empty())
 	{
-		LVITEM item = {0};
-		item.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
-		item.iItem = INT_MAX;
-		item.iSubItem = 0;
-		item.pszText = (LPTSTR)items[i]->GetName();
-		item.iImage = items[i]->GetIcon();
-		item.lParam = (LPARAM)items[i];
-		item.iItem = ListView_InsertItem(m_lv, &item);
-		item.mask = LVIF_TEXT;
-		item.iSubItem = 1;
-		TCHAR buffer[50];
-		FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
-		item.pszText = buffer;
-		ListView_SetItem(m_lv, &item);
+		for (size_t i=0; i<items.size(); i++)
+		{
+			LVITEM item = {0};
+			item.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
+			item.iItem = INT_MAX;
+			item.iSubItem = 0;
+			item.pszText = (LPTSTR)items[i]->GetName();
+			item.iImage = items[i]->GetIcon();
+			item.lParam = (LPARAM)items[i];
+			item.iItem = ListView_InsertItem(m_lv, &item);
+			item.mask = LVIF_TEXT;
+			item.iSubItem = 1;
+			TCHAR buffer[50];
+			FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
+			item.pszText = buffer;
+			ListView_SetItem(m_lv, &item);
 
-		m_nameMap.insert(pair<wstring, ListItem*>(items[i]->GetFileName(), items[i]));
+			m_nameMap.insert(pair<wstring, ListItem*>(items[i]->GetFileName(), items[i]));
+		}
+		AdjustSizeForList();
 	}
-
-	AdjustSizeForList();
 	return 0;
 }
 
 LRESULT FSWindow::OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	std::vector<RefreshItem*> items = m_pScanner->GetRefreshItems();
-	for (size_t i=0; i<items.size(); i++)
+	if (!items.empty())
 	{
-		map<wstring, ListItem*>::iterator mapFind = m_nameMap.find(items[i]->GetFileName());
-		if (mapFind != m_nameMap.end())
+		for (size_t i=0; i<items.size(); i++)
 		{
-			mapFind->second->UpdateSize(items[i]->GetSize());
-			LVFINDINFO lvfi;
-			lvfi.flags = LVFI_PARAM;
-			lvfi.lParam = (LPARAM)mapFind->second;
-			int iFind = ListView_FindItem(m_lv, -1, &lvfi);
-			if (iFind >= 0)
+			map<wstring, ListItem*>::iterator mapFind = m_nameMap.find(items[i]->GetFileName());
+			if (mapFind != m_nameMap.end())
 			{
-				LVITEM lvi;
-				lvi.mask = LVIF_TEXT;
-				lvi.iItem = iFind;
-				lvi.iSubItem = 1;
-				TCHAR buffer[50];
-				FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
-				lvi.pszText = buffer;
-				ListView_SetItem(m_lv, &lvi);
+				mapFind->second->UpdateSize(items[i]->GetSize());
+				LVFINDINFO lvfi;
+				lvfi.flags = LVFI_PARAM;
+				lvfi.lParam = (LPARAM)mapFind->second;
+				int iFind = ListView_FindItem(m_lv, -1, &lvfi);
+				if (iFind >= 0)
+				{
+					LVITEM lvi;
+					lvi.mask = LVIF_TEXT;
+					lvi.iItem = iFind;
+					lvi.iSubItem = 1;
+					TCHAR buffer[50];
+					FormatFolderInfoBuffer(items[i]->GetSize(), buffer, 50);
+					lvi.pszText = buffer;
+					ListView_SetItem(m_lv, &lvi);
+				}
 			}
+			delete items[i];
 		}
-		delete items[i];
+		AdjustSizeForList();
 	}
 	return 0;
 }
