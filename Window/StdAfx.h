@@ -16,4 +16,6 @@
 #include <tchar.h>
 #include <assert.h>
 
+#include <vector>
+
 #include "..\Pipe\Pipe.h"
