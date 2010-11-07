@@ -425,6 +425,7 @@ BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_SIZE, OnSize)
 	MESSAGE_HANDLER(WM_NEWITEMS, OnNewItems)
 	MESSAGE_HANDLER(WM_REFRESHITEMS, OnRefreshItems)
+	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
 	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 END_MSG_MAP()
 
@@ -433,6 +434,7 @@ END_MSG_MAP()
 	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	virtual void OnFinalMessage(HWND hwnd);
 
@@ -462,7 +464,7 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 	GetClientRect(&rc);
 	m_lv = CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHAREIMAGELISTS,
 		0, 0, rc.right-rc.left, rc.bottom-rc.top,
-		m_hWnd, 0, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
+		m_hWnd, (HMENU)1, (HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), NULL);
 	if (!m_lv)
 		return -1;
 
@@ -565,6 +567,26 @@ LRESULT FSWindow::OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 		}
 		delete items[i];
 	}
+	return 0;
+}
+
+int CALLBACK compareIndex(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	return ((ListItem*)lParam1)->GetIndex() - ((ListItem*)lParam2)->GetIndex();
+}
+
+int CALLBACK compareSize(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	ULONGLONG size1 = ((ListItem*)lParam1)->GetSize().nLogicalSize;
+	ULONGLONG size2 = ((ListItem*)lParam2)->GetSize().nLogicalSize;
+	return size1 == size2 ? 0 : size1 > size2 ? -1 : 1;
+}
+
+LRESULT FSWindow::OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+	LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmh;
+	PFNLVCOMPARE compareFunc = pnmlv->iSubItem == 0 ? compareIndex : compareSize;
+	ListView_SortItems(m_lv, compareFunc, 0);
 	return 0;
 }
 
