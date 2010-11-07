@@ -622,6 +622,11 @@ void FSWindow::AdjustSizeForList()
 	HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO mi = { sizeof(mi) };
 	GetMonitorInfo(hMonitor, &mi);
+	if (rc.top < mi.rcWork.top)
+	{
+		rc.bottom += mi.rcWork.top - rc.top;
+		rc.top += mi.rcWork.top - rc.top;
+	}
 	if (rc.bottom > mi.rcWork.bottom)
 	{
 		rc.bottom = mi.rcWork.bottom;
@@ -629,9 +634,10 @@ void FSWindow::AdjustSizeForList()
 	}
 	if (rc.right > mi.rcWork.right)
 	{
+		rc.left -= rc.right - mi.rcWork.right;
 		rc.right = mi.rcWork.right;
 	}
-	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+	MoveWindow(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 	ListView_SetExtendedListViewStyle(m_lv, dwExLvStyle);
 }
