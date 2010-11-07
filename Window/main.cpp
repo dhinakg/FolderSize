@@ -420,6 +420,16 @@ public:
 	FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser), m_pScanner(NULL) {}
 	~FSWindow() { if (m_pScanner) m_pScanner->Quit(); }
 
+	static CWndClassInfo& GetWndClassInfo()
+	{
+		static CWndClassInfo wc =
+		{
+			{ sizeof(WNDCLASSEX), 0, StartWindowProc },
+			NULL, NULL, IDC_ARROW, TRUE, 0, _T("")
+		};
+		return wc;
+	}
+
 BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
 	MESSAGE_HANDLER(WM_SIZE, OnSize)
