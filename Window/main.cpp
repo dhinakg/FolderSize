@@ -436,6 +436,7 @@ BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_NEWITEMS, OnNewItems)
 	MESSAGE_HANDLER(WM_REFRESHITEMS, OnRefreshItems)
 	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
+	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems);
 	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 END_MSG_MAP()
 
@@ -445,6 +446,7 @@ END_MSG_MAP()
 	LRESULT OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	virtual void OnFinalMessage(HWND hwnd);
 
@@ -606,6 +608,14 @@ LRESULT FSWindow::OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 	return 0;
 }
 
+LRESULT FSWindow::OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+	for (map<wstring, ListItem*>::iterator itr=m_nameMap.begin(); itr!=m_nameMap.end(); itr++)
+		delete itr->second;
+	m_nameMap.clear();
+	return TRUE;
+}
+
 LRESULT FSWindow::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	DispEventUnadvise(m_pWebBrowser);
@@ -631,7 +641,8 @@ void FSWindow::AdjustSizeForList()
 	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
 	RECT rc;
 	::GetWindowRect(m_lv, &rc);
-	rc.right = rc.left + LOWORD(approx);
+	// the list actually needs to be a few pixels wider than it reports
+	rc.right = rc.left + LOWORD(approx) + 4;
 	rc.bottom = rc.top + HIWORD(approx);
 	AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
 
@@ -676,11 +687,9 @@ void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 {
 	m_pScanner->Quit();
 
-	for (map<wstring, ListItem*>::iterator itr=m_nameMap.begin(); itr!=m_nameMap.end(); itr++)
-		delete itr->second;
-	m_nameMap.clear();
-
+	// the notification from the control will clean up the old items
 	ListView_DeleteAllItems(m_lv);
+
 	AdjustSizeForList();
 
 	m_pScanner = new FolderViewScanner(m_pWebBrowser, m_hWnd);
