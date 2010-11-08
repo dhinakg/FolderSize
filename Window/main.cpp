@@ -638,16 +638,26 @@ void FSWindow::AdjustSizeForList()
 	HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO mi = { sizeof(mi) };
 	GetMonitorInfo(hMonitor, &mi);
+	// if the title bar somehow got too high for the screen, align it with the top of the monitor
 	if (rc.top < mi.rcWork.top)
 	{
 		rc.bottom += mi.rcWork.top - rc.top;
 		rc.top += mi.rcWork.top - rc.top;
 	}
+	// if we're going off the bottom, shift the window up if there's space
+	if (rc.bottom > mi.rcWork.bottom && rc.top > mi.rcWork.top)
+	{
+		int shift = min(rc.top - mi.rcWork.top, rc.bottom - mi.rcWork.bottom);
+		rc.top -= shift;
+		rc.bottom -= shift;
+	}
+	// if we're still going off the bottom, trim it at the bottom and get ready for a scroll bar
 	if (rc.bottom > mi.rcWork.bottom)
 	{
 		rc.bottom = mi.rcWork.bottom;
 		rc.right += GetSystemMetrics(SM_CXVSCROLL);
 	}
+	// if we're bumping out past the right of the monitor, bump it left instead
 	if (rc.right > mi.rcWork.right)
 	{
 		rc.left -= rc.right - mi.rcWork.right;
