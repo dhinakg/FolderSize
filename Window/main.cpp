@@ -708,14 +708,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			HWND hwndExplorer;
 			if (SUCCEEDED(pWebBrowsers[i]->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
 			{
-				RECT rc;
-				GetWindowRect(hwndExplorer, &rc);
-				rc.left = rc.right;
-				FSWindow* pWnd = new FSWindow(pWebBrowsers[i]);
-				if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
+				WINDOWPLACEMENT wp = { sizeof(wp) };
+				GetWindowPlacement(hwndExplorer, &wp);
+				if (wp.showCmd != SW_SHOWMINIMIZED)
 				{
-					g_nWindows ++;
-					pWnd->ShowWindow(nCmdShow);
+					RECT rc;
+					GetWindowRect(hwndExplorer, &rc);
+					rc.left = rc.right;
+					FSWindow* pWnd = new FSWindow(pWebBrowsers[i]);
+					if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
+					{
+						g_nWindows ++;
+						pWnd->ShowWindow(nCmdShow);
+					}
 				}
 			}
 			pWebBrowsers[i]->Release();
