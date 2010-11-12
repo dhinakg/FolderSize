@@ -627,9 +627,10 @@ LRESULT FSWindow::OnItemActivate(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 		IShellBrowser* psb;
 		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
 		{
-			HRESULT hr = psb->BrowseObject(pItem->GetPidl(), SBSP_DEFBROWSER | SBSP_RELATIVE);
-			int z=3;
+			psb->BrowseObject(pItem->GetPidl(), SBSP_DEFBROWSER | SBSP_RELATIVE);
+			psb->Release();
 		}
+		psp->Release();
 	}
 	return 0;
 }
