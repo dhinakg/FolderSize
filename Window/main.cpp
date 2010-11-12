@@ -27,13 +27,18 @@ static bool GetLogicalFileSize(LPCTSTR pFileName, ULONGLONG& nSize)
 class ListItem
 {
 public:
-	ListItem(LPCTSTR filename, FOLDERINFO2& size, int index, int icon, LPCTSTR name) : m_size(size), m_index(index), m_icon(icon)
+	ListItem(LPCTSTR filename, LPITEMIDLIST pidl, FOLDERINFO2& size, int index, int icon, LPCTSTR name) : m_pidl(pidl), m_size(size), m_index(index), m_icon(icon)
 	{
 		lstrcpyn(m_filename, filename, MAX_PATH);
 		lstrcpyn(m_name, name, MAX_PATH);
 	}
+	~ListItem()
+	{
+		CoTaskMemFree(m_pidl);
+	}
 
 	LPCTSTR GetFileName() { return m_filename; }
+	LPITEMIDLIST GetPidl() { return m_pidl; }
 	FOLDERINFO2& GetSize() { return m_size; }
 	int GetIndex() { return m_index; }
 	int GetIcon() { return m_icon; }
@@ -42,6 +47,7 @@ public:
 	void UpdateSize(FOLDERINFO2& size) { m_size = size; }
 
 private:
+	LPITEMIDLIST m_pidl;
 	FOLDERINFO2 m_size;
 	int m_index;
 	int m_icon;
@@ -264,7 +270,9 @@ DWORD FolderViewScanner::ThreadProc()
 												fi.giff = GIFF_CLEAN;
 											}
 
-											ListItem* pItem = new ListItem(PathFindFileName(pPath), fi, index++, shfi.iIcon, shfi.szDisplayName);
+											// the ListItem takes ownership of the PIDL
+											ListItem* pItem = new ListItem(PathFindFileName(pPath), pItemID, fi, index++, shfi.iIcon, shfi.szDisplayName);
+											pItemID = NULL;
 
 											EnterCriticalSection(&m_cs);
 											if (m_newItems.empty())
@@ -435,6 +443,7 @@ BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_SIZE, OnSize)
 	MESSAGE_HANDLER(WM_NEWITEMS, OnNewItems)
 	MESSAGE_HANDLER(WM_REFRESHITEMS, OnRefreshItems)
+	NOTIFY_HANDLER(1, LVN_ITEMACTIVATE, OnItemActivate)
 	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
 	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems);
 	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
@@ -442,9 +451,9 @@ END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnItemActivate(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -598,6 +607,31 @@ int CALLBACK compareSize(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	ULONGLONG size1 = ((ListItem*)lParam1)->GetSize().nLogicalSize;
 	ULONGLONG size2 = ((ListItem*)lParam2)->GetSize().nLogicalSize;
 	return size1 == size2 ? 0 : size1 > size2 ? -1 : 1;
+}
+
+LRESULT FSWindow::OnItemActivate(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+	int i = ListView_GetNextItem(m_lv, -1, LVNI_SELECTED);
+	if (i < 0)
+		return 0;
+	LVITEM lvi;
+	lvi.mask = LVIF_PARAM;
+	lvi.iItem = i;
+	lvi.iSubItem = 0;
+	ListView_GetItem(m_lv, &lvi);
+	ListItem* pItem = (ListItem*)lvi.lParam;
+
+	IServiceProvider* psp;
+	if (SUCCEEDED(m_pWebBrowser->QueryInterface(IID_IServiceProvider, (void**)&psp)))
+	{
+		IShellBrowser* psb;
+		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
+		{
+			HRESULT hr = psb->BrowseObject(pItem->GetPidl(), SBSP_DEFBROWSER | SBSP_RELATIVE);
+			int z=3;
+		}
+	}
+	return 0;
 }
 
 LRESULT FSWindow::OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
