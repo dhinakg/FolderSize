@@ -1,9 +1,5 @@
 #include "StdAfx.h"
 
-HINSTANCE g_hInstance;
-int g_nWindows = 0;
-
-
 __inline ULONGLONG MakeULongLong(DWORD dwHigh, DWORD dwLow)
 {
 	return ((ULONGLONG)dwHigh << 32) | dwLow;
@@ -138,7 +134,7 @@ private:
 
 FolderViewScanner::FolderViewScanner(IWebBrowser2* pWebBrowser, HWND hWndPost) : m_hWndBrowser(NULL), m_hWndPost(hWndPost), m_hThread(NULL), m_hQuitEvent(NULL)
 {
-	// ok, get the current index for this web browser, so i can open it in the other thread
+	// ok, get the HWND for this web browser, so i can open it in the other thread
 	InitializeCriticalSection(&m_cs);
 	m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hWndBrowser;
@@ -184,7 +180,7 @@ void FolderViewScanner::Quit()
 	SetEvent(m_hQuitEvent);
 }
 
-IWebBrowser2* GetWebBrowserFromHandle(HWND hWnd)
+static IWebBrowser2* GetWebBrowserFromHandle(HWND hWnd)
 {
 	IWebBrowser2* pWB = NULL;
 	IWebBrowser2** pWebBrowsers;
@@ -654,8 +650,6 @@ LRESULT FSWindow::OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 LRESULT FSWindow::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	DispEventUnadvise(m_pWebBrowser);
-	if (--g_nWindows == 0)
-		PostQuitMessage(0);
 	return 0;
 }
 
@@ -735,49 +729,112 @@ void FSWindow::OnQuit()
 	PostMessage(WM_CLOSE, 0, 0);
 }
 
+static void CreateWindowForWebBrowser(IWebBrowser2* pWebBrowser)
+{
+	HWND hwndExplorer;
+	if (SUCCEEDED(pWebBrowser->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
+	{
+		WINDOWPLACEMENT wp = { sizeof(wp) };
+		GetWindowPlacement(hwndExplorer, &wp);
+		if (wp.showCmd != SW_SHOWMINIMIZED)
+		{
+			RECT rc;
+			GetWindowRect(hwndExplorer, &rc);
+			rc.left = rc.right;
+			FSWindow* pWnd = new FSWindow(pWebBrowser);
+			if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
+			{
+				pWnd->ShowWindow(SW_SHOWDEFAULT);
+			}
+		}
+	}
+}
+
+class ShellWindowManager : public IDispEventSimpleImpl<1, ShellWindowManager, &DIID_DShellWindowsEvents>
+{
+public:
+	ShellWindowManager();
+	~ShellWindowManager();
+
+static _ATL_FUNC_INFO ShellWindowsEventInfo;
+static _ATL_FUNC_INFO QuitInfo;
+BEGIN_SINK_MAP(ShellWindowManager)
+	SINK_ENTRY_INFO(1, DIID_DShellWindowsEvents, DISPID_WINDOWREGISTERED, OnWindowRegistered, &ShellWindowsEventInfo)
+END_SINK_MAP()
+
+	void __stdcall OnWindowRegistered(long lCookie);
+
+	CComPtr<IShellWindows> m_pShellWindows;
+};
+
+_ATL_FUNC_INFO ShellWindowManager::ShellWindowsEventInfo = { CC_STDCALL, VT_EMPTY, 1, {VT_I4} };
+
+ShellWindowManager::ShellWindowManager()
+{
+	m_pShellWindows.CoCreateInstance(CLSID_ShellWindows);
+
+	long count;
+	if (SUCCEEDED(m_pShellWindows->get_Count(&count)))
+	{
+		for (long i=0; i<count; i++)
+		{
+			VARIANT varIndex;
+			V_VT(&varIndex) = VT_I4;
+			V_I4(&varIndex) = count - 1;
+			IDispatch* pDisp;
+			if (SUCCEEDED(m_pShellWindows->Item(varIndex, &pDisp)))
+			{
+				IWebBrowser2* pwb;
+				if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
+				{
+					CreateWindowForWebBrowser(pwb);
+				}
+				pDisp->Release();
+			}
+		}
+	}
+
+	DispEventAdvise(m_pShellWindows);
+}
+
+ShellWindowManager::~ShellWindowManager()
+{
+	DispEventUnadvise(m_pShellWindows);
+}
+
+void ShellWindowManager::OnWindowRegistered(long lCookie)
+{
+	// assume the new web browser is always the last one in the list
+	long count;
+	if (SUCCEEDED(m_pShellWindows->get_Count(&count)))
+	{
+		VARIANT varIndex;
+		V_VT(&varIndex) = VT_I4;
+		V_I4(&varIndex) = count - 1;
+		IDispatch* pDisp;
+		if (SUCCEEDED(m_pShellWindows->Item(varIndex, &pDisp)))
+		{
+			IWebBrowser2* pwb;
+			if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
+			{
+				CreateWindowForWebBrowser(pwb);
+			}
+			pDisp->Release();
+		}
+	}
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	g_hInstance = hInstance;
-
+	InitCommonControls();
 	CoInitialize(NULL);
 
-	IWebBrowser2** pWebBrowsers;
-	long nCount;
-	if (GetShellWindows(pWebBrowsers, nCount) && nCount)
 	{
-		InitCommonControls();
+		ShellWindowManager swm;
 
-		for (long i=0; i<nCount; i++)
-		{
-			HWND hwndExplorer;
-			if (SUCCEEDED(pWebBrowsers[i]->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
-			{
-				WINDOWPLACEMENT wp = { sizeof(wp) };
-				GetWindowPlacement(hwndExplorer, &wp);
-				if (wp.showCmd != SW_SHOWMINIMIZED)
-				{
-					RECT rc;
-					GetWindowRect(hwndExplorer, &rc);
-					rc.left = rc.right;
-					FSWindow* pWnd = new FSWindow(pWebBrowsers[i]);
-					if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
-					{
-						g_nWindows ++;
-						pWnd->ShowWindow(nCmdShow);
-					}
-				}
-			}
-			pWebBrowsers[i]->Release();
-		}
-
-		delete[] pWebBrowsers;
-
-		if (g_nWindows)
-		{
-			MSG msg;
-			while (GetMessage(&msg, NULL, 0, 0))
-				DispatchMessage(&msg);
-		}
+		MSG msg;
+		while (GetMessage(&msg, NULL, 0, 0))
+			DispatchMessage(&msg);
 	}
 
 	CoUninitialize();
