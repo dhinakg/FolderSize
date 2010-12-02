@@ -679,7 +679,7 @@ void FSWindow::AdjustSizeForList()
 	// the list actually needs to be a few pixels wider than it reports
 	rc.right = rc.left + LOWORD(approx) + 4;
 	rc.bottom = rc.top + HIWORD(approx);
-	AdjustWindowRectEx(&rc, GetWindowLongPtr(GWL_STYLE), FALSE, GetWindowLongPtr(GWL_EXSTYLE));
+	AdjustWindowRectEx(&rc, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
 
 	HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO mi = { sizeof(mi) };
