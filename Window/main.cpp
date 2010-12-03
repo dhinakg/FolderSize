@@ -421,8 +421,8 @@ class FSWindow :
 	public IDispEventSimpleImpl<1, FSWindow, &DIID_DWebBrowserEvents2>
 {
 public:
-	FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser), m_pScanner(NULL) {}
-	~FSWindow() { if (m_pScanner) m_pScanner->Quit(); }
+	FSWindow(IWebBrowser2* pWebBrowser);
+	~FSWindow();
 
 	static CWndClassInfo& GetWndClassInfo()
 	{
@@ -442,7 +442,6 @@ BEGIN_MSG_MAP(FSWindow)
 	NOTIFY_HANDLER(1, LVN_ITEMACTIVATE, OnItemActivate)
 	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
 	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems);
-	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -452,7 +451,6 @@ END_MSG_MAP()
 	LRESULT OnItemActivate(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	virtual void OnFinalMessage(HWND hwnd);
 
 static _ATL_FUNC_INFO NavigateCompleteInfo;
@@ -466,6 +464,7 @@ END_SINK_MAP()
 	void __stdcall OnQuit();
 
 private:
+	void CreateIfUnminimizedFolderView();
 	void AdjustSizeForList();
 
 	HWND m_lv;
@@ -474,6 +473,19 @@ private:
 	FolderViewScanner* m_pScanner;
 	std::map<std::wstring, ListItem*> m_nameMap;
 };
+
+FSWindow::FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBrowser), m_pScanner(NULL)
+{
+	DispEventAdvise(m_pWebBrowser);
+	CreateIfUnminimizedFolderView();
+}
+
+FSWindow::~FSWindow()
+{
+	if (m_pScanner)
+		m_pScanner->Quit();
+	DispEventUnadvise(m_pWebBrowser);
+}
 
 LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
@@ -503,9 +515,6 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 	if (himl == NULL)
 		return -1;
 	ListView_SetImageList(m_lv, himl, LVSIL_SMALL);
-
-	if (FAILED(DispEventAdvise(m_pWebBrowser)))
-		return -1;
 
 	m_pScanner = new FolderViewScanner(m_pWebBrowser, m_hWnd);
 
@@ -647,17 +656,51 @@ LRESULT FSWindow::OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 	return TRUE;
 }
 
-LRESULT FSWindow::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-	DispEventUnadvise(m_pWebBrowser);
-	return 0;
-}
-
 void FSWindow::OnFinalMessage(HWND hwnd)
 {
 	delete this;
 }
 
+void FSWindow::CreateIfUnminimizedFolderView()
+{
+	// if the web browser is a shell view, create the window
+	IServiceProvider* psp;
+	if (SUCCEEDED(m_pWebBrowser->QueryInterface(IID_IServiceProvider, (void**)&psp)))
+	{
+		IShellBrowser* psb;
+		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
+		{
+			IShellView* psv = NULL;
+			if (SUCCEEDED(psb->QueryActiveShellView(&psv)))
+			{
+				IFolderView* pfv;
+				if (SUCCEEDED(psv->QueryInterface(IID_IFolderView, (void**)&pfv)))
+				{
+					HWND hwndExplorer;
+					if (SUCCEEDED(m_pWebBrowser->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
+					{
+						WINDOWPLACEMENT wp = { sizeof(wp) };
+						::GetWindowPlacement(hwndExplorer, &wp);
+						if (wp.showCmd != SW_SHOWMINIMIZED)
+						{
+							RECT rc;
+							::GetWindowRect(hwndExplorer, &rc);
+							rc.left = rc.right;
+							if (Create(hwndExplorer, rc, _T("Folder Size")))
+							{
+								ShowWindow(SW_SHOWDEFAULT);
+							}
+						}
+					}
+					pfv->Release();
+				}
+				psv->Release();
+			}
+			psb->Release();
+		}
+		psp->Release();
+	}
+}
 
 void FSWindow::AdjustSizeForList()
 {
@@ -714,40 +757,27 @@ _ATL_FUNC_INFO FSWindow::QuitInfo = { CC_STDCALL, VT_EMPTY, 0, NULL };
 
 void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 {
-	m_pScanner->Quit();
+	// there may be no window yet if the explorer window was either navigated to a web page, or was minimized
+	if (m_hWnd == NULL)
+	{
+		CreateIfUnminimizedFolderView();
+	}
+	else
+	{
+		m_pScanner->Quit();
 
-	// the notification from the control will clean up the old items
-	ListView_DeleteAllItems(m_lv);
+		// the notification from the control will clean up the old items
+		ListView_DeleteAllItems(m_lv);
 
-	AdjustSizeForList();
+		AdjustSizeForList();
 
-	m_pScanner = new FolderViewScanner(m_pWebBrowser, m_hWnd);
+		m_pScanner = new FolderViewScanner(m_pWebBrowser, m_hWnd);
+	}
 }
 
 void FSWindow::OnQuit()
 {
 	PostMessage(WM_CLOSE, 0, 0);
-}
-
-static void CreateWindowForWebBrowser(IWebBrowser2* pWebBrowser)
-{
-	HWND hwndExplorer;
-	if (SUCCEEDED(pWebBrowser->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
-	{
-		WINDOWPLACEMENT wp = { sizeof(wp) };
-		GetWindowPlacement(hwndExplorer, &wp);
-		if (wp.showCmd != SW_SHOWMINIMIZED)
-		{
-			RECT rc;
-			GetWindowRect(hwndExplorer, &rc);
-			rc.left = rc.right;
-			FSWindow* pWnd = new FSWindow(pWebBrowser);
-			if (pWnd->Create(hwndExplorer, rc, _T("Folder Size")))
-			{
-				pWnd->ShowWindow(SW_SHOWDEFAULT);
-			}
-		}
-	}
 }
 
 class ShellWindowManager : public IDispEventSimpleImpl<1, ShellWindowManager, &DIID_DShellWindowsEvents>
@@ -780,14 +810,14 @@ ShellWindowManager::ShellWindowManager()
 		{
 			VARIANT varIndex;
 			V_VT(&varIndex) = VT_I4;
-			V_I4(&varIndex) = count - 1;
+			V_I4(&varIndex) = i;
 			IDispatch* pDisp;
 			if (SUCCEEDED(m_pShellWindows->Item(varIndex, &pDisp)))
 			{
 				IWebBrowser2* pwb;
 				if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
 				{
-					CreateWindowForWebBrowser(pwb);
+					new FSWindow(pwb);
 				}
 				pDisp->Release();
 			}
@@ -817,7 +847,7 @@ void ShellWindowManager::OnWindowRegistered(long lCookie)
 			IWebBrowser2* pwb;
 			if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
 			{
-				CreateWindowForWebBrowser(pwb);
+				new FSWindow(pwb);
 			}
 			pDisp->Release();
 		}
