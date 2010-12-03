@@ -516,6 +516,8 @@ LRESULT FSWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 		return -1;
 	ListView_SetImageList(m_lv, himl, LVSIL_SMALL);
 
+	AdjustSizeForList();
+
 	m_pScanner = new FolderViewScanner(m_pWebBrowser, m_hWnd);
 
 	return 0;
@@ -710,17 +712,27 @@ void FSWindow::AdjustSizeForList()
 	ListView_SetColumnWidth(m_lv, 0, LVSCW_AUTOSIZE);
 	ListView_SetColumnWidth(m_lv, 1, LVSCW_AUTOSIZE);
 
-	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
+	// get the original window position and coordinates of the monitor it's on
 	RECT rc;
-	::GetWindowRect(m_lv, &rc);
-	// the list actually needs to be a few pixels wider than it reports
-	rc.right = rc.left + LOWORD(approx) + 4;
-	rc.bottom = rc.top + HIWORD(approx);
-	AdjustWindowRectEx(&rc, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
-
+	GetWindowRect(&rc);
 	HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO mi = { sizeof(mi) };
 	GetMonitorInfo(hMonitor, &mi);
+	bool isTouchingRightSideOfMonitor = rc.right == mi.rcWork.right;
+
+	// now get the size the list wants to be and the size it is
+	DWORD approx = ListView_ApproximateViewRect(m_lv, -1, -1, -1);
+	::GetWindowRect(m_lv, &rc);
+	int approxWidth = LOWORD(approx) + 4;
+	int approxHeight = HIWORD(approx);
+
+	if (isTouchingRightSideOfMonitor)
+		rc.left = rc.right - approxWidth;
+	else
+		rc.right = rc.left + approxWidth;
+	rc.bottom = rc.top + approxHeight;
+	AdjustWindowRectEx(&rc, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
+
 	// if the title bar somehow got too high for the screen, align it with the top of the monitor
 	if (rc.top < mi.rcWork.top)
 	{
@@ -775,9 +787,26 @@ void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 	}
 }
 
+static FSWindow* pZombie = NULL;
+
+static void CALLBACK TimerDestroy(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	delete pZombie;
+	pZombie = NULL;
+	KillTimer(NULL, idEvent);
+}
+
 void FSWindow::OnQuit()
 {
-	PostMessage(WM_CLOSE, 0, 0);
+	if (m_hWnd)
+	{
+		PostMessage(WM_CLOSE);
+	}
+	else
+	{
+		pZombie = this;
+		::SetTimer(NULL, 0, 0, TimerDestroy);
+	}
 }
 
 class ShellWindowManager : public IDispEventSimpleImpl<1, ShellWindowManager, &DIID_DShellWindowsEvents>
