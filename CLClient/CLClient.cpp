@@ -2,7 +2,7 @@
 //
 
 #include "StdAfx.h"
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {

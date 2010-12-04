@@ -615,14 +615,14 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Settings"
+			Name="Common"
 			>
 			<File
-				RelativePath="..\Settings\Settings.cpp"
+				RelativePath="..\Common\Settings.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Settings\Settings.h"
+				RelativePath="..\Common\Settings.h"
 				>
 			</File>
 		</Filter>

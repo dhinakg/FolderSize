@@ -21,4 +21,4 @@
 
 using namespace std;
 
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"

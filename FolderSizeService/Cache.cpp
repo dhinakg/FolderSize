@@ -5,7 +5,7 @@
 #include "CacheManager.h"
 #include "Folder.h"
 #include "FolderManager.h"
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"
 
 LARGE_INTEGER g_nPerformanceFrequency = {0};
 

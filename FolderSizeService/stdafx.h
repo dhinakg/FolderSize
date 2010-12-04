@@ -22,7 +22,7 @@
 #include <map>
 using namespace std;
 
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"
 
 __inline ULONGLONG MakeULongLong(DWORD dwHigh, DWORD dwLow)
 {

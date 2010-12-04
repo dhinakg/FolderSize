@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Pipe\FolderInfo.h"
+#include "..\Common\FolderInfo.h"
 #include "Scanner.h"
 #include "Monitor.h"
 #include "Path.h"

@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "ShellUpdate.h"
 #include "FolderSize.h"
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"
 
 #define MUTEX_NAME TEXT("FolderSizeShellUpdateMutex")
 

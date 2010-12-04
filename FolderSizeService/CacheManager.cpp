@@ -2,7 +2,7 @@
 #include "CacheManager.h"
 #include "Cache.h"
 #include "EventLog.h"
-#include "../Settings/Settings.h"
+#include "../Common/Settings.h"
 
 CacheManager::CacheManager(SERVICE_STATUS_HANDLE hSS)
 : m_hSS(hSS), m_ScanDriveTypes(LoadScanDriveTypes())

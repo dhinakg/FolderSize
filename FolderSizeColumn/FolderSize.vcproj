@@ -692,14 +692,18 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Pipe"
+			Name="Common"
 			>
 			<File
-				RelativePath="..\Pipe\Pipe.cpp"
+				RelativePath="..\Common\FolderInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Pipe\Pipe.h"
+				RelativePath="..\Common\Pipe.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Common\Pipe.h"
 				>
 			</File>
 		</Filter>

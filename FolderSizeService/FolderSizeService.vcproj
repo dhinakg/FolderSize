@@ -463,34 +463,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Pipe"
-			>
-			<File
-				RelativePath="..\Pipe\FolderInfo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Pipe\Pipe.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Pipe\Pipe.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Settings"
-			>
-			<File
-				RelativePath="..\Settings\Settings.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Settings\Settings.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Main Service"
 			>
 			<File
@@ -591,6 +563,30 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Common"
+			>
+			<File
+				RelativePath="..\Common\FolderInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Common\Pipe.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Common\Pipe.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Common\Settings.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Common\Settings.h"
 				>
 			</File>
 		</Filter>

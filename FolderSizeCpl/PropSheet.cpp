@@ -6,7 +6,7 @@
 #include "Resource.h"
 #include "Hyperlinks.h"
 #include "Service.h"
-#include "../Settings/Settings.h"
+#include "../Common/Settings.h"
 
 void RefreshShell()
 {

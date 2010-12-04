@@ -177,15 +177,15 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Pipe\FolderInfo.h"
+			RelativePath="..\Common\FolderInfo.h"
 			>
 		</File>
 		<File
-			RelativePath="..\Pipe\Pipe.cpp"
+			RelativePath="..\Common\Pipe.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\Pipe\Pipe.h"
+			RelativePath="..\Common\Pipe.h"
 			>
 		</File>
 		<File

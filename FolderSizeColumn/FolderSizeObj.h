@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Pipe\Pipe.h"
+#include "..\Common\Pipe.h"
 
 class ATL_NO_VTABLE CFolderSizeObj : 
 	public CComObjectRootEx<CComSingleThreadModel>,

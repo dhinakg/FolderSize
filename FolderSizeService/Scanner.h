@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Path.h"
-#include "..\Pipe\FolderInfo.h"
+#include "..\Common\FolderInfo.h"
 
 class PerformanceMonitor;
 

@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "FolderSizeModule.h"
-#include "../Settings/Settings.h"
+#include "../Common/Settings.h"
 
 
 CFolderSizeModule::CFolderSizeModule()
