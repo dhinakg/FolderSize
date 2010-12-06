@@ -4,3 +4,4 @@ FeatureComponents	Feature_	Component_
 FolderSize	ColumnHandler
 FolderSize	ControlPanel
 FolderSize	Service
+FolderSize	Window
