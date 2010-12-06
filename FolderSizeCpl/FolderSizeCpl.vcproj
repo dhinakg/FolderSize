@@ -462,7 +462,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\foldericon.ico"
+				RelativePath="..\Common\foldericon.ico"
 				>
 			</File>
 			<File
@@ -607,10 +607,6 @@
 			</File>
 			<File
 				RelativePath=".\FolderSizeCpl_zh-tw.rc"
-				>
-			</File>
-			<File
-				RelativePath=".\icon.ico"
 				>
 			</File>
 		</Filter>

@@ -26,7 +26,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Icon
 //
 
-IDI_ICON                ICON                  "foldericon.ico"
+IDI_ICON                ICON                  "..\common\foldericon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
