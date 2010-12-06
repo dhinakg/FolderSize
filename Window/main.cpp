@@ -531,10 +531,10 @@ LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 
 static void FormatFolderInfoBuffer(FOLDERINFO2& fi, LPTSTR buffer, size_t cch)
 {
-	FormatSizeWithOption(fi.nLogicalSize, buffer, 50);
+	FormatSizeWithOption(fi.nLogicalSize, buffer, cch);
 
 	size_t len = wcslen(buffer);
-	if (len < 50 - 1 && (fi.giff == GIFF_DIRTY || fi.giff == GIFF_SCANNING))
+	if (len < cch - 1 && (fi.giff == GIFF_DIRTY || fi.giff == GIFF_SCANNING))
 	{
 		buffer[len] = fi.giff == GIFF_DIRTY ? L'~' : L'+';
 		buffer[len + 1] = L'\0';
