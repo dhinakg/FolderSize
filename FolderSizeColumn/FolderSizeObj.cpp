@@ -274,7 +274,7 @@ static void FormatSizeWithOption(ULONGLONG nSize, LPTSTR pszBuff, UINT uiBufSize
 		StrFormatByteSize64(nSize, pszBuff, uiBufSize);
 		break;
 	case 2:
-		_i64tot(nSize, pszBuff, 10);
+		_i64tot_s(nSize, pszBuff, uiBufSize, 10);
 		break;
 	case 0:
 	default:
