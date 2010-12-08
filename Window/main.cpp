@@ -1,4 +1,11 @@
 #include "StdAfx.h"
+#include "resource.h"
+
+#define WM_NOTIFYICON (WM_APP + 1)
+#define WM_KILLWINDOW (WM_APP + 2)
+
+HWND g_hwndMain = NULL;
+
 
 __inline ULONGLONG MakeULongLong(DWORD dwHigh, DWORD dwLow)
 {
@@ -439,6 +446,7 @@ BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_SIZE, OnSize)
 	MESSAGE_HANDLER(WM_NEWITEMS, OnNewItems)
 	MESSAGE_HANDLER(WM_REFRESHITEMS, OnRefreshItems)
+	MESSAGE_HANDLER(WM_CLOSE, OnClose)
 	NOTIFY_HANDLER(1, LVN_ITEMACTIVATE, OnItemActivate)
 	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
 	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems);
@@ -448,10 +456,10 @@ END_MSG_MAP()
 	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNewItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnItemActivate(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	virtual void OnFinalMessage(HWND hwnd);
 
 static _ATL_FUNC_INFO NavigateCompleteInfo;
 static _ATL_FUNC_INFO QuitInfo;
@@ -482,6 +490,8 @@ FSWindow::FSWindow(IWebBrowser2* pWebBrowser) : m_lv(NULL), m_pWebBrowser(pWebBr
 
 FSWindow::~FSWindow()
 {
+	if (m_hWnd)
+		DestroyWindow();
 	if (m_pScanner)
 		m_pScanner->Quit();
 	DispEventUnadvise(m_pWebBrowser);
@@ -529,7 +539,7 @@ LRESULT FSWindow::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 	return 0;
 }
 
-static void FormatFolderInfoBuffer(FOLDERINFO2& fi, LPTSTR buffer, size_t cch)
+static void FormatFolderInfoBuffer(FOLDERINFO2& fi, LPTSTR buffer, UINT cch)
 {
 	FormatSizeWithOption(fi.nLogicalSize, buffer, cch);
 
@@ -604,6 +614,12 @@ LRESULT FSWindow::OnRefreshItems(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	return 0;
 }
 
+LRESULT FSWindow::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	::PostMessage(g_hwndMain, WM_KILLWINDOW, 0, (LPARAM)this);
+	return 0;
+}
+
 int CALLBACK compareIndex(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	return ((ListItem*)lParam1)->GetIndex() - ((ListItem*)lParam2)->GetIndex();
@@ -652,15 +668,10 @@ LRESULT FSWindow::OnColumnClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 
 LRESULT FSWindow::OnDeleteAllItems(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 {
-	for (map<wstring, ListItem*>::iterator itr=m_nameMap.begin(); itr!=m_nameMap.end(); itr++)
+	for (map<wstring, ListItem*>::iterator itr = m_nameMap.begin(); itr != m_nameMap.end(); itr++)
 		delete itr->second;
 	m_nameMap.clear();
 	return TRUE;
-}
-
-void FSWindow::OnFinalMessage(HWND hwnd)
-{
-	delete this;
 }
 
 void FSWindow::CreateIfUnminimizedFolderView()
@@ -789,31 +800,27 @@ void FSWindow::OnNavigateComplete(IDispatch* pDisp, VARIANT* URL)
 
 static FSWindow* pZombie = NULL;
 
-static void CALLBACK TimerDestroy(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	delete pZombie;
-	pZombie = NULL;
-	KillTimer(NULL, idEvent);
-}
-
 void FSWindow::OnQuit()
 {
-	if (m_hWnd)
-	{
-		PostMessage(WM_CLOSE);
-	}
-	else
-	{
-		pZombie = this;
-		::SetTimer(NULL, 0, 0, TimerDestroy);
-	}
+	::PostMessage(g_hwndMain, WM_KILLWINDOW, 0, (LPARAM)this);
 }
 
-class ShellWindowManager : public IDispEventSimpleImpl<1, ShellWindowManager, &DIID_DShellWindowsEvents>
+class ShellWindowManager :
+	public CWindowImpl<ShellWindowManager>,
+	public IDispEventSimpleImpl<1, ShellWindowManager, &DIID_DShellWindowsEvents>
 {
 public:
 	ShellWindowManager();
 	~ShellWindowManager();
+
+private:
+	void Activate();
+	void Deactivate();
+
+BEGIN_MSG_MAP(FSWindow)
+	MESSAGE_HANDLER(WM_NOTIFYICON, OnAppIconMsg)
+	MESSAGE_HANDLER(WM_KILLWINDOW, OnKillWindow)
+END_MSG_MAP()
 
 static _ATL_FUNC_INFO ShellWindowsEventInfo;
 static _ATL_FUNC_INFO QuitInfo;
@@ -821,14 +828,39 @@ BEGIN_SINK_MAP(ShellWindowManager)
 	SINK_ENTRY_INFO(1, DIID_DShellWindowsEvents, DISPID_WINDOWREGISTERED, OnWindowRegistered, &ShellWindowsEventInfo)
 END_SINK_MAP()
 
+	LRESULT OnAppIconMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnKillWindow(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	void __stdcall OnWindowRegistered(long lCookie);
 
 	CComPtr<IShellWindows> m_pShellWindows;
+	set<FSWindow*> m_FSWindows;
 };
 
 _ATL_FUNC_INFO ShellWindowManager::ShellWindowsEventInfo = { CC_STDCALL, VT_EMPTY, 1, {VT_I4} };
 
 ShellWindowManager::ShellWindowManager()
+{
+	g_hwndMain = Create(HWND_MESSAGE);
+	NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+	nid.hWnd = m_hWnd;
+	nid.uID = 1;
+	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+	nid.uCallbackMessage = WM_NOTIFYICON;
+	nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON,
+		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+	lstrcpy(nid.szTip, _T("Folder Size"));
+	Shell_NotifyIcon(NIM_ADD, &nid);
+
+	Activate();
+}
+
+ShellWindowManager::~ShellWindowManager()
+{
+	if (m_pShellWindows)
+		Deactivate();
+}
+
+void ShellWindowManager::Activate()
 {
 	m_pShellWindows.CoCreateInstance(CLSID_ShellWindows);
 
@@ -841,12 +873,12 @@ ShellWindowManager::ShellWindowManager()
 			V_VT(&varIndex) = VT_I4;
 			V_I4(&varIndex) = i;
 			IDispatch* pDisp;
-			if (SUCCEEDED(m_pShellWindows->Item(varIndex, &pDisp)))
+			if (m_pShellWindows->Item(varIndex, &pDisp) == S_OK)
 			{
 				IWebBrowser2* pwb;
 				if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
 				{
-					new FSWindow(pwb);
+					m_FSWindows.insert(new FSWindow(pwb));
 				}
 				pDisp->Release();
 			}
@@ -856,9 +888,33 @@ ShellWindowManager::ShellWindowManager()
 	DispEventAdvise(m_pShellWindows);
 }
 
-ShellWindowManager::~ShellWindowManager()
+void ShellWindowManager::Deactivate()
 {
+	for (set<FSWindow*>::iterator itr = m_FSWindows.begin(); itr != m_FSWindows.end(); itr++)
+		delete *itr;
+	m_FSWindows.clear();
 	DispEventUnadvise(m_pShellWindows);
+	m_pShellWindows.Release();
+}
+
+LRESULT ShellWindowManager::OnAppIconMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	if (lParam == WM_LBUTTONDOWN || lParam == WM_LBUTTONDBLCLK)
+	{
+		if (m_pShellWindows)
+			Deactivate();
+		else
+			Activate();
+	}
+	return 0;
+}
+
+LRESULT ShellWindowManager::OnKillWindow(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	FSWindow* pWindow = (FSWindow*)lParam;
+	m_FSWindows.erase(pWindow);
+	delete pWindow;
+	return 0;
 }
 
 void ShellWindowManager::OnWindowRegistered(long lCookie)
@@ -876,7 +932,7 @@ void ShellWindowManager::OnWindowRegistered(long lCookie)
 			IWebBrowser2* pwb;
 			if (SUCCEEDED(pDisp->QueryInterface(IID_IWebBrowser2, (void**)&pwb)))
 			{
-				new FSWindow(pwb);
+				m_FSWindows.insert(new FSWindow(pwb));
 			}
 			pDisp->Release();
 		}
