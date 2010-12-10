@@ -41,8 +41,8 @@ IDB_BRIO                BITMAP                  "brio.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,1
- PRODUCTVERSION 2,5,0,0
+ FILEVERSION 1,5,0,1
+ PRODUCTVERSION 2,6,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -59,12 +59,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Brio"
             VALUE "FileDescription", "Folder Size Control Panel"
-            VALUE "FileVersion", "1, 4, 0, 1"
+            VALUE "FileVersion", "1, 5, 0, 1"
             VALUE "InternalName", "FolderSizeCpl"
-            VALUE "LegalCopyright", "Copyright © 2009"
+            VALUE "LegalCopyright", "Copyright © 2010"
             VALUE "OriginalFilename", "FolderSize.cpl"
-            VALUE "ProductName", "Folder Size for Windows"
-            VALUE "ProductVersion", "2, 5, 0, 0"
+            VALUE "ProductName", "Folder Size"
+            VALUE "ProductVersion", "2, 6, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
