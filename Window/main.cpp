@@ -832,22 +832,64 @@ END_SINK_MAP()
 	LRESULT OnKillWindow(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	void __stdcall OnWindowRegistered(long lCookie);
 
+	HICON m_icon;
+	HICON m_gray;
 	CComPtr<IShellWindows> m_pShellWindows;
 	set<FSWindow*> m_FSWindows;
 };
 
 _ATL_FUNC_INFO ShellWindowManager::ShellWindowsEventInfo = { CC_STDCALL, VT_EMPTY, 1, {VT_I4} };
 
-ShellWindowManager::ShellWindowManager()
+ShellWindowManager::ShellWindowManager() : m_icon(NULL), m_gray(NULL)
 {
 	g_hwndMain = Create(HWND_MESSAGE);
+
+	m_icon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON,
+		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+
+	ICONINFO ii;
+	if (GetIconInfo(m_icon, &ii))
+	{
+		BITMAP bm;
+		if (GetObject(ii.hbmColor, sizeof(bm), &bm))
+		{
+			if (bm.bmBitsPixel == 32)
+			{
+				BITMAPINFO bmi = { sizeof(bmi) };
+				HDC hdc = CreateCompatibleDC(NULL);
+				if (GetDIBits(hdc, ii.hbmColor, 0, 0, NULL, &bmi, DIB_RGB_COLORS))
+				{
+					bmi.bmiHeader.biCompression = BI_RGB;
+					DWORD* buffer = (DWORD*)(new BYTE[bmi.bmiHeader.biSizeImage]);
+					int lines = GetDIBits(hdc, ii.hbmColor, 0, bm.bmHeight, buffer, &bmi, DIB_RGB_COLORS);
+					if (lines == bm.bmHeight)
+					{
+						for (int i = 0; i < bm.bmWidth * bm.bmHeight; i++)
+						{
+							DWORD color = buffer[i];
+							int total = ((int)GetRValue(color) + (int)GetBValue(color) + (int)GetGValue(color)) / 3;
+							buffer[i] &= 0xFF000000;
+							buffer[i] |= RGB(total, total, total);
+						}
+						if (SetDIBits(hdc, ii.hbmColor, 0, lines, buffer, &bmi, DIB_RGB_COLORS))
+						{
+							m_gray = CreateIconIndirect(&ii);
+						}
+					}
+				}
+				DeleteDC(hdc);
+			}
+		}
+		DeleteObject(ii.hbmColor);
+		DeleteObject(ii.hbmMask);
+	}
+
 	NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
 	nid.hWnd = m_hWnd;
 	nid.uID = 1;
 	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 	nid.uCallbackMessage = WM_NOTIFYICON;
-	nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON,
-		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+	nid.hIcon = m_icon;
 	lstrcpy(nid.szTip, _T("Folder Size"));
 	Shell_NotifyIcon(NIM_ADD, &nid);
 
@@ -858,10 +900,25 @@ ShellWindowManager::~ShellWindowManager()
 {
 	if (m_pShellWindows)
 		Deactivate();
+
+	NOTIFYICONDATA nid;
+	nid.hWnd = m_hWnd;
+	nid.uID = 1;
+	Shell_NotifyIcon(NIM_DELETE, &nid);
+
+	if (m_gray)
+		DestroyIcon(m_gray);
 }
 
 void ShellWindowManager::Activate()
 {
+	NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+	nid.hWnd = m_hWnd;
+	nid.uID = 1;
+	nid.uFlags = NIF_ICON;
+	nid.hIcon = m_icon;
+	Shell_NotifyIcon(NIM_MODIFY, &nid);
+
 	m_pShellWindows.CoCreateInstance(CLSID_ShellWindows);
 
 	long count;
@@ -890,6 +947,16 @@ void ShellWindowManager::Activate()
 
 void ShellWindowManager::Deactivate()
 {
+	if (m_gray)
+	{
+		NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+		nid.hWnd = m_hWnd;
+		nid.uID = 1;
+		nid.uFlags = NIF_ICON;
+		nid.hIcon = m_gray;
+		Shell_NotifyIcon(NIM_MODIFY, &nid);
+	}
+
 	for (set<FSWindow*>::iterator itr = m_FSWindows.begin(); itr != m_FSWindows.end(); itr++)
 		delete *itr;
 	m_FSWindows.clear();
