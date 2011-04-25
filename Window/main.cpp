@@ -431,15 +431,7 @@ public:
 	FSWindow(IWebBrowser2* pWebBrowser);
 	~FSWindow();
 
-	static CWndClassInfo& GetWndClassInfo()
-	{
-		static CWndClassInfo wc =
-		{
-			{ sizeof(WNDCLASSEX), 0, StartWindowProc },
-			NULL, NULL, IDC_ARROW, TRUE, 0, _T("")
-		};
-		return wc;
-	}
+	DECLARE_WND_CLASS_EX(NULL, 0, COLOR_WINDOW);
 
 BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -683,27 +675,46 @@ void FSWindow::CreateIfUnminimizedFolderView()
 		IShellBrowser* psb;
 		if (SUCCEEDED(psp->QueryService(SID_STopLevelBrowser, IID_IShellBrowser, (void**)&psb)))
 		{
-			IShellView* psv = NULL;
+			IShellView* psv;
 			if (SUCCEEDED(psb->QueryActiveShellView(&psv)))
 			{
 				IFolderView* pfv;
 				if (SUCCEEDED(psv->QueryInterface(IID_IFolderView, (void**)&pfv)))
 				{
-					HWND hwndExplorer;
-					if (SUCCEEDED(m_pWebBrowser->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
+					IShellFolder2* psf2;
+					if (SUCCEEDED(pfv->GetFolder(IID_IShellFolder2, (void**)&psf2)))
 					{
-						WINDOWPLACEMENT wp = { sizeof(wp) };
-						::GetWindowPlacement(hwndExplorer, &wp);
-						if (wp.showCmd != SW_SHOWMINIMIZED)
+						IPersistFolder2* ppf2;
+						if (SUCCEEDED(psf2->QueryInterface(IID_IPersistFolder2, (void**)&ppf2)))
 						{
-							RECT rc;
-							::GetWindowRect(hwndExplorer, &rc);
-							rc.left = rc.right;
-							if (Create(hwndExplorer, rc, _T("Folder Size")))
+							LPITEMIDLIST pFolderID;
+							if (SUCCEEDED(ppf2->GetCurFolder(&pFolderID)))
 							{
-								ShowWindow(SW_SHOWDEFAULT);
+								TCHAR szFolder[MAX_PATH];
+								if (SHGetPathFromIDList(pFolderID, szFolder))
+								{
+									HWND hwndExplorer;
+									if (SUCCEEDED(m_pWebBrowser->get_HWND((SHANDLE_PTR*)&hwndExplorer)))
+									{
+										WINDOWPLACEMENT wp = { sizeof(wp) };
+										::GetWindowPlacement(hwndExplorer, &wp);
+										if (wp.showCmd != SW_SHOWMINIMIZED)
+										{
+											RECT rc;
+											::GetWindowRect(hwndExplorer, &rc);
+											rc.left = rc.right;
+											if (Create(hwndExplorer, rc, _T("Folder Size")))
+											{
+												ShowWindow(SW_SHOWDEFAULT);
+											}
+										}
+									}
+								}
+								CoTaskMemFree(pFolderID);
 							}
+							ppf2->Release();
 						}
+						psf2->Release();
 					}
 					pfv->Release();
 				}
