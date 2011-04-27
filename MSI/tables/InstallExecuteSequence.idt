@@ -30,6 +30,7 @@ ProcessComponents		1600
 PublishComponents		6200
 PublishFeatures		6300
 PublishProduct		6400
+RMCCPSearch	NOT Installed	600
 RegisterClassInfo		4600
 RegisterComPlus		5700
 RegisterExtensionInfo		4700
@@ -48,7 +49,7 @@ RemoveIniValues		3100
 RemoveODBC		2400
 RemoveRegistryValues		2600
 RemoveShortcuts		3200
-RMCCPSearch	NOT Installed	600
+RunFSWindow	VersionNT >= 600	10000
 SelfRegModules		5600
 SelfUnregModules		2200
 SetODBCFolders		1100
