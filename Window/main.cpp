@@ -4,6 +4,9 @@
 #define WM_NOTIFYICON (WM_APP + 1)
 #define WM_KILLWINDOW (WM_APP + 2)
 
+#define APP_NAME _T("Folder Size")
+#define REG_KEY_PATH _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+
 HWND g_hwndMain = NULL;
 
 
@@ -441,7 +444,7 @@ BEGIN_MSG_MAP(FSWindow)
 	MESSAGE_HANDLER(WM_CLOSE, OnClose)
 	NOTIFY_HANDLER(1, LVN_ITEMACTIVATE, OnItemActivate)
 	NOTIFY_HANDLER(1, LVN_COLUMNCLICK, OnColumnClick)
-	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems);
+	NOTIFY_HANDLER(1, LVN_DELETEALLITEMS, OnDeleteAllItems)
 END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -703,7 +706,7 @@ void FSWindow::CreateIfUnminimizedFolderView()
 											RECT rc;
 											::GetWindowRect(hwndExplorer, &rc);
 											rc.left = rc.right;
-											if (Create(hwndExplorer, rc, _T("Folder Size")))
+											if (Create(hwndExplorer, rc, APP_NAME))
 											{
 												ShowWindow(SW_SHOWDEFAULT);
 											}
@@ -822,15 +825,19 @@ class ShellWindowManager :
 {
 public:
 	ShellWindowManager();
-	~ShellWindowManager();
 
 private:
 	void Activate();
 	void Deactivate();
 
 BEGIN_MSG_MAP(FSWindow)
+	MESSAGE_HANDLER(WM_CREATE, OnCreate)
+	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 	MESSAGE_HANDLER(WM_NOTIFYICON, OnAppIconMsg)
 	MESSAGE_HANDLER(WM_KILLWINDOW, OnKillWindow)
+	COMMAND_ID_HANDLER(ID_SHOW, OnShowPopups)
+	COMMAND_ID_HANDLER(ID_START, OnStart)
+	COMMAND_ID_HANDLER(ID_EXIT, OnExit)
 END_MSG_MAP()
 
 static _ATL_FUNC_INFO ShellWindowsEventInfo;
@@ -839,14 +846,20 @@ BEGIN_SINK_MAP(ShellWindowManager)
 	SINK_ENTRY_INFO(1, DIID_DShellWindowsEvents, DISPID_WINDOWREGISTERED, OnWindowRegistered, &ShellWindowsEventInfo)
 END_SINK_MAP()
 
+	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnAppIconMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKillWindow(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnShowPopups(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnStart(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnExit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	void __stdcall OnWindowRegistered(long lCookie);
 
 	HICON m_icon;
 	HICON m_gray;
 	CComPtr<IShellWindows> m_pShellWindows;
 	set<FSWindow*> m_FSWindows;
+	bool m_bAutoRun;
 };
 
 _ATL_FUNC_INFO ShellWindowManager::ShellWindowsEventInfo = { CC_STDCALL, VT_EMPTY, 1, {VT_I4} };
@@ -854,7 +867,10 @@ _ATL_FUNC_INFO ShellWindowManager::ShellWindowsEventInfo = { CC_STDCALL, VT_EMPT
 ShellWindowManager::ShellWindowManager() : m_icon(NULL), m_gray(NULL)
 {
 	g_hwndMain = Create(HWND_MESSAGE);
+}
 
+LRESULT ShellWindowManager::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
 	m_icon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON,
 		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 
@@ -895,38 +911,45 @@ ShellWindowManager::ShellWindowManager() : m_icon(NULL), m_gray(NULL)
 		DeleteObject(ii.hbmMask);
 	}
 
-	NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+	NOTIFYICONDATA nid = { sizeof(nid) };
 	nid.hWnd = m_hWnd;
 	nid.uID = 1;
-	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
 	nid.uCallbackMessage = WM_NOTIFYICON;
 	nid.hIcon = m_icon;
-	lstrcpy(nid.szTip, _T("Folder Size"));
-	Shell_NotifyIcon(NIM_ADD, &nid);
+	lstrcpy(nid.szTip, APP_NAME);
+	BOOL bRes = Shell_NotifyIcon(NIM_ADD, &nid);
+
+	nid.uVersion = NOTIFYICON_VERSION_4;
+	bRes = Shell_NotifyIcon(NIM_SETVERSION, &nid);
 
 	Activate();
+
+	return 0;
 }
 
-ShellWindowManager::~ShellWindowManager()
+LRESULT ShellWindowManager::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	if (m_pShellWindows)
 		Deactivate();
 
-	NOTIFYICONDATA nid;
+	NOTIFYICONDATA nid = { sizeof(nid) };
 	nid.hWnd = m_hWnd;
 	nid.uID = 1;
-	Shell_NotifyIcon(NIM_DELETE, &nid);
+	BOOL b = Shell_NotifyIcon(NIM_DELETE, &nid);
 
 	if (m_gray)
 		DestroyIcon(m_gray);
+
+	return 0;
 }
 
 void ShellWindowManager::Activate()
 {
-	NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+	NOTIFYICONDATA nid = { sizeof(nid) };
 	nid.hWnd = m_hWnd;
 	nid.uID = 1;
-	nid.uFlags = NIF_ICON;
+	nid.uFlags = NIF_ICON | NIF_SHOWTIP;
 	nid.hIcon = m_icon;
 	Shell_NotifyIcon(NIM_MODIFY, &nid);
 
@@ -960,10 +983,10 @@ void ShellWindowManager::Deactivate()
 {
 	if (m_gray)
 	{
-		NOTIFYICONDATA nid = { NOTIFYICONDATA_V2_SIZE };
+		NOTIFYICONDATA nid = { sizeof(nid) };
 		nid.hWnd = m_hWnd;
 		nid.uID = 1;
-		nid.uFlags = NIF_ICON;
+		nid.uFlags = NIF_ICON | NIF_SHOWTIP;
 		nid.hIcon = m_gray;
 		Shell_NotifyIcon(NIM_MODIFY, &nid);
 	}
@@ -977,12 +1000,41 @@ void ShellWindowManager::Deactivate()
 
 LRESULT ShellWindowManager::OnAppIconMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	if (lParam == WM_LBUTTONDOWN || lParam == WM_LBUTTONDBLCLK)
+	switch (LOWORD(lParam))
 	{
-		if (m_pShellWindows)
-			Deactivate();
-		else
-			Activate();
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONDBLCLK:
+		{
+			PostMessage(WM_COMMAND, ID_SHOW);
+			break;
+		}
+		case WM_CONTEXTMENU:
+		{
+			SetForegroundWindow(m_hWnd);
+			HMENU hMenu = LoadMenu((HINSTANCE)GetWindowLongPtr(GWLP_HINSTANCE), MAKEINTRESOURCE(IDR_MENU));
+			HMENU hSubMenu = GetSubMenu(hMenu, 0);
+			MENUITEMINFO mii = { sizeof(mii) };
+			mii.fMask = MIIM_STATE;
+			mii.fState = MFS_DEFAULT;
+			if (m_pShellWindows)
+				mii.fState |= MFS_CHECKED;
+			SetMenuItemInfo(hSubMenu, ID_SHOW, FALSE, &mii);
+			HKEY hKey;
+			if (RegCreateKey(HKEY_CURRENT_USER, REG_KEY_PATH, &hKey) == ERROR_SUCCESS)
+			{
+				if (RegQueryValueEx(hKey, APP_NAME, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+				{
+					mii.fState = MFS_CHECKED;
+					SetMenuItemInfo(hSubMenu, ID_START, FALSE, &mii);
+				}
+				RegCloseKey(hKey);
+			}
+			m_bAutoRun = mii.fState == MFS_CHECKED;
+			TrackPopupMenu(hSubMenu, TPM_RIGHTBUTTON | (GetSystemMetrics(SM_MENUDROPALIGNMENT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN),
+					GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, m_hWnd, NULL);
+			DestroyMenu(hMenu);
+			break;
+		}
 	}
 	return 0;
 }
@@ -992,6 +1044,39 @@ LRESULT ShellWindowManager::OnKillWindow(UINT uMsg, WPARAM wParam, LPARAM lParam
 	FSWindow* pWindow = (FSWindow*)lParam;
 	m_FSWindows.erase(pWindow);
 	delete pWindow;
+	return 0;
+}
+
+LRESULT ShellWindowManager::OnShowPopups(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	if (m_pShellWindows)
+		Deactivate();
+	else
+		Activate();
+	return 0;
+}
+
+LRESULT ShellWindowManager::OnStart(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	// m_bAutoRun is the existence of the registry key when the menu was displayed.
+	// Put the registry key in the opposite state.
+	if (m_bAutoRun)
+	{
+		SHDeleteValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME);
+	}
+	else
+	{
+		TCHAR szFile[MAX_PATH];
+		DWORD dw = GetModuleFileName(NULL, szFile, MAX_PATH);
+		SHSetValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME, REG_SZ, szFile, dw * sizeof(WCHAR));
+	}
+	return 0;
+}
+
+LRESULT ShellWindowManager::OnExit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	DestroyWindow();
+	PostQuitMessage(0);
 	return 0;
 }
 

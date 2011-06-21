@@ -353,6 +353,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\Common\foldericon.ico"
+			>
+		</File>
+		<File
 			RelativePath=".\main.cpp"
 			>
 		</File>
