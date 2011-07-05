@@ -1,4 +1,5 @@
 Action	Type	Source	Target
 s72	i2	S72	S255
 CustomAction	Action
-RunFSWindow	210	FolderSize.exe	
+InstallFSWindow	210	FolderSize.exe	-install
+RemoveFSWindow	18	FolderSize.exe	-remove

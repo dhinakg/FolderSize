@@ -13,6 +13,7 @@ DeleteServices	VersionNT	2000
 DuplicateFiles		4210
 FileCost		900
 FindRelatedProducts		200
+InstallFSWindow	VersionNT >= 600 AND REMOVE=""	10000
 InstallFiles		4000
 InstallFinalize		6600
 InstallInitialize		1500
@@ -43,13 +44,13 @@ RegisterUser		6000
 RemoveDuplicateFiles		3400
 RemoveEnvironmentStrings		3300
 RemoveExistingProducts		6700
+RemoveFSWindow	REMOVE~="ALL"	1300
 RemoveFiles		3500
 RemoveFolders		3600
 RemoveIniValues		3100
 RemoveODBC		2400
 RemoveRegistryValues		2600
 RemoveShortcuts		3200
-RunFSWindow	VersionNT >= 600	10000
 SelfRegModules		5600
 SelfUnregModules		2200
 SetODBCFolders		1100
