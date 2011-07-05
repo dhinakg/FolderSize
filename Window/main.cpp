@@ -5,6 +5,7 @@
 #define WM_KILLWINDOW (WM_APP + 2)
 
 #define APP_NAME _T("Folder Size")
+#define SHELL_WINDOW_CLASS_NAME _T("FolderSizeShellWindow")
 #define REG_KEY_PATH _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run")
 
 HWND g_hwndMain = NULL;
@@ -826,6 +827,8 @@ class ShellWindowManager :
 public:
 	ShellWindowManager();
 
+	DECLARE_WND_CLASS(SHELL_WINDOW_CLASS_NAME)
+
 private:
 	void Activate();
 	void Deactivate();
@@ -940,6 +943,8 @@ LRESULT ShellWindowManager::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 
 	if (m_gray)
 		DestroyIcon(m_gray);
+
+	PostQuitMessage(0);
 
 	return 0;
 }
@@ -1056,19 +1061,29 @@ LRESULT ShellWindowManager::OnShowPopups(WORD wNotifyCode, WORD wID, HWND hWndCt
 	return 0;
 }
 
+static void SetAutoRun()
+{
+	TCHAR szFile[MAX_PATH];
+	DWORD dw = GetModuleFileName(NULL, szFile, MAX_PATH);
+	SHSetValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME, REG_SZ, szFile, dw * sizeof(WCHAR));
+}
+
+static void DeleteAutoRun()
+{
+	SHDeleteValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME);
+}
+
 LRESULT ShellWindowManager::OnStart(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	// m_bAutoRun is the existence of the registry key when the menu was displayed.
 	// Put the registry key in the opposite state.
 	if (m_bAutoRun)
 	{
-		SHDeleteValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME);
+		DeleteAutoRun();
 	}
 	else
 	{
-		TCHAR szFile[MAX_PATH];
-		DWORD dw = GetModuleFileName(NULL, szFile, MAX_PATH);
-		SHSetValue(HKEY_CURRENT_USER, REG_KEY_PATH, APP_NAME, REG_SZ, szFile, dw * sizeof(WCHAR));
+		SetAutoRun();
 	}
 	return 0;
 }
@@ -1076,7 +1091,6 @@ LRESULT ShellWindowManager::OnStart(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 LRESULT ShellWindowManager::OnExit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	DestroyWindow();
-	PostQuitMessage(0);
 	return 0;
 }
 
@@ -1104,6 +1118,51 @@ void ShellWindowManager::OnWindowRegistered(long lCookie)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	// find an already running instance
+	HWND hwndExisting = FindWindow(SHELL_WINDOW_CLASS_NAME, NULL);
+
+	int argc;
+	LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	if (argv)
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			if (argv[i][0] == _T('/') || argv[i][0] == _T('-'))
+			{
+				if (lstrcmpi(argv[i] + 1, _T("install")) == 0)
+				{
+					SetAutoRun();
+				}
+				if (lstrcmpi(argv[i] + 1, _T("remove")) == 0)
+				{
+					if (hwndExisting)
+					{
+						PostMessage(hwndExisting, WM_CLOSE, 0, 0);
+						DWORD dwProcessId;
+						if (GetWindowThreadProcessId(hwndExisting, &dwProcessId))
+						{
+							HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, dwProcessId);
+							if (hProcess)
+							{
+								WaitForSingleObject(hProcess, 8000);
+								CloseHandle(hProcess);
+							}
+						}
+					}
+					DeleteAutoRun();
+					return 0;
+				}
+			}
+		}
+		LocalFree(argv);
+	}
+
+	if (hwndExisting)
+	{
+		// send it a message to tell it to activate in some way that it can
+		return 0;
+	}
+
 	InitCommonControls();
 	CoInitialize(NULL);
 
