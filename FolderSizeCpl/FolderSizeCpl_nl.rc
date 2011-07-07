@@ -81,7 +81,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder size voor Windows is bedacht, ontworpen en geïmplementeerd door Brian Oraas.",
                     IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size voor Windows 2.5",IDC_TITLE,7,7,198,22,
+    LTEXT           "Folder Size voor Windows 2.6",IDC_TITLE,7,7,198,22,
                     WS_TABSTOP
     PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "Folder Size voor Windows wordt verdeeld onder de voorwaarden van de GNU/GPL licentie.",

@@ -71,7 +71,7 @@ CAPTION "Om"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size för Windows uppfanns, planerades och implementerades av Brian Oraas.",IDC_STATIC,7,38,96,34
-    LTEXT           "Folder Size för Windows 2.5",IDC_TITLE,7,7,198,22,WS_TABSTOP
+    LTEXT           "Folder Size för Windows 2.6",IDC_TITLE,7,7,198,22,WS_TABSTOP
     PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
     LTEXT           "Folder Size för Windows får distribueras fritt under GNU General Public License.",IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licens",IDC_STATIC,7,123,198,58
