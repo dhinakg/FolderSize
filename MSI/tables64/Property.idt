@@ -3,6 +3,8 @@ s72	l0
 Property	Property
 ALLUSERS	1
 ARPHELPLINK	http://foldersize.sourceforge.net
+ARPNOMODIFY	1
+ARPPRODUCTICON	FolderSizeIcon
 BannerBitmap	bannrbmp
 ButtonText_Back	< &Back
 ButtonText_Browse	Br&owse
