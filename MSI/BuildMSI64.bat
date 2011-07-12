@@ -5,7 +5,7 @@ msidb -c -d FolderSize64.msi -f "%cd%\tables64" *
 
 rem Create a CAB containing the four FolderSize files
 
-cabarc n FolderSize.cab ..\release\x64\FolderSizeColumn.dll ..\release\x64\FolderSize.cpl ..\release\x64\FolderSizeSvc.exe ..\release\x64\FolderSize.exe
+cabarc -m lzx:21 n FolderSize.cab ..\release\x64\FolderSizeColumn.dll ..\release\x64\FolderSize.cpl ..\release\x64\FolderSizeSvc.exe ..\release\x64\FolderSize.exe
 
 rem Add the CAB to the MSI as a stream
 
