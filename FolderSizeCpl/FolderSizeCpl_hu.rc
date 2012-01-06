@@ -13,12 +13,12 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Hungarian resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HUN)
 #ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
+LANGUAGE LANG_HUNGARIAN, SUBLANG_DEFAULT
+#pragma code_page(1250)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -31,15 +31,15 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Display"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Format",IDC_STATIC,7,7,198,61
-    CONTROL         "&Explorer (%s)",IDC_DISPLAY_EXPLORER,"Button",BS_AUTORADIOBUTTON,17,22,171,10
-    CONTROL         "&Compact (%s)",IDC_DISPLAY_COMPACT,"Button",BS_AUTORADIOBUTTON,17,36,176,10
-    CONTROL         "&Bytes (%s)",IDC_DISPLAY_BYTES,"Button",BS_AUTORADIOBUTTON,17,50,175,10
-    GROUPBOX        "Drive types",IDC_STATIC,7,74,198,51
-    CONTROL         "&Hard drives",IDC_DISPLAY_LOCAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,90,53,10
-    CONTROL         "&Removable storage",IDC_DISPLAY_REMOVABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,90,78,10
-    CONTROL         "CD/&DVD drives",IDC_DISPLAY_CD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,106,63,10
-    CONTROL         "&Network shares",IDC_DISPLAY_NETWORK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,106,66,10
+    GROUPBOX        "Formátum",IDC_STATIC,7,7,198,61
+    CONTROL         "&Intézõ-szerû (%s)",IDC_DISPLAY_EXPLORER,"Button",BS_AUTORADIOBUTTON,17,22,171,10
+    CONTROL         "&Tömörített (%s)",IDC_DISPLAY_COMPACT,"Button",BS_AUTORADIOBUTTON,17,36,176,10
+    CONTROL         "&Bájtok (%s)",IDC_DISPLAY_BYTES,"Button",BS_AUTORADIOBUTTON,17,50,175,10
+    GROUPBOX        "Meghajtó típusok",IDC_STATIC,7,74,198,51
+    CONTROL         "Helyi lemezek",IDC_DISPLAY_LOCAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,90,71,10
+    CONTROL         "Cserélhetõ meghajtók",IDC_DISPLAY_REMOVABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,90,88,10
+    CONTROL         "CD/&DVD meghajtók",IDC_DISPLAY_CD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,106,80,10
+    CONTROL         "Hálózati megosztások",IDC_DISPLAY_NETWORK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,106,89,10
 END
 
 IDD_SERVICE DIALOGEX 0, 0, 212, 188
@@ -47,18 +47,18 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Service"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Service status:",IDC_STATIC,7,7,49,8
+    LTEXT           "Szolgáltatás állapota:",IDC_STATIC,7,7,49,8
     LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
-    PUSHBUTTON      "&Start",IDC_SERVICE_START,7,37,50,14
-    PUSHBUTTON      "S&top",IDC_SERVICE_STOP,7,67,50,14
-    LTEXT           "You must have Administrator privileges to modify the service.",IDC_STATIC,64,161,141,20
+    PUSHBUTTON      "&Indítás",IDC_SERVICE_START,7,37,50,14
+    PUSHBUTTON      "Leállítás",IDC_SERVICE_STOP,7,64,50,14
+    LTEXT           "Rendszergazdai jogosultság szükséges a szolgáltatás módosításához.",IDC_STATIC,64,161,141,20
     ICON            "",IDC_SERVICE_INFOICON,37,161,20,20
-    PUSHBUTTON      "&Pause",IDC_SERVICE_PAUSE,7,94,50,14
-    PUSHBUTTON      "&Resume",IDC_SERVICE_RESUME,7,120,50,14
-    LTEXT           "While the service is running, a Folder Size cache is in memory and monitoring your folders.",IDC_STATIC,64,36,141,27
-    LTEXT           "When the service is stopped, folder size information is not available in Explorer.",IDC_STATIC,64,67,141,21
-    LTEXT           "Pause the background scanning to free disk bandwidth.",IDC_STATIC,64,94,141,23
-    LTEXT           "Resume to keep the cache updated.",IDC_STATIC,64,119,141,24
+    PUSHBUTTON      "Szünet",IDC_SERVICE_PAUSE,7,96,50,14
+    PUSHBUTTON      "Folytatás",IDC_SERVICE_RESUME,7,122,50,14
+    LTEXT           "Amíg a szolgáltatás fut, a Folder Size a memóriában tárolja és figyeli a mappáit.",IDC_STATIC,64,36,141,22
+    LTEXT           "Amikor a szolgáltatás le van álítva, a mappa méret információk nem érhetõek el az Intézõben.",IDC_STATIC,64,64,141,26
+    LTEXT           "Szüneteltesse a folyamatot a meghajtó-sávszélesség növeléséhez.",IDC_STATIC,64,96,141,23
+    LTEXT           "Folytassa a tárolt adatok frissítéséhez.",IDC_STATIC,64,121,141,24
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 212, 188
@@ -67,28 +67,28 @@ CAPTION "About"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Folder Size for Windows 2.6",IDC_TITLE,7,7,198,22,WS_TABSTOP
-    LTEXT           "Folder Size for Windows was conceived, architected, and implemented by Brian Oraas.",IDC_STATIC,7,38,96,34
+    LTEXT           "Folder Size for Windows-t kigondolta, felépítette és megvalósította: Brian Oraas.",IDC_STATIC,7,38,96,34
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | WS_TABSTOP,133,38,72,79,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "&Credits",IDC_CREDITS,7,79,50,14
-    LTEXT           "Folder Size for Windows may be distributed under the terms of the GNU General Public License.",IDC_HYPER_GPL,17,137,179,19
-    GROUPBOX        "License",IDC_STATIC,7,123,198,58
-    LTEXT           "Find out more about GNU here.",IDC_HYPER_GNU,17,162,179,8,WS_TABSTOP
+    PUSHBUTTON      "&Készítõk",IDC_CREDITS,7,79,50,14
+    LTEXT           "Folder Size for Windows a GNU General Public License feltételek alatt terjeszthetõ",IDC_HYPER_GPL,17,137,179,19
+    GROUPBOX        "Licensz",IDC_STATIC,7,123,198,58
+    LTEXT           "Fedezzen fel még többet a GNU-ról itt.",IDC_HYPER_GNU,17,162,179,8,WS_TABSTOP
 END
 
-IDD_CREDITS DIALOGEX 0, 0, 323, 160
+IDD_CREDITS DIALOGEX 0, 0, 323, 155
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Credits"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    ICON            "",IDC_FOLDERSIZEICON,7,7,21,20
-    LTEXT           "The following people have all contributed some of their knowledge or expertise to improve Folder Size!",IDC_STATIC,53,7,224,22
-    GROUPBOX        "Translation",IDC_STATIC,53,27,172,126
-    LTEXT           "",IDC_TRANSLATORS,61,40,160,107,SS_NOPREFIX
-    GROUPBOX        "Graphic",IDC_STATIC,232,29,84,29
+    ICON            "",IDC_FOLDERSIZEICON,7,7,20,20
+    LTEXT           "A következõ emberek mind közremûködtek a tudásuk szerint vagy szakvéleményükkel abban, hogy fejlesszék a Folder Size-t!",IDC_STATIC,53,7,224,22
+    GROUPBOX        "Fordítás",IDC_STATIC,53,29,172,118
+    LTEXT           "",IDC_TRANSLATORS,61,41,160,100,SS_NOPREFIX
+    GROUPBOX        "Grafika",IDC_STATIC,232,29,84,29
     LTEXT           "Christian Helmrich",IDC_STATIC,240,41,60,8
-    GROUPBOX        "Code",IDC_STATIC,232,66,84,37
+    GROUPBOX        "Kód",IDC_STATIC,232,66,84,37
     LTEXT           "Kirill Müller\nMarkus Cozowicz",IDC_STATIC,240,78,69,23
-    DEFPUSHBUTTON   "OK",IDOK,266,139,50,14
+    DEFPUSHBUTTON   "OK",IDOK,266,134,50,14
 END
 
 
@@ -121,7 +121,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 316
         TOPMARGIN, 7
-        BOTTOMMARGIN, 153
+        BOTTOMMARGIN, 148
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -135,18 +135,18 @@ END
 STRINGTABLE 
 BEGIN
     IDS_NAME                "Folder Size"
-    IDS_INFO                "Customize the Explorer Folder Size column and control the Folder Size service."
-    IDS_SERVICE_RUNNING     "Running"
-    IDS_SERVICE_STOPPED     "Stopped"
-    IDS_SERVICE_UNKNOWN     "Unknown"
-    IDS_SERVICE_PAUSED      "Paused"
-    IDS_SERVICE_START_PENDING "Starting"
-    IDS_SERVICE_STOP_PENDING "Stopping"
-    IDS_SERVICE_CONTINUE_PENDING "Resuming"
-    IDS_SERVICE_PAUSE_PENDING "Pausing"
+    IDS_INFO                "Szabja testre az Intézõ Mappa méret oszlopait és irányítsa a Folder Size szolgáltatást."
+    IDS_SERVICE_RUNNING     "Fut"
+    IDS_SERVICE_STOPPED     "Leállítva"
+    IDS_SERVICE_UNKNOWN     "Ismeretlen"
+    IDS_SERVICE_PAUSED      "Szünetelve"
+    IDS_SERVICE_START_PENDING "Indítás"
+    IDS_SERVICE_STOP_PENDING "Leállítás"
+    IDS_SERVICE_CONTINUE_PENDING "Folytatás"
+    IDS_SERVICE_PAUSE_PENDING "Szüneteltetés"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Hungarian resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -173,6 +173,11 @@ END
 3 TEXTINCLUDE 
 BEGIN
     "\r\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED

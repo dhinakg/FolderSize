@@ -578,6 +578,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FolderSizeCpl_hu.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSizeCpl_it.rc"
 				>
 			</File>

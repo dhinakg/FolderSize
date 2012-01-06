@@ -370,6 +370,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FolderSizeService_hu.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSizeService_it.rc"
 				>
 			</File>

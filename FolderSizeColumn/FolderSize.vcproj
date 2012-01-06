@@ -611,6 +611,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FolderSize_hu.rc"
+				>
+			</File>
+			<File
 				RelativePath=".\FolderSize_it.rc"
 				>
 			</File>

@@ -360,6 +360,7 @@ INT_PTR CALLBACK CreditsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				TEXT("Игорь Петрович (Russian)\n")
 				TEXT("Piotr Kwiliński (Polish)\n")
 				TEXT("Victor Pereyra (Spanish)\n")
+				TEXT("Tamás Dávid (Hungarian)")
 			);
 			//     LTEXT           "Bruce Pimenta (German)\nCalle (Swedish)\nFrederik Uyttersprot & Huub van Dooren (Dutch)\nJ.J.Ghisa (Italian)\nJosep Lladonosa Capell (Catalan)\nKeblo (Japanese)\nWayland Tai (Chinese)\nLimerick Kepler (French)\nMiguel Maratá (Portuguese)\nИгорь Петрович (Russian)\nPiotr Kwiliński (Polish)\nVictor Pereyra (Spanish)\n",
 
