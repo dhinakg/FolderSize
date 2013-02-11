@@ -47,8 +47,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Service"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Szolgáltatás állapota:",IDC_STATIC,7,7,49,8
-    LTEXT           "Static",IDC_SERVICE_STATUS,64,7,134,10
+    LTEXT           "Szolgáltatás állapota:",IDC_STATIC,7,7,69,8
+    LTEXT           "Static",IDC_SERVICE_STATUS,84,7,134,10
     PUSHBUTTON      "&Indítás",IDC_SERVICE_START,7,37,50,14
     PUSHBUTTON      "Leállítás",IDC_SERVICE_STOP,7,64,50,14
     LTEXT           "Rendszergazdai jogosultság szükséges a szolgáltatás módosításához.",IDC_STATIC,64,161,141,20
@@ -70,25 +70,25 @@ BEGIN
     LTEXT           "Folder Size for Windows-t kigondolta, felépítette és megvalósította: Brian Oraas.",IDC_STATIC,7,38,96,34
     CONTROL         109,IDC_PIC_BRIO,"Static",SS_BITMAP | SS_CENTERIMAGE | WS_TABSTOP,133,38,72,79,WS_EX_CLIENTEDGE
     PUSHBUTTON      "&Készítõk",IDC_CREDITS,7,79,50,14
-    LTEXT           "Folder Size for Windows a GNU General Public License feltételek alatt terjeszthetõ",IDC_HYPER_GPL,17,137,179,19
+    LTEXT           "Folder Size for Windows a GNU General Public License feltételek alatt terjeszthetõ.",IDC_HYPER_GPL,17,137,179,19
     GROUPBOX        "Licensz",IDC_STATIC,7,123,198,58
     LTEXT           "Fedezzen fel még többet a GNU-ról itt.",IDC_HYPER_GNU,17,162,179,8,WS_TABSTOP
 END
 
-IDD_CREDITS DIALOGEX 0, 0, 323, 155
+IDD_CREDITS DIALOGEX 0, 0, 323, 160
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Credits"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    ICON            "",IDC_FOLDERSIZEICON,7,7,20,20
+    ICON            "",IDC_FOLDERSIZEICON,7,7,21,20
     LTEXT           "A következõ emberek mind közremûködtek a tudásuk szerint vagy szakvéleményükkel abban, hogy fejlesszék a Folder Size-t!",IDC_STATIC,53,7,224,22
-    GROUPBOX        "Fordítás",IDC_STATIC,53,29,172,118
-    LTEXT           "",IDC_TRANSLATORS,61,41,160,100,SS_NOPREFIX
+    GROUPBOX        "Fordítás",IDC_STATIC,53,27,172,126
+    LTEXT           "",IDC_TRANSLATORS,61,40,160,107,SS_NOPREFIX
     GROUPBOX        "Grafika",IDC_STATIC,232,29,84,29
     LTEXT           "Christian Helmrich",IDC_STATIC,240,41,60,8
     GROUPBOX        "Kód",IDC_STATIC,232,66,84,37
     LTEXT           "Kirill Müller\nMarkus Cozowicz",IDC_STATIC,240,78,69,23
-    DEFPUSHBUTTON   "OK",IDOK,266,134,50,14
+    DEFPUSHBUTTON   "OK",IDOK,266,139,50,14
 END
 
 
